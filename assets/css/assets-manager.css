@@ -1,0 +1,227 @@
+/**
+ * Assets manager styles
+ * @author Webcraftic <wordpress.webraftic@gmail.com> 
+ * @copyright Webcraftic 12.11.2017 
+ */
+html,
+body {
+  overflow: hidden !important;
+}
+#wbcr-assets-manager-wrapper {
+  display: none;
+  position: fixed;
+  z-index: 99999999;
+  top: 32px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+}
+#wbcr-assets-manager {
+  background: #ffffff;
+  padding: 20px;
+  font-size: 14px;
+  line-height: 1.5em;
+  color: #4a545a;
+}
+#wbcr-assets-manager a {
+  text-decoration: none;
+  border: none;
+}
+#wbcr-assets-manager h3 {
+  padding: 10px;
+  margin: 20px 0 0;
+  font-size: 20px;
+  background: #ececec;
+  color: #696969;
+  border-radius: 5px 5px 0 0;
+}
+#wbcr-assets-manager .wbcr-header {
+  position: relative;
+}
+#wbcr-assets-manager .wbcr-header h2 {
+  font-size: 24px;
+  margin: 0 0 10px 0;
+  color: #4a545a;
+  font-weight: bold;
+}
+#wbcr-assets-manager .wbcr-header p {
+  font-size: 14px;
+  color: #a9a9a9;
+  margin: 0px auto 15px auto;
+}
+#wbcr-assets-manager .wbcr-header .wbcr-description {
+  padding-right: 300px;
+}
+#wbcr-assets-manager table {
+  table-layout: fixed;
+  width: 100%;
+  margin: 0px;
+  padding: 0px;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  border-collapse: collapse;
+  color: #737373;
+}
+#wbcr-assets-manager table thead {
+  background: none;
+  color: #9a9797;
+  font-weight: bold;
+  border: none;
+}
+#wbcr-assets-manager table thead tr {
+  border: none;
+}
+#wbcr-assets-manager table thead th {
+  padding: 10px;
+  vertical-align: middle;
+  border-bottom: 2px solid #ececec;
+}
+#wbcr-assets-manager table tr {
+  border: none;
+  border-bottom: 1px solid #ececec;
+  background: #ffffff;
+}
+#wbcr-assets-manager table tbody tr:last-child {
+  border-bottom: 0px;
+}
+#wbcr-assets-manager table td {
+  padding: 5px;
+  border: none;
+  vertical-align: middle;
+  font-size: 14px;
+}
+#wbcr-assets-manager table td.wbcr-assets-manager-size {
+  font-size: 12px;
+}
+#wbcr-assets-manager table td.wbcr-script {
+  white-space: nowrap;
+}
+#wbcr-assets-manager table .wbcr-assets-manager-disable *:after,
+#wbcr-assets-manager table .wbcr-assets-manager-disable *:before {
+  display: none;
+}
+#wbcr-assets-manager table select {
+  height: auto;
+  width: auto;
+  padding: 5px 10px;
+  margin: 0;
+  font-size: 14px;
+  appearance: menulist;
+  -webkit-appearance: menulist;
+  color: #827b7b;
+}
+#wbcr-assets-manager table select,
+#wbcr-assets-manager table select:focus,
+#wbcr-assets-manager table select:hover,
+#wbcr-assets-manager table select:active {
+  border: 1px solid #d6d2d2;
+  box-shadow: none;
+  background-color: #ffffff;
+}
+#wbcr-assets-manager table .wbcr-assets-manager-enable-placeholder {
+  color: #bbbbbb;
+  font-style: italic;
+  font-size: 14px;
+}
+#wbcr-assets-manager table input[type='checkbox'] {
+  display: inline-block;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+#wbcr-assets-manager table label {
+  display: inline-block;
+  margin: 0 10px 0 0;
+  width: auto;
+  font-weight: normal;
+}
+#wbcr-assets-manager .wbcr-state {
+  margin: 0 auto;
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  line-height: 3.4;
+  font-weight: bold;
+  font-size: 12px;
+  border-radius: 100%;
+}
+#wbcr-assets-manager .wbcr-state.wbcr-state-0 {
+  background: #dff5c4;
+  color: #798c64;
+}
+#wbcr-assets-manager .wbcr-state.wbcr-state-1 {
+  background: #ffb1af;
+  color: #a25f5f;
+}
+#wbcr-assets-manager .wbcr-use-by-comment {
+  color: #a25f5f;
+}
+#wbcr-assets-manager .wbcr-script span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+  font-weight: bold;
+}
+#wbcr-assets-manager .wbcr-script a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: #bbbbba;
+}
+#wbcr-assets-manager .wbcr-float-panel {
+  position: fixed;
+  top: 30px;
+  right: 35px;
+  background: #23282d;
+  padding: 15px 15px 5px;
+  border-radius: 0 0 5px 5px;
+}
+#wbcr-assets-manager .wbcr-float-panel input[type='submit'] {
+  display: inline-block;
+  width: 140px;
+  height: 35px;
+  padding: 0;
+  margin: 0 10px 0 0;
+  border-radius: 3px;
+  background: #FFC107;
+  color: #907010;
+  cursor: pointer;
+  border: none;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  vertical-align: top;
+  outline: none;
+  line-height: 2.6;
+}
+#wbcr-assets-manager .wbcr-float-panel input[type='submit']:after {
+  clear: both;
+}
+#wbcr-assets-manager .wbcr-float-panel input[type='submit']:hover {
+  background: #ffc721;
+}
+#wbcr-assets-manager .wbcr-float-panel .wbcr-close {
+  display: inline-block;
+  height: 35px;
+  width: 37px;
+  border-radius: 3px;
+  font-size: 0;
+  background: #9E9E9E url('../img/cancel.png') center center no-repeat;
+  vertical-align: top;
+  outline: none;
+}
+#wbcr-assets-manager .wbcr-float-panel .wbcr-hide-panel {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #929292;
+  text-decoration: underline;
+  text-align: center;
+  outline: none;
+}

@@ -1,0 +1,171 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: clearfy\n"
+"POT-Creation-Date: 2017-11-16 09:39+0300\n"
+"PO-Revision-Date: 2017-11-17 13:22+0100\n"
+"Last-Translator: Robert <soutien@bestgoodeal.eu>\n"
+"Language-Team: Russian\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.4\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10 >= 2 && n"
+"%10<=4 &&(n%100<10||n%100 >= 20)? 1 : 2);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c\n"
+"Report-Msgid-Bugs-To: \n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: libs\n"
+
+#: admin/pages/assets-manager.php:50
+msgid "Comments"
+msgstr "Commentaires"
+
+#: gonzales.php:82
+msgid "Webcraftic assets cleanup"
+msgstr "Nettoyage des actifs webcraftic"
+
+#: admin/pages/assets-manager.php:33
+msgid "Webcraftic Assets manager"
+msgstr "Gestionnaire d'actifs webcraftic"
+
+#: admin/pages/assets-manager.php:51
+msgid "General"
+msgstr "Général"
+
+#: admin/pages/assets-manager.php:116
+msgid "Disable assets manager"
+msgstr "Désactiver le gestionnaire d'actifs"
+
+#: admin/pages/assets-manager.php:118
+msgid "Full disable of the module."
+msgstr "Désactivation complète du module."
+
+#: admin/pages/assets-manager.php:140
+msgid "Disable assets manager panel"
+msgstr "Désactiver le panneau gestion des actifs"
+
+#: admin/pages/assets-manager.php:142
+msgid ""
+"By default in your admin bar there is a button for control the assets "
+"scripts and styles. With this option, you can turn off the script manager on "
+"front and back-end."
+msgstr ""
+"Par défaut dans votre barre d'administration il y a un bouton pour contrôler "
+"les scripts et les styles des actifs. Avec cette option, vous pouvez "
+"désactiver le gestionnaire de scripts à l'avant et back-end."
+
+#: admin/pages/assets-manager.php:156
+msgid "Disable assets manager on front"
+msgstr "Désactiver le gestionnaire d'actifs à l'avant"
+
+#: admin/pages/assets-manager.php:158
+msgid "Disables assets manager initialization for frontend."
+msgstr "Initialisation du gestionnaire d'actifs désactivés pour le frontend."
+
+#: admin/pages/assets-manager.php:165
+msgid "Disable assets manager on back-end"
+msgstr "Désactiver le gestionnaire d'actifs sur back-end"
+
+#: admin/pages/assets-manager.php:167
+msgid "Disables assets manager initialization for backend."
+msgstr "Initialisation du gestionnaire d'actifs désactivés pour backend."
+
+#: gonzales.php:17
+msgid ""
+"We found that you use the plugin \"Clearfy - disable unused functions\", "
+"this plugin already has the same functions as \"WP Asset CleanUp\", so you "
+"can disable the \"WP Asset CleanUp\" plugin!"
+msgstr ""
+"Nous avons constaté que vous utilisez le plugin \"Clearfy-désactiver les "
+"fonctions inutilisées\", ce plugin a déjà les mêmes fonctions que \"WP Asset "
+"Cleanup\", de sorte que vous pouvez désactiver le \"WP Asset Cleanup\" "
+"plugin!"
+
+#: plugin/includes/class.configurate-assets.php:80
+msgid "Script Manager"
+msgstr "Gestionnaire de scripts"
+
+#: plugin/includes/class.configurate-assets.php:106
+msgid "Assets manager"
+msgstr "Gestionnaire d'actifs"
+
+#: plugin/includes/class.configurate-assets.php:108
+msgid ""
+"Below you can disable/enable CSS and JS files on a per page/post basis, as "
+"well as by custom post types. We recommend testing this locally or on a "
+"staging site first, as you could break the appearance of your live site. If "
+"you aren't sure about a certain script, you can try clicking on it, as a lot "
+"of authors will mention their plugin or theme in the header of the source "
+"code."
+msgstr ""
+"Ci-dessous vous pouvez désactiver/activer les fichiers CSS et JS sur une "
+"base par page/post, ainsi que par les types de postes personnalisés. Nous "
+"vous recommandons de tester cela localement ou sur un site de mise en scène "
+"d'abord, comme vous pourriez rompre l'apparence de votre site en direct. Si "
+"vous n'êtes pas sûr d'un certain script, vous pouvez essayer de cliquer "
+"dessus, comme beaucoup d'auteurs mentionneront leur plugin ou thème dans "
+"l'en-tête du code source."
+
+#: plugin/includes/class.configurate-assets.php:109
+msgid ""
+"If for some reason you run into trouble, you can always enable everything "
+"again to reset the settings."
+msgstr ""
+"Si pour une raison quelconque vous avez des problèmes, vous pouvez toujours "
+"activer tout à nouveau pour réinitialiser les paramètres."
+
+#: plugin/includes/class.configurate-assets.php:118
+msgid "Save settings"
+msgstr "Enregistrer les paramètres"
+
+#: plugin/includes/class.configurate-assets.php:124
+msgid "Hide panel in adminbar?"
+msgstr "Masquer le panneau dans la barre d'administration?"
+
+#: plugin/includes/class.configurate-assets.php:135
+msgid "State"
+msgstr "État"
+
+#: plugin/includes/class.configurate-assets.php:136
+msgid "Size"
+msgstr "Taille"
+
+#: plugin/includes/class.configurate-assets.php:137
+msgid "Script"
+msgstr "Script"
+
+#: plugin/includes/class.configurate-assets.php:138
+msgid "In use"
+msgstr "En cours d'utilisation"
+
+#: plugin/includes/class.configurate-assets.php:139
+msgid "Disable"
+msgstr "Désactivé"
+
+#: plugin/includes/class.configurate-assets.php:140
+msgid "Enable"
+msgstr "Activez"
+
+#: plugin/includes/class.configurate-assets.php:187
+msgid "In use by"
+msgstr "Utilisé par"
+
+#: plugin/includes/class.configurate-assets.php:214
+msgid "Enabled"
+msgstr "Activée"
+
+#: plugin/includes/class.configurate-assets.php:219
+msgid "Everywhere"
+msgstr "Partout"
+
+#: plugin/includes/class.configurate-assets.php:226
+#: plugin/includes/class.configurate-assets.php:249
+msgid "Current URL"
+msgstr "URL actuelle"
+
+#: plugin/includes/class.configurate-assets.php:235
+msgid "Disable everwhere to view enable settings."
+msgstr "Désactivez partout pour afficher les paramètres d'activation."
