@@ -25,6 +25,17 @@
 		add_filter('plugin_row_meta', 'wbcr_gnz_set_plugin_meta', 10, 2);
 	}
 
+	function wbcr_gnz_rating_widget_url($page_url, $plugin_name)
+	{
+		if( $plugin_name == 'wbcr_gonzales' ) {
+			return 'https://goo.gl/zyNV6z';
+		}
+
+		return $page_url;
+	}
+
+	add_filter('wbcr_factory_imppage_rating_widget_url', 'wbcr_gnz_rating_widget_url', 10, 2);
+
 	function wbcr_gnz_group_options($options)
 	{
 		$options[] = array(

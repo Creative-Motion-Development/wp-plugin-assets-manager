@@ -591,9 +591,13 @@
 			
 			$home = get_theme_root() . '/../..';
 			$src = explode('?', $src);
+
+			if( !filter_var($src[0], FILTER_VALIDATE_URL) === false && strpos($src[0], get_home_url()) === false ) {
+				return 0;
+			}
 			
 			$src_relative = $home . str_replace(get_home_url(), '', $this->prepareCorrectUrl($src[0]));
-			
+
 			if( file_exists($src_relative) ) {
 				$weight = round(filesize($src_relative) / 1024, 1);
 			}

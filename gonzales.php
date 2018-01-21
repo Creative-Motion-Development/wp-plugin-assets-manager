@@ -1,10 +1,10 @@
 <?php
 	/**
-	 * Plugin Name: Webcraftic assets manager
+	 * Plugin Name: Webcraftic Assets manager
 	 * Plugin URI: https://wordpress.org/plugins/gonzales/
 	 * Description: Increase the speed of the pages by disabling unused scripts (.JS) and styles (.CSS). Make your website REACTIVE!
 	 * Author: Webcraftic <wordpress.webraftic@gmail.com>
-	 * Version: 1.0.0
+	 * Version: 1.0.1
 	 * Text Domain: gonzales
 	 * Domain Path: /languages/
 	 */
@@ -80,7 +80,7 @@
 				$wbcr_gonzales_plugin = new Factory000_Plugin(__FILE__, array(
 					'name' => 'wbcr_gonzales',
 					'title' => __('Webcraftic assets manager', 'gonzales'),
-					'version' => '1.0.0',
+					'version' => '1.0.1',
 					'host' => 'wordpress.org',
 					'url' => 'https://wordpress.org/plugins/gonzales/',
 					'assembly' => BUILD_TYPE,
