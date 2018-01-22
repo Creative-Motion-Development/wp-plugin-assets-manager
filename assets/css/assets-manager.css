@@ -17,6 +17,7 @@ body {
   right: 0;
   background: rgba(0, 0, 0, 0.5);
   overflow-y: auto;
+  font-family: "Open Sans", Arial, sans-serif;
 }
 #wbcr-assets-manager {
   background: #ffffff;
@@ -112,6 +113,7 @@ body {
   appearance: menulist;
   -webkit-appearance: menulist;
   color: #827b7b;
+  font-family: "Open Sans", Arial, sans-serif;
 }
 #wbcr-assets-manager table select,
 #wbcr-assets-manager table select:focus,
