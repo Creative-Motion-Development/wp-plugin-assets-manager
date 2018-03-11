@@ -9,4 +9,5 @@
 	global $wpdb;
 
 	$wpdb->query("DELETE FROM {$wpdb->prefix}options WHERE option_name LIKE 'wbcr_gonzales_%';");
+	$wpdb->query("DELETE FROM {$wpdb->prefix}options WHERE option_name LIKE 'wbcr_gnz_%';");
 

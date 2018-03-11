@@ -5,8 +5,12 @@
 	 *
 	 * @since 1.0.0
 	 */
-	class WbcrGnz_MoreFeaturesPage extends FactoryClearfy000_MoreFeaturesPage {
 
+	// Exit if accessed directly
+	if( !defined('ABSPATH') ) {
+		exit;
 	}
 
-	FactoryPages000::register($wbcr_gonzales_plugin, 'WbcrGnz_MoreFeaturesPage');
+	class WbcrGnz_MoreFeaturesPage extends Wbcr_FactoryClearfy000_MoreFeaturesPage {
+
+	}

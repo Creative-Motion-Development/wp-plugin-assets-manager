@@ -6,7 +6,13 @@
 	 * @copyright (c) 05.11.2017, Webcraftic
 	 * @version 1.0
 	 */
-	class WbcrGnz_ConfigAssetsManager extends WbcrFactoryClearfy_Configurate {
+
+	// Exit if accessed directly
+	if( !defined('ABSPATH') ) {
+		exit;
+	}
+
+	class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		
 		/**
 		 * Stores list of all available assets (used in rendering panel)
@@ -14,6 +20,15 @@
 		 * @var array
 		 */
 		private $collection = array();
+
+		/**
+		 * @param Wbcr_Factory000_Plugin $plugin
+		 */
+		public function __construct(Wbcr_Factory000_Plugin $plugin)
+		{
+			parent::__construct($plugin);
+			$this->plugin = $plugin;
+		}
 		
 		
 		/**
@@ -25,9 +40,9 @@
 				return;
 			}
 			
-			$on_frontend = (bool)$this->getOption('disable_assets_manager_on_front', false);
-			$on_backend = (bool)$this->getOption('disable_assets_manager_on_backend', true);
-			$is_panel = (bool)$this->getOption('disable_assets_manager_panel', false);
+			$on_frontend = $this->getOption('disable_assets_manager_on_front');
+			$on_backend = $this->getOption('disable_assets_manager_on_backend', true);
+			$is_panel = $this->getOption('disable_assets_manager_panel');
 
 			if( (!is_admin() && !$on_frontend) || (is_admin() && !$on_backend) ) {
 				add_filter('script_loader_src', array($this, 'unloadAssets'), 10, 2);
@@ -66,7 +81,10 @@
 				add_action('admin_init', array($this, 'formSave'));
 			}
 		}
-		
+
+		/**
+		 * @param WP_Admin_Bar $wp_admin_bar
+		 */
 		function assetsManagerAdminBar($wp_admin_bar)
 		{
 			if( !current_user_can('manage_options') ) {
@@ -85,13 +103,12 @@
 		
 		function assetsManager()
 		{
-			global $wbcr_gonzales_plugin;
 			if( !current_user_can('manage_options') || !isset($_GET['wbcr_assets_manager']) ) {
 				return;
 			}
 
 			$current_url = esc_url($this->getCurrentUrl());
-			$options = $this->getOption('manager_options', array());
+			$options = $this->getOption('assets_manager_options', array());
 			
 			echo "<div id='wbcr-assets-manager-wrapper' ";
 			if( isset($_GET['wbcr_assets_manager']) ) {
@@ -121,7 +138,7 @@
 			$setting_page_url = !defined('LOADING_GONZALES_AS_ADDON')
 				? 'options-general.php'
 				: 'admin.php';
-			$setting_page_url .= '?page=gonzales-' . $wbcr_gonzales_plugin->pluginName;
+			$setting_page_url .= '?page=gonzales-' . $this->plugin->getPluginName();
 			echo "<a href='" . admin_url($setting_page_url) . "' class='wbcr-hide-panel'>" . __('Hide panel in adminbar?', 'gonzales') . "</a>";
 			echo "</div>";
 			
@@ -286,15 +303,13 @@
 		
 		public function formSave()
 		{
-			global $wbcr_gonzales_plugin;
-			
 			if( isset($_GET['wbcr_assets_manager']) && isset($_POST['wbcr_assets_manager_save']) ) {
 				
 				if( !current_user_can('manage_options') || !wp_verify_nonce(filter_input(INPUT_POST, 'wbcr_assets_manager_save'), 'wbcr_assets_manager_nonce') ) {
 					return false;
 				}
 				
-				$options = $this->getOption('manager_options', array());
+				$options = $this->getOption('assets_manager_options', array());
 				$current_url = esc_url($this->getCurrentUrl());
 				
 				if( isset($_POST['disabled']) && !empty($_POST['disabled']) ) {
@@ -413,9 +428,9 @@
 						}
 					}
 				}
-				
-				update_option($wbcr_gonzales_plugin->pluginName . '_manager_options', $options);
-				
+
+				$this->updateOption('assets_manager_options', $options);
+
 				// todo: test cache control
 				if( function_exists('w3tc_pgcache_flush') ) {
 					w3tc_pgcache_flush();
@@ -435,7 +450,7 @@
 				? 'js'
 				: 'css';
 			
-			$options = $this->getOption('manager_options', array());
+			$options = $this->getOption('assets_manager_options', array());
 			$current_url = esc_url($this->getCurrentUrl());
 			
 			$disabled = null;
@@ -532,11 +547,9 @@
 		 */
 		public function appendAsset()
 		{
-			global $wbcr_gonzales_plugin;
-
 			if( current_user_can('manage_options') && isset($_GET['wbcr_assets_manager']) ) {
-				wp_enqueue_style('wbcr-assets-manager', WBCR_GNZ_PLUGIN_URL . '/assets/css/assets-manager.css', array(), $wbcr_gonzales_plugin->version);
-				wp_enqueue_script('wbcr-assets-manager', WBCR_GNZ_PLUGIN_URL . '/assets/js/assets-manager.js', array(), $wbcr_gonzales_plugin->version, true);
+				wp_enqueue_style('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', array(), $this->plugin->getPluginVersion());
+				wp_enqueue_script('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', array(), $this->plugin->getPluginVersion(), true);
 			}
 		}
 		

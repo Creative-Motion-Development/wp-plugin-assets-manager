@@ -6,15 +6,20 @@
 	 * @version 1.0
 	 */
 
-	require(WBCR_GNZ_PLUGIN_DIR . '/admin/pages/assets-manager.php');
+	// Exit if accessed directly
+	if( !defined('ABSPATH') ) {
+		exit;
+	}
+
+	require(WGZ_PLUGIN_DIR . '/admin/pages/assets-manager.php');
 
 	if( !defined('LOADING_GONZALES_AS_ADDON') ) {
-		require(WBCR_GNZ_PLUGIN_DIR . '/admin/pages/more-features.php');
+		require(WGZ_PLUGIN_DIR . '/admin/pages/more-features.php');
 	}
 
 	function wbcr_gnz_set_plugin_meta($links, $file)
 	{
-		if( $file == WBCR_GNZ_PLUGIN_BASE ) {
+		if( $file == WGZ_PLUGIN_BASE ) {
 			$links[] = '<a href="https://goo.gl/TcMcS4" style="color: #FF5722;font-weight: bold;" target="_blank">' . __('Get ultimate plugin free', 'gonzales') . '</a>';
 		}
 
