@@ -32,7 +32,7 @@
 
 	function wbcr_gnz_rating_widget_url($page_url, $plugin_name)
 	{
-		if( $plugin_name == 'wbcr_gonzales' ) {
+		if( $plugin_name == WGZ_Plugin::app()->getPluginName() ) {
 			return 'https://goo.gl/zyNV6z';
 		}
 

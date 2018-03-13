@@ -45,6 +45,8 @@
 				$this->internal = false;
 				$this->menu_target = 'options-general.php';
 				$this->add_link_to_plugin_actions = true;
+			} else {
+				$this->page_parent_page = 'performance';
 			}
 
 			parent::__construct($plugin);
@@ -71,7 +73,7 @@
 			$options = array();
 			$options[] = array(
 				'type' => 'html',
-				'html' => '<div class="wbcr-factory-page-group-header"><strong>' . __('Отключайте неиспользумые скрипты, стили и шрифты', 'gonzales') . '</strong><p>' . __('В админбаре есть кнопка под названием “Менеджер скриптов”, если на нее нажать вы увидите список загружаемых скриптов, стилей и шрифтов на текущей странице вашего сайта. Если вы считаете, что какой-то из ресурсов лишний на этой странице, вы можете индивидуально его отключить, чтобы он не создавал дополнительную нагрузку на страницу. Используйте менеджер скриптов аккуратно, чтобы не нарушить работу вашего сайта. Мы рекомендуем вам использовать локальный хостинг для тестирования.', 'gonzales') . '</p></div>'
+				'html' => '<div class="wbcr-factory-page-group-header"><strong>' . __('Disable unused scripts, styles, and fonts', 'gonzales') . '</strong><p>' . __('There is a button in the adminbar called "Script Manager". If you click on it you will see a list of loaded scripts, styles and fonts on the current page of your site. If you think that one of the assets is superfluous on this page, you can disable it individually, so that it does not create unnecessary queries when page loading. Use the script manager very carefull to non-corrupt your website. We recommend to test this function at a local server.', 'gonzales') . '</p></div>'
 			);
 
 			$options[] = array(
