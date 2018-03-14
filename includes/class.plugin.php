@@ -56,6 +56,8 @@
 					}
 					
 					self::$app = $plugin_parent;
+				} else {
+					self::$app = $this;
 				}
 				
 				if( !$this->as_addon ) {

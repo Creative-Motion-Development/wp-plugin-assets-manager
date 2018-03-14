@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: clearfy\n"
-"POT-Creation-Date: 2017-11-16 09:47+0300\n"
-"PO-Revision-Date: 2017-11-16 13:23+0300\n"
+"POT-Creation-Date: 2018-03-14 17:11+0300\n"
+"PO-Revision-Date: 2018-03-14 17:13+0300\n"
 "Last-Translator: alex.kovalevv@gmail.com <alex.kovalevv@gmail.com>\n"
 "Language-Team: Alex Kovalev <alex.kovalevv@gmail.com>\n"
 "Language: ru_RU\n"
@@ -18,32 +18,66 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: libs\n"
 
-#: admin/pages/assets-manager.php:33
-#: plugin/includes/class.configurate-assets.php:106
-msgid "Assets manager"
-msgstr "Менеджер скриптов"
+#: admin/boot.php:23
+msgid "Get ultimate plugin free"
+msgstr "Получите полную версию плагина бесплатно"
 
-#: admin/pages/assets-manager.php:49
-msgid "Comments"
-msgstr ""
-
-#: admin/pages/assets-manager.php:50
-msgid "General"
-msgstr "Основные"
-
-#: admin/pages/assets-manager.php:115
+#: admin/boot.php:48 admin/pages/assets-manager.php:83
 msgid "Disable assets manager"
 msgstr "Отключить менеджер скриптов"
 
-#: admin/pages/assets-manager.php:117
-msgid "Full disable of the module."
-msgstr "Полностью отключает работу модуля."
-
-#: admin/pages/assets-manager.php:139
+#: admin/boot.php:55 admin/pages/assets-manager.php:107
 msgid "Disable assets manager panel"
 msgstr "Скрыть панель в админбаре"
 
-#: admin/pages/assets-manager.php:141
+#: admin/boot.php:61 admin/pages/assets-manager.php:116
+msgid "Disable assets manager on front"
+msgstr "Отключить менеджер скриптов на внешней стороне сайта"
+
+#: admin/boot.php:67 admin/pages/assets-manager.php:125
+msgid "Disable assets manager on back-end"
+msgstr "Отключить менеджер скриптов в админпанели"
+
+#: admin/boot.php:73
+msgid "Assets manager options"
+msgstr "Настройки менеджера скриптов"
+
+#: admin/pages/assets-manager.php:42 admin/pages/assets-manager.php:61
+#: includes/class.configurate-assets.php:123
+msgid "Assets manager"
+msgstr "Менеджер скриптов"
+
+#: admin/pages/assets-manager.php:62
+msgid "General"
+msgstr "Основные"
+
+#: admin/pages/assets-manager.php:76
+msgid "Disable unused scripts, styles, and fonts"
+msgstr "Отключите неиспользуемые скрипты, стили и шрифты"
+
+#: admin/pages/assets-manager.php:76
+msgid ""
+"There is a button in the adminbar called \"Script Manager\". If you click on "
+"it you will see a list of loaded scripts, styles and fonts on the current "
+"page of your site. If you think that one of the assets is superfluous on "
+"this page, you can disable it individually, so that it does not create "
+"unnecessary queries when page loading. Use the script manager very carefull "
+"to non-corrupt your website. We recommend to test this function at a local "
+"server."
+msgstr ""
+"В админбаре есть кнопка под названием “Менеджер скриптов”, если на нее "
+"нажать вы увидите список загружаемых скриптов, стилей и шрифтов на текущей "
+"странице вашего сайта. Если вы считаете, что какой-то из ресурсов лишний на "
+"этой странице, вы можете индивидуально его отключить, чтобы он не создавал "
+"лишних запросов при загрузке. Используйте менеджер скриптов аккуратно, чтобы "
+"не нарушить работу вашего сайта. Мы рекомендуем вам использовать локальный "
+"сервер для тестирования этой функции."
+
+#: admin/pages/assets-manager.php:85
+msgid "Full disable of the module."
+msgstr "Полностью отключает работу модуля."
+
+#: admin/pages/assets-manager.php:109
 msgid ""
 "By default in your admin bar there is a button for control the assets "
 "scripts and styles. With this option, you can turn off the script manager on "
@@ -53,41 +87,33 @@ msgstr ""
 "скриптами и стилями. Используя эту настроку вы можете скрыть эту панель из "
 "админбара, чтобы она не занимала место."
 
-#: admin/pages/assets-manager.php:155
-msgid "Disable assets manager on front"
-msgstr "Отключить менеджер скриптов на внешней стороне сайта"
-
-#: admin/pages/assets-manager.php:157
+#: admin/pages/assets-manager.php:118
 msgid "Disables assets manager initialization for frontend."
 msgstr "Отключает инициализацию менеджера лицензий на внешней стороне сайта."
 
-#: admin/pages/assets-manager.php:164
-msgid "Disable assets manager on back-end"
-msgstr "Отключить менеджер скриптов в админпанели"
-
-#: admin/pages/assets-manager.php:166
+#: admin/pages/assets-manager.php:127
 msgid "Disables assets manager initialization for backend."
 msgstr "Отключает инициализацию менеджера лицензий в админпанели сайта."
 
-#: gonzales.php:17
+#: gonzales.php:22
 msgid ""
 "We found that you use the plugin \"Clearfy - disable unused functions\", "
-"this plugin already has the same functions as \"WP Asset CleanUp\", so you "
-"can disable the \"WP Asset CleanUp\" plugin!"
+"this plugin already has the same functions as \"Assets manager\", so you can "
+"disable the \"Assets manager\" plugin!"
 msgstr ""
 "Мы обнаружили, что вы используете плагин \"Clearfy - disable unused features"
 "\", этот плагин включает функционал \"WP Asset CleanUp\", вы можете "
-"деактивировать плагин \"WP Asset CleanUp\"!"
+"деактивировать плагин \"Менеджер скриптов\"!"
 
-#: gonzales.php:82
+#: gonzales.php:80
 msgid "Webcraftic assets manager"
 msgstr "Webcraftic менеджер скриптов"
 
-#: plugin/includes/class.configurate-assets.php:80
+#: includes/class.configurate-assets.php:98
 msgid "Script Manager"
 msgstr "Менеджер скриптов"
 
-#: plugin/includes/class.configurate-assets.php:108
+#: includes/class.configurate-assets.php:125
 msgid ""
 "Below you can disable/enable CSS and JS files on a per page/post basis, as "
 "well as by custom post types. We recommend testing this locally or on a "
@@ -107,7 +133,7 @@ msgstr ""
 "функциях плагина, вы сможете более уверенно включать или отключать его стили "
 "и скрипты."
 
-#: plugin/includes/class.configurate-assets.php:109
+#: includes/class.configurate-assets.php:126
 msgid ""
 "If for some reason you run into trouble, you can always enable everything "
 "again to reset the settings."
@@ -115,59 +141,68 @@ msgstr ""
 "Если по какой-то причине вы столкнулись с проблемами, вы всегда можете "
 "включить все опции, чтобы сбросить настройки."
 
-#: plugin/includes/class.configurate-assets.php:118
+#: includes/class.configurate-assets.php:135
 msgid "Save settings"
 msgstr "Сохранить"
 
-#: plugin/includes/class.configurate-assets.php:124
+#: includes/class.configurate-assets.php:142
 msgid "Hide panel in adminbar?"
 msgstr "Скрыть панель из админбара?"
 
-#: plugin/includes/class.configurate-assets.php:135
+#: includes/class.configurate-assets.php:153
 msgid "State"
 msgstr "Состояние"
 
-#: plugin/includes/class.configurate-assets.php:136
+#: includes/class.configurate-assets.php:154
 msgid "Size"
 msgstr "Размер"
 
-#: plugin/includes/class.configurate-assets.php:137
+#: includes/class.configurate-assets.php:155
 msgid "Script"
 msgstr "Скрипт"
 
-#: plugin/includes/class.configurate-assets.php:138
+#: includes/class.configurate-assets.php:156
 msgid "In use"
 msgstr "Используется"
 
-#: plugin/includes/class.configurate-assets.php:139
+#: includes/class.configurate-assets.php:157
 msgid "Disable"
 msgstr "Отключить"
 
-#: plugin/includes/class.configurate-assets.php:140
+#: includes/class.configurate-assets.php:158
 msgid "Enable"
 msgstr "Включить"
 
-#: plugin/includes/class.configurate-assets.php:187
+#: includes/class.configurate-assets.php:205
 msgid "In use by"
 msgstr "Используется "
 
-#: plugin/includes/class.configurate-assets.php:214
+#: includes/class.configurate-assets.php:232
 msgid "Enabled"
 msgstr "Включить"
 
-#: plugin/includes/class.configurate-assets.php:219
+#: includes/class.configurate-assets.php:237
 msgid "Everywhere"
 msgstr "Повсюду"
 
-#: plugin/includes/class.configurate-assets.php:226
-#: plugin/includes/class.configurate-assets.php:249
+#: includes/class.configurate-assets.php:244
+#: includes/class.configurate-assets.php:267
 msgid "Current URL"
 msgstr "Текущий URL"
 
-#: plugin/includes/class.configurate-assets.php:235
+#: includes/class.configurate-assets.php:253
 msgid "Disable everwhere to view enable settings."
 msgstr ""
 "Нужно включить опцию \"повсюду\", чтобы увидеть дополнительные настройки."
+
+#~ msgid ""
+#~ "We found that you use the plugin \"Clearfy - disable unused functions\", "
+#~ "this plugin already has the same functions as \"WP Asset CleanUp\", so "
+#~ "you can disable the \"WP Asset CleanUp\" plugin!"
+#~ msgstr ""
+#~ "Мы обнаружили, что вы используете плагин \"Clearfy - disable unused "
+#~ "features\", этот плагин включает функционал \"WP Asset CleanUp\", вы "
+#~ "можете деактивировать плагин \"WP Asset CleanUp\"!"
 
 #~ msgid "Webcraftic Assets manager"
 #~ msgstr "Webcraftic менеджер скриптов"
