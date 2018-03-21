@@ -7,6 +7,7 @@
 	 * Version: 1.0.3
 	 * Text Domain: gonzales
 	 * Domain Path: /languages/
+	 * Author URI: http://webcraftic.com
 	 */
 
 	// Exit if accessed directly
@@ -73,7 +74,6 @@
 		require_once(WGZ_PLUGIN_DIR . '/includes/class.plugin.php');
 
 		if( !defined('LOADING_GONZALES_AS_ADDON') ) {
-			//todo: обновить опции в старом плагине на новый префикс
 			new WGZ_Plugin(__FILE__, array(
 				'prefix' => 'wbcr_gnz_',
 				'plugin_name' => 'wbcr_gonzales',
@@ -82,7 +82,7 @@
 				'required_php_version' => '5.2',
 				'required_wp_version' => '4.2',
 				'plugin_build' => BUILD_TYPE,
-				'updates' => WGZ_PLUGIN_DIR . '/updates/'
+				//'updates' => WGZ_PLUGIN_DIR . '/updates/'
 			));
 		}
 	}

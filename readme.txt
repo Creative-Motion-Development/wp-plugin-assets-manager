@@ -1,4 +1,4 @@
-=== WP Asset CleanUp (Gonzales), Assets manager, Page speed optimizer ===
+=== Wordpress Assets manager, dequeue scripts, dequeue styles ===
 Tags: dequeue script, dequeue style, pagespeed, speed, unload style, gonzales, assets clean, assets, assets cleanup, page speed optimizer, perfmatters, disable script, disable style, disable jquery, disable jquery-migrate, disable fonts
 Contributors: webcraftic
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VDX7JNTQPNPFW
@@ -14,7 +14,7 @@ Increase the speed of the pages by disabling unused scripts (.JS) and styles (.C
 
 You should know that, a lot of WordPress plugins developers forget performance when creating plugins. This means that a lot of them load self scripts/styles on every single post and or page of your site. This is not good, because it slows your site down.
 
-That's why we created the WP Asset CleanUp plugin (Gonzales), with it, you can choose which scripts and styles should be loaded on the page, and which ones do not. One example of this would be with the Contact Form 7 plugin. With two clicks you can disable it everywhere except for on your contact page.
+That's why we created the WP Asset manager, with it, you can choose which scripts and styles should be loaded on the page, and which ones do not. One example of this would be with the Contact Form 7 plugin. With two clicks you can disable it everywhere except for on your contact page.
 
 THIS PLUGIN’S BENEFITS INCLUDE
 
@@ -36,6 +36,16 @@ We used some useful functions from plugins <strong>Asset Queue Manager</strong>,
 
 If you want to help with the translation, please contact me through this site or through the contacts inside the plugin.
 
+#### Recommended separate modules ####
+
+We invite you to check out a few other related free plugins that our team has also produced that you may find especially useful:
+
+* [Clearfy – WordPress optimization plugin and disable ultimate tweaker](https://wordpress.org/plugins/gonzales/)
+* [Disable updates, Updates manager, Disable automatic updates](https://wordpress.org/plugins/gonzales/)
+* [Disable Comments for Any Post Types (Remove Comments)](https://wordpress.org/plugins/comments-plus/)
+* [Disable updates, Disable automatic updates, Updates manager](https://wordpress.org/plugins/webcraftic-updates-manager/)
+
+
 == Installation ==
 
 1. Upload the plugin folder to the `/wp-content/plugins/` directory
@@ -47,5 +57,15 @@ If you want to help with the translation, please contact me through this site or
 2. Assets manager
 
 == Changelog ==
+= 1.0.3 =
+* Fixed: Compatibility with Clearfy plugin
+* Fixed: The plugin interface did not work and the styles were not loaded due to security settings
+* ADDED: Plugin options caching to reduce database queries for 90%. Clearfy became lighter and faster.
+* ADDED: Compress and cache the plugin core files, to reduce the load on the admin panel
+
+= 1.0.2 =
+* Fixed: Core bugs
+* Fixed: Problems with the fonts in the assets manager
+
 = 1.0.0 =
 * Plugin release

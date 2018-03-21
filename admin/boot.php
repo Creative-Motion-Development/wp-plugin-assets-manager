@@ -79,5 +79,41 @@
 
 	add_filter("wbcr_clearfy_group_options", 'wbcr_gnz_group_options');
 
+	function wbcr_gnz_migrate_options()
+	{
+		global $wpdb;
+
+		if( WGZ_Plugin::app()->getOption('migrate_options_1_0_3') ) {
+			return;
+		}
+		$assets = get_option('wbcr_gonzales_manager_options');
+
+		if( !empty($assets) ) {
+			WGZ_Plugin::app()->updateOption('assets_manager_options', $assets);
+		}
+
+		delete_option('wbcr_gonzales_manager_options');
+
+		$request = $wpdb->get_results("SELECT option_id, option_name, option_value FROM {$wpdb->prefix}options WHERE option_name LIKE 'wbcr_gonzales_%'");
+
+		if( !empty($request) ) {
+			foreach($request as $option) {
+				$option_new_name = str_replace('wbcr_gonzales_', WGZ_Plugin::app()->getPrefix(), $option->option_name);
+				if( !get_option($option_new_name, false) ) {
+					$wpdb->query("UPDATE {$wpdb->prefix}options SET option_name='$option_new_name' WHERE option_id='{$option->option_id}'");
+				} else {
+					delete_option($option->option_name);
+				}
+			}
+		}
+
+		WGZ_Plugin::app()->updateOption('migrate_options_1_0_3', 1);
+		WGZ_Plugin::app()->flushOptionsCache();
+	}
+
+	wbcr_gnz_migrate_options();
+
+
+
 
 
