@@ -39,7 +39,7 @@
 		return $page_url;
 	}
 
-	add_filter('wbcr_factory_imppage_rating_widget_url', 'wbcr_gnz_rating_widget_url', 10, 2);
+	add_filter('wbcr_factory_pages_000_imppage_rating_widget_url', 'wbcr_gnz_rating_widget_url', 10, 2);
 
 	function wbcr_gnz_group_options($options)
 	{
