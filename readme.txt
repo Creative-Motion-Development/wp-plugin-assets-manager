@@ -40,11 +40,11 @@ If you want to help with the translation, please contact me through this site or
 
 We invite you to check out a few other related free plugins that our team has also produced that you may find especially useful:
 
-* [Clearfy – WordPress optimization plugin and disable ultimate tweaker](https://wordpress.org/plugins/gonzales/)
-* [Disable updates, Updates manager, Disable automatic updates](https://wordpress.org/plugins/gonzales/)
+* [Clearfy – WordPress optimization plugin and disable ultimate tweaker](https://wordpress.org/plugins/clearfy/)
 * [Disable Comments for Any Post Types (Remove Comments)](https://wordpress.org/plugins/comments-plus/)
+* [Cyrlitera – transliteration of links and file names](https://wordpress.org/plugins/cyrlitera/)
 * [Disable updates, Disable automatic updates, Updates manager](https://wordpress.org/plugins/webcraftic-updates-manager/)
-
+* [Disable admin notices individually](https://wordpress.org/plugins/disable-admin-notices/ "Disable admin notices individually")
 
 == Installation ==
 
