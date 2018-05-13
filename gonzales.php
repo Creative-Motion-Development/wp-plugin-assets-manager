@@ -4,10 +4,10 @@
 	 * Plugin URI: https://wordpress.org/plugins/gonzales/
 	 * Description: Increase the speed of the pages by disabling unused scripts (.JS) and styles (.CSS). Make your website REACTIVE!
 	 * Author: Webcraftic <wordpress.webraftic@gmail.com>
-	 * Version: 1.0.3
+	 * Version: 1.0.4
 	 * Text Domain: gonzales
 	 * Domain Path: /languages/
-	 * Author URI: http://webcraftic.com
+	 * Author URI: https://clearfy.pro
 	 */
 
 	// Exit if accessed directly
@@ -78,7 +78,7 @@
 				'prefix' => 'wbcr_gnz_',
 				'plugin_name' => 'wbcr_gonzales',
 				'plugin_title' => __('Webcraftic assets manager', 'gonzales'),
-				'plugin_version' => '1.0.3',
+				'plugin_version' => '1.0.4',
 				'required_php_version' => '5.2',
 				'required_wp_version' => '4.2',
 				'plugin_build' => BUILD_TYPE,

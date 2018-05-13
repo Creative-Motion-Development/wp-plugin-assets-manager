@@ -40,11 +40,13 @@ If you want to help with the translation, please contact me through this site or
 
 We invite you to check out a few other related free plugins that our team has also produced that you may find especially useful:
 
-* [Clearfy – WordPress optimization plugin and disable ultimate tweaker](https://wordpress.org/plugins/gonzales/)
-* [Disable updates, Updates manager, Disable automatic updates](https://wordpress.org/plugins/gonzales/)
+* [Clearfy – WordPress optimization plugin and disable ultimate tweaker](https://wordpress.org/plugins/clearfy/)
 * [Disable Comments for Any Post Types (Remove Comments)](https://wordpress.org/plugins/comments-plus/)
+* [Cyrlitera – transliteration of links and file names](https://wordpress.org/plugins/cyrlitera/)
+* [Cyr-to-lat reloaded – transliteration of links and file names](https://wordpress.org/plugins/cyr-and-lat/ "Cyr-to-lat reloaded")
+* [Disable admin notices individually](https://wordpress.org/plugins/disable-admin-notices/ "Disable admin notices individually")
+* [Hide login page](https://wordpress.org/plugins/hide-login-page/ "Hide login page")
 * [Disable updates, Disable automatic updates, Updates manager](https://wordpress.org/plugins/webcraftic-updates-manager/)
-
 
 == Installation ==
 
@@ -57,6 +59,10 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 1.0.4 =
+* Fixed: Update core
+* Fixed: Compatibility with others plugin
+
 = 1.0.3 =
 * Fixed: Compatibility with Clearfy plugin
 * Fixed: The plugin interface did not work and the styles were not loaded due to security settings
