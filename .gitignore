@@ -1,2 +1,5 @@
-/reports/
-reports/
+/libs/factory/bootstrap/node_modules
+/libs/factory/bootstrap/assets/css-min
+/libs/factory/bootstrap/assets/js-min
+/libs/factory/bootstrap/assets/cache
+
