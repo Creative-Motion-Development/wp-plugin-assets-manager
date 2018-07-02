@@ -70,7 +70,11 @@
 			}
 
 			if( !$is_panel && ((is_admin() && !$on_backend) || (!is_admin() && !$on_frontend)) ) {
-				add_action('admin_bar_menu', array($this, 'assetsManagerAdminBar'), 1000);
+				if( defined('LOADING_GONZALES_AS_ADDON') ) {
+					add_action('wbcr_clearfy_admin_bar_menu_items', array($this, 'clearfyAdminBarMenu'));
+				} else {
+					add_action('admin_bar_menu', array($this, 'assetsManagerAdminBar'), 1000);
+				}
 			}
 
 			if( !is_admin() && !$on_frontend ) {
@@ -82,6 +86,18 @@
 			}
 		}
 
+		function clearfyAdminBarMenu($menu_items)
+		{
+			$current_url = add_query_arg(array('wbcr_assets_manager' => 1));
+
+			$menu_items['assetsManager'] = array(
+				'title' => __('Script Manager', 'gonzales') . ' (Beta)',
+				'href' => $current_url
+			);
+
+			return $menu_items;
+		}
+
 		/**
 		 * @param WP_Admin_Bar $wp_admin_bar
 		 */
@@ -90,9 +106,9 @@
 			if( !current_user_can('manage_options') ) {
 				return;
 			}
-			
+
 			$current_url = add_query_arg(array('wbcr_assets_manager' => 1));
-			
+
 			$args = array(
 				'id' => 'assetsManager',
 				'title' => __('Script Manager', 'gonzales') . ' (Beta)',
