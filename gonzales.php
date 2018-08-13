@@ -82,7 +82,7 @@
 				'required_php_version' => '5.2',
 				'required_wp_version' => '4.2',
 				'plugin_build' => BUILD_TYPE,
-				//'updates' => WGZ_PLUGIN_DIR . '/updates/'
+				'updates' => WGZ_PLUGIN_DIR . '/updates/'
 			));
 		}
 	}
