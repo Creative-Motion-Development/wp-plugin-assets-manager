@@ -133,6 +133,9 @@ body {
   margin-right: 3px;
   vertical-align: middle;
 }
+#wbcr-assets-manager table input[type='text'] {
+    font-size: 14px;
+}
 #wbcr-assets-manager table label {
   display: inline-block;
   margin: 0 10px 0 0;
