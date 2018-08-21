@@ -230,3 +230,14 @@ body {
   text-align: center;
   outline: none;
 }
+#wbcr-assets-manager .wbcr-resource-block {
+  padding: 5px;
+}
+#wbcr-assets-manager .wbcr-resource-tbody {
+    border-bottom: 5px solid #ececec;
+}
+#wbcr-assets-manager .wbcr-resource-name {
+  font-weight: bold;
+  font-size: 20px;
+  text-transform: uppercase;
+}
