@@ -54,7 +54,7 @@ html, body {
     p {
       font-size: 14px;
       color: #a9a9a9;
-      margin: 0px auto 15px auto;
+      margin: 0 auto 15px auto;
     }
 
     .wbcr-description {
@@ -65,8 +65,8 @@ html, body {
   table {
     table-layout: fixed;
     width: 100%;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     border: none;
     text-align: left;
     font-size: 14px;
@@ -93,7 +93,7 @@ html, body {
       background: #ffffff;
     }
     tbody tr:last-child {
-      border-bottom: 0px;
+      border-bottom: 0;
     }
     td {
       padding: 5px;
@@ -123,7 +123,7 @@ html, body {
       -webkit-appearance: menulist;
       color: #827b7b;
       font-family: "Open Sans", Arial, sans-serif;
-      
+
       &, &:focus, &:hover, &:active {
         border: 1px solid #d6d2d2;
         box-shadow: none;
@@ -151,7 +151,7 @@ html, body {
     }
   }
 
-  .wbcr-state {
+  .wbcr-state, .wbcr-resource-state {
     margin: 0 auto;
 
     width: 40px;
@@ -247,20 +247,24 @@ html, body {
       text-align: center;
       outline: none;
     }
+  }
 
-    .wbcr-resource-block {
-      padding: 5px;
-    }
+  .wbcr-resource-block {
+    padding: 5px;
+  }
 
-    .wbcr-resource-tbody {
-      border-bottom: 5px solid #ececec;
-    }
+  .wbcr-resource-table {
+    border-bottom: 5px solid #ececec;
+  }
 
-    .wbcr-resource-name {
-      font-weight: bold;
-      font-size: 20px;
-      text-transform: uppercase;
-    }
+  .wbcr-resource {
+    border-top: 10px solid #ececec;
+  }
+
+  .wbcr-resource-name {
+    font-weight: bold;
+    font-size: 20px;
+    text-transform: uppercase;
   }
 
 }

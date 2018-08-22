@@ -21,8 +21,6 @@
 		 */
 		private $collection = array();
 
-		private $resource_data = array();
-
 		/**
 		 * @param Wbcr_Factory000_Plugin $plugin
 		 */
@@ -118,7 +116,7 @@
 			);
 			$wp_admin_bar->add_node($args);
 		}
-		
+
 		function assetsManager()
 		{
 			if( !current_user_can('manage_options') || !isset($_GET['wbcr_assets_manager']) ) {
@@ -162,35 +160,53 @@
 
 			krsort($this->collection);
 
+			$is_first_plugin = true;
 			foreach($this->collection as $resource_type => $resources) {
 				echo "<h3>" . $resource_type . "</h3>";
 				foreach($resources as $resource_name => $types) {
-					if ( ! empty( $resource_name ) ) {
-						require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-						$plugin_state = is_plugin_active( $this->resource_data[ $resource_name ]['path'] ) ? 0 : 1;
-						echo "<div class='wbcr-section'>";
-						echo "<table>";
-						echo "<thead>";
-						echo "<tr>";
-						echo "<th style='width: 100px;'>" . __('Loaded', 'gonzales') . "</th>";
-						echo "<th style='width: 55%;'>" . __('Plugin info', 'gonzales') . "</th>";
-						echo "<th style='width: 200px;'>" . __('State', 'gonzales') . "</th>";
-						echo "<th>" . __('Enable', 'gonzales') . "</th>";
-						echo "</tr>";
-						echo "</thead>";
-						echo "<tbody class='wbcr-resource-tbody'>";
-						echo "<tr>";
-						echo '<td><div class="wbcr-state wbcr-state-' . $plugin_state . '">' . __('Yes', 'gonzales') . '</div></td>';
-						echo '<td><div class="wbcr-resource-block">';
-						echo '<span class="wbcr-resource-name">' . $this->resource_data[ $resource_name ]['Name'] . '</span><br>';
-						echo "<b>Author:</b> " . $this->resource_data[ $resource_name ]['Author'] . "<br>";
-						echo "<b>Version:</b> " . $this->resource_data[ $resource_name ]['Version'] . "</div></td>";
-						echo "<td>State</td>";
-						echo "<td>Enable</td>";
-						echo "</tr>";
-						echo "</tbody>";
-						echo "</table>";
-						echo "</div>";
+
+					if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
+						$plugin_data = $this->getPluginData( $resource_name );
+
+						if ( ! empty( $plugin_data ) ) {
+							$is_disabled = $this->getIsDisabled( $options, $resource_type, $resource_name );
+							$disabled = $this->getDisabled( $is_disabled, $options, $resource_type, $resource_name );
+
+							$is_enabled = $this->getIsEnabled( $options, $resource_type, $resource_name );
+							$enabled = $this->getEnabled( $is_enabled, $options, $resource_type, $resource_name );
+
+							$state = $this->getState( $is_disabled, $disabled, $current_url );
+
+							echo "<div class='wbcr-section " . ($is_first_plugin ? "" : "wbcr-resource") . "'>";
+							echo "<table class='wbcr-resource-table'>";
+							echo "<thead>";
+							echo "<tr>";
+							echo "<th style='width: 100px;'>" . __( 'Loaded', 'gonzales' ) . "</th>";
+							echo "<th style='width: 55%;'>" . __( 'Plugin info', 'gonzales' ) . "</th>";
+							echo "<th style='width: 200px;'>" . __( 'State', 'gonzales' ) . "</th>";
+							echo "<th>" . __( 'Enable', 'gonzales' ) . "</th>";
+							echo "</tr>";
+							echo "</thead>";
+							echo "<tbody>";
+							echo "<tr>";
+							echo '<td><div class="wbcr-state wbcr-state-' . $state . '">' . __( 'Yes', 'gonzales' ) . '</div></td>';
+							echo '<td><div class="wbcr-resource-block">';
+							echo '<span class="wbcr-resource-name">' . $plugin_data['Name'] . '</span><br>';
+							echo "<b>Author:</b> " . $plugin_data['Author'] . "<br>";
+							echo "<b>Version:</b> " . $plugin_data['Version'] . "</div></td>";
+							// State Controls
+							$id = '[' . $resource_type . '][' . $resource_name . ']';
+
+							$this->getStateControrlHTML(
+								$id, $state, $is_disabled, $is_enabled, $resource_type, $resource_name, $disabled, $enabled, $current_url
+							);
+							echo "</tr>";
+							echo "</tbody>";
+							echo "</table>";
+							echo "</div>";
+
+							$is_first_plugin = false;
+						}
 					}
 
 					echo "<div class='wbcr-section'>";
@@ -211,43 +227,12 @@
 
 						if( !empty($rows) ) {
 							foreach($rows as $handle => $row) {
+								$is_disabled = $this->getIsDisabled( $options, $type_name, $handle );
+								$disabled = $this->getDisabled( $is_disabled, $options, $type_name, $handle );
 
-								$is_disabled = isset($options['disabled']) && isset($options['disabled'][$type_name]) && isset($options['disabled'][$type_name][$handle]);
-								$disabled = array();
-								if( $is_disabled ) {
-									$disabled = &$options['disabled'][$type_name][$handle];
-									if( !isset($disabled['current']) ) {
-										$disabled['current'] = array();
-									}
-									if( !isset($disabled['everywhere']) ) {
-										$disabled['everywhere'] = array();
-									}
-									if( !isset($disabled['custom']) ) {
-										$disabled['custom'] = array();
-									}
-									if( !isset($disabled['regex']) ) {
-										$disabled['regex'] = "";
-									}
-								}
+								$is_enabled = $this->getIsEnabled( $options, $type_name, $handle );
+								$enabled = $this->getEnabled( $is_enabled, $options, $type_name, $handle );
 
-								$is_enabled = isset($options['enabled']) && isset($options['enabled'][$type_name]) && isset($options['enabled'][$type_name][$handle]);
-								$enabled = array();
-								if( $is_enabled ) {
-									$enabled = &$options['enabled'][$type_name][$handle];
-
-									if( !isset($enabled['current']) ) {
-										$enabled['current'] = array();
-									}
-									if( !isset($enabled['everywhere']) ) {
-										$enabled['everywhere'] = array();
-									}
-									if( !isset($enabled['custom']) ) {
-										$enabled['custom'] = array();
-									}
-									if( !isset($enabled['regex']) ) {
-										$enabled['regex'] = "";
-									}
-								}
 								/**
 								 * Find dependency
 								 */
@@ -266,18 +251,7 @@
 
 								echo "<tr>";
 
-								$state = 0;
-								if(
-									$is_disabled
-									&& (
-										$disabled['everywhere'] == 1
-										|| in_array($current_url, $disabled['current'])
-										|| ! empty($disabled['custom'])
-										|| ! empty($disabled['regex'])
-									)
-								) {
-									$state = 1;
-								}
+								$state = $this->getState( $is_disabled, $disabled, $current_url );
 
 								echo '<td><div class="wbcr-state wbcr-state-' . (int)$state . '">' . strtoupper($type_name) . '</div></td>';
 
@@ -293,163 +267,310 @@
 								echo $comment;
 								echo "</td>";
 
-								//Disable
-								echo "<td class='wbcr-assets-manager-disable'>";
-								echo "<select name='disabled{$id}[state]' class='wbcr-gonzales-disable-select'>";
-								echo "<option value='' class='wbcr-gonzales-option-enabled'>" . __('Enabled', 'gonzales') . "</option>";
-								echo "<option value='disable' class='wbcr-gonzales-option-disable' ";
-								if( $state ) {
-									echo "selected";
-								}
-								echo ">" . __('Disable', 'gonzales') . "</option>";
-								echo "</select>";
-								echo "</td>";
-								//Enable
-								echo "<td>";
-								echo "<span class='wbcr-assets-manager-enable-placeholder' ";
-								if( $state ) {
-									echo "style='display: none;'";
-								}
-								echo ">" . __('Disable everwhere to view enable settings.', 'gonzales') . "</span>";
-								echo "<span class='wbcr-assets-manager-enable'";
-								if( ! $state ) {
-									echo " style='display: none;'";
-								}
-								echo ">";
-								echo "<div>";
-								echo "<select name='action{$id}' class='wbcr-gonzales-action-select'>";
-								echo "<option value='current'" . selected( $is_disabled && ! empty( $disabled['current'] ) ) . ">" . __( 'Current URL', 'gonzales' ) . "</option>";
-								echo "<option value='everywhere'" . selected( $is_disabled && ! empty( $disabled['everywhere'] ) ) . ">" . __( 'Everywhere', 'gonzales' ) . "</option>";
-								echo "<option value='custom'" . selected( $is_disabled && ! empty( $disabled['custom'] ) ) . ">" . __( 'Custom URL', 'gonzales' ) . "</option>";
-								echo "<option value='regex'" . selected( $is_disabled && ! empty( $disabled['regex'] ) ) . ">" . __( 'Regular expression', 'gonzales' ) . "</option>";
-								echo "</select>";
-								echo "</div>";
-								echo "<div class='wbcr-assets-manager everywhere'";
-								if( !$is_disabled || empty($disabled['everywhere']) ) {
-									echo " style='display: none;'";
-								}
-								echo ">";
-								echo "<input type='hidden' name='enabled{$id}[current]' value='' />";
-								echo "<span><strong>" . __('Exclude', 'gonzales') . ":</strong></span><br>";
-								echo "<label for='" . $type_name . "-" . $handle . "-enable-current'>";
-								echo "<input type='checkbox' name='enabled{$id}[current]' id='" . $type_name . "-" . $handle . "-enable-current' value='" . $current_url . "' ";
+								// State Controls
+								$this->getStateControrlHTML(
+									$id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url
+								);
 
-								if( $is_enabled && in_array($current_url, $enabled['current']) ) {
-									echo "checked";
-								}
-
-								echo " />" . __('Current URL', 'gonzales');
-								echo "</label>";
-
-								$post_types = get_post_types(array('public' => true), 'objects', 'and');
-								if( !empty($post_types) ) {
-									echo "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
-									foreach($post_types as $key => $value) {
-										echo "<label for='" . $type_name . "-" . $handle . "-enable-" . $key . "'>";
-										echo "<input type='checkbox' name='enabled{$id}[post_types][]' id='" . $type_name . "-" . $handle . "-enable-" . $key . "' value='" . $key . "' ";
-										if( isset($enabled['post_types']) ) {
-											if( in_array($key, $enabled['post_types']) ) {
-												echo "checked";
-											}
-										}
-										echo " />" . $value->label;
-										echo "</label>";
-									}
-								}
-
-								$taxonomies = get_taxonomies(array('public' => true), 'objects', 'and');
-								if( !empty($taxonomies) ) {
-									unset($taxonomies['category']);
-									echo "<input type='hidden' name='enabled{$id}[taxonomies]' value='' />";
-									foreach($taxonomies as $key => $value) {
-										echo "<label for='" . $type_name . "-" . $handle . "-enable-" . $key . "'>";
-										echo "<input type='checkbox' name='enabled{$id}[taxonomies][]' id='" . $type_name . "-" . $handle . "-enable-" . $key . "' value='" . $key . "' ";
-										if( isset($enabled['taxonomies']) ) {
-											if( in_array($key, $enabled['taxonomies']) ) {
-												echo "checked";
-											}
-										}
-										echo " />" . $value->label;
-										echo "</label>";
-									}
-								}
-
-								$categories = get_categories();
-								if( !empty($categories) ) {
-									echo "<input type='hidden' name='enabled{$id}[categories]' value='' />";
-									foreach($categories as $key => $cat) {
-										echo "<label for='" . $type_name . "-" . $handle . "-enable-" . $cat->term_id . "'>";
-										echo "<input type='checkbox' name='enabled{$id}[categories][]' id='" . $type_name . "-" . $handle . "-enable-" . $cat->term_id . "' value='" . $cat->term_id . "' ";
-										if( isset($enabled['categories']) ) {
-											if( in_array($cat->term_id, $enabled['categories']) ) {
-												echo "checked";
-											}
-										}
-										echo " />" . $cat->name;
-										echo "</label>";
-									}
-								}
-
-								echo "</div>";
-								echo "<div class='wbcr-assets-manager custom'";
-								if( !$is_disabled || empty($disabled['custom']) ) {
-									echo " style='display: none;'";
-								}
-								echo ">";
-								echo "<span title='" . __('Example', 'gonzales') . ': ' . site_url() . "/post/*, " . site_url() . "/page-*'><strong>" . __('Enter URL (set * for mask)', 'gonzales') . ":</strong></span><br>";
-
-								if ($is_disabled && ! empty($disabled['custom']) ) {
-									foreach ( $disabled['custom'] as $url ) {
-										echo "<input type='text' name='disabled{$id}[custom][]' class='wbcr-gonzales-text' value='" . $url . "'>";
-									}
-								} else {
-									echo "<input type='text' name='disabled{$id}[custom][]' class='wbcr-gonzales-text' value=''>";
-								}
-								echo "<a href='javascript:void(0)' class='wbcr-add-custom-url' data-name='disabled{$id}[custom][]'>" . __('Add new URL', 'gonzales') . "</a>";
-								echo "</div>";
-								echo "<div class='wbcr-assets-manager regex'";
-								if( !$is_disabled || empty($disabled['regex']) ) {
-									echo " style='display: none;'";
-								}
-								echo ">";
-								echo "<span><strong>" . __('Enter regular expression', 'gonzales') . ":</strong></span><br>";
-								$regex = isset( $disabled['regex'] ) ? $disabled['regex'] : '' ;
-								echo "<input type='text' name='disabled{$id}[regex]' class='wbcr-gonzales-text' value='" . $regex . "'>";
-								echo "</div>";
-								echo "</span>";
-								echo "</td>";
 								echo "</tr>";
+
+								if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
+									$name = $resource_type . '[' . $resource_name . '][' . $type_name . '][]';
+									echo "<input type='hidden' name='$name' value='$handle'>";
+								}
 							}
 						}
 					}
-				}
 
-				echo "</tbody>";
-				echo "</table>";
-				echo "</div>";
+					echo "</tbody>";
+					echo "</table>";
+					echo "</div>";
+				}
 			}
 			
 			echo "</form>";
 			echo "</div>";
 			echo "</div>";
 		}
+
+		/**
+		 * Get is disabled
+		 *
+		 * @param $options
+		 * @param $type_name
+		 * @param $handle
+		 *
+		 * @return bool
+		 */
+		private function getIsDisabled( $options, $type_name, $handle )
+		{
+			return isset($options['disabled']) && isset($options['disabled'][$type_name]) && isset($options['disabled'][$type_name][$handle]);
+		}
+
+		/**
+		 * Get disabled
+		 *
+		 * @param $is_disabled
+		 * @param $options
+		 * @param $type_name
+		 * @param $handle
+		 *
+		 * @return array
+		 */
+		private function getDisabled( $is_disabled, $options, $type_name, $handle )
+		{
+			$disabled = array();
+
+			if( $is_disabled ) {
+				$disabled = &$options['disabled'][$type_name][$handle];
+				if( !isset($disabled['current']) ) {
+					$disabled['current'] = array();
+				}
+				if( !isset($disabled['everywhere']) ) {
+					$disabled['everywhere'] = array();
+				}
+				if( !isset($disabled['custom']) ) {
+					$disabled['custom'] = array();
+				}
+				if( !isset($disabled['regex']) ) {
+					$disabled['regex'] = "";
+				}
+			}
+
+			return $disabled;
+		}
+
+		/**
+		 * Get is enabled
+		 *
+		 * @param $options
+		 * @param $type_name
+		 * @param $handle
+		 *
+		 * @return bool
+		 */
+		private function getIsEnabled( $options, $type_name, $handle )
+		{
+			return isset($options['enabled']) && isset($options['enabled'][$type_name]) && isset($options['enabled'][$type_name][$handle]);
+		}
+
+		/**
+		 * Get enabled
+		 *
+		 * @param $is_enabled
+		 * @param $options
+		 * @param $type_name
+		 * @param $handle
+		 *
+		 * @return array
+		 */
+		private function getEnabled( $is_enabled, $options, $type_name, $handle )
+		{
+			$enabled = array();
+
+			if( $is_enabled ) {
+				$enabled = &$options['enabled'][$type_name][$handle];
+
+				if( !isset($enabled['current']) ) {
+					$enabled['current'] = array();
+				}
+				if( !isset($enabled['everywhere']) ) {
+					$enabled['everywhere'] = array();
+				}
+				if( !isset($enabled['custom']) ) {
+					$enabled['custom'] = array();
+				}
+				if( !isset($enabled['regex']) ) {
+					$enabled['regex'] = "";
+				}
+			}
+
+			return $enabled;
+		}
+
+		/**
+		 * Get State
+		 *
+		 * @param $is_disabled
+		 * @param $disabled
+		 * @param $current_url
+		 *
+		 * @return int
+		 */
+		private function getState( $is_disabled, $disabled, $current_url )
+		{
+			$state = 0;
+			if(
+				$is_disabled
+				&& (
+					$disabled['everywhere'] == 1
+					|| in_array($current_url, $disabled['current'])
+					|| ! empty($disabled['custom'])
+					|| ! empty($disabled['regex'])
+				)
+			) {
+				$state = 1;
+			}
+
+			return $state;
+		}
+
+		/**
+		 * Get state controrl HTML
+		 *
+		 * @param $id
+		 * @param $state
+		 * @param $is_disabled
+		 * @param $is_enabled
+		 * @param $type_name
+		 * @param $handle
+		 * @param $disabled
+		 * @param $enabled
+		 * @param $current_url
+		 */
+		private function getStateControrlHTML( $id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url ) {
+			//Disable
+			echo "<td class='wbcr-assets-manager-disable'>";
+			echo "<select name='disabled{$id}[state]' class='wbcr-gonzales-disable-select'>";
+			echo "<option value='' class='wbcr-gonzales-option-enabled'>" . __('Enabled', 'gonzales') . "</option>";
+			echo "<option value='disable' class='wbcr-gonzales-option-disable' ";
+			if( $state ) {
+				echo "selected";
+			}
+			echo ">" . __('Disable', 'gonzales') . "</option>";
+			echo "</select>";
+			echo "</td>";
+			//Enable
+			echo "<td>";
+			echo "<span class='wbcr-assets-manager-enable-placeholder' ";
+			if( $state ) {
+				echo "style='display: none;'";
+			}
+			echo ">" . __('Disable everwhere to view enable settings.', 'gonzales') . "</span>";
+			echo "<span class='wbcr-assets-manager-enable'";
+			if( ! $state ) {
+				echo " style='display: none;'";
+			}
+			echo ">";
+			echo "<div>";
+			echo "<select name='action{$id}' class='wbcr-gonzales-action-select'>";
+			echo "<option value='current'" . selected( $is_disabled && ! empty( $disabled['current'] ) ) . ">" . __( 'Current URL', 'gonzales' ) . "</option>";
+			echo "<option value='everywhere'" . selected( $is_disabled && ! empty( $disabled['everywhere'] ) ) . ">" . __( 'Everywhere', 'gonzales' ) . "</option>";
+			echo "<option value='custom'" . selected( $is_disabled && ! empty( $disabled['custom'] ) ) . ">" . __( 'Custom URL', 'gonzales' ) . "</option>";
+			echo "<option value='regex'" . selected( $is_disabled && ! empty( $disabled['regex'] ) ) . ">" . __( 'Regular expression', 'gonzales' ) . "</option>";
+			echo "</select>";
+			echo "</div>";
+			echo "<div class='wbcr-assets-manager everywhere'";
+			if( !$is_disabled || empty($disabled['everywhere']) ) {
+				echo " style='display: none;'";
+			}
+			echo ">";
+			echo "<input type='hidden' name='enabled{$id}[current]' value='' />";
+			echo "<span><strong>" . __('Exclude', 'gonzales') . ":</strong></span><br>";
+			echo "<label for='" . $type_name . "-" . $handle . "-enable-current'>";
+			echo "<input type='checkbox' name='enabled{$id}[current]' id='" . $type_name . "-" . $handle . "-enable-current' value='" . $current_url . "' ";
+
+			if( $is_enabled && in_array($current_url, $enabled['current']) ) {
+				echo "checked";
+			}
+
+			echo " />" . __('Current URL', 'gonzales');
+			echo "</label>";
+
+			$post_types = get_post_types(array('public' => true), 'objects', 'and');
+			if( !empty($post_types) ) {
+				echo "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
+				foreach($post_types as $key => $value) {
+					echo "<label for='" . $type_name . "-" . $handle . "-enable-" . $key . "'>";
+					echo "<input type='checkbox' name='enabled{$id}[post_types][]' id='" . $type_name . "-" . $handle . "-enable-" . $key . "' value='" . $key . "' ";
+					if( isset($enabled['post_types']) ) {
+						if( in_array($key, $enabled['post_types']) ) {
+							echo "checked";
+						}
+					}
+					echo " />" . $value->label;
+					echo "</label>";
+				}
+			}
+
+			$taxonomies = get_taxonomies(array('public' => true), 'objects', 'and');
+			if( !empty($taxonomies) ) {
+				unset($taxonomies['category']);
+				echo "<input type='hidden' name='enabled{$id}[taxonomies]' value='' />";
+				foreach($taxonomies as $key => $value) {
+					echo "<label for='" . $type_name . "-" . $handle . "-enable-" . $key . "'>";
+					echo "<input type='checkbox' name='enabled{$id}[taxonomies][]' id='" . $type_name . "-" . $handle . "-enable-" . $key . "' value='" . $key . "' ";
+					if( isset($enabled['taxonomies']) ) {
+						if( in_array($key, $enabled['taxonomies']) ) {
+							echo "checked";
+						}
+					}
+					echo " />" . $value->label;
+					echo "</label>";
+				}
+			}
+
+			$categories = get_categories();
+			if( !empty($categories) ) {
+				echo "<input type='hidden' name='enabled{$id}[categories]' value='' />";
+				foreach($categories as $key => $cat) {
+					echo "<label for='" . $type_name . "-" . $handle . "-enable-" . $cat->term_id . "'>";
+					echo "<input type='checkbox' name='enabled{$id}[categories][]' id='" . $type_name . "-" . $handle . "-enable-" . $cat->term_id . "' value='" . $cat->term_id . "' ";
+					if( isset($enabled['categories']) ) {
+						if( in_array($cat->term_id, $enabled['categories']) ) {
+							echo "checked";
+						}
+					}
+					echo " />" . $cat->name;
+					echo "</label>";
+				}
+			}
+
+			echo "</div>";
+			echo "<div class='wbcr-assets-manager custom'";
+			if( !$is_disabled || empty($disabled['custom']) ) {
+				echo " style='display: none;'";
+			}
+			echo ">";
+			echo "<span title='" . __('Example', 'gonzales') . ': ' . site_url() . "/post/*, " . site_url() . "/page-*'><strong>" . __('Enter URL (set * for mask)', 'gonzales') . ":</strong></span><br>";
+
+			if ($is_disabled && ! empty($disabled['custom']) ) {
+				foreach ( $disabled['custom'] as $url ) {
+					echo "<input type='text' name='disabled{$id}[custom][]' class='wbcr-gonzales-text' value='" . $url . "'>";
+				}
+			} else {
+				echo "<input type='text' name='disabled{$id}[custom][]' class='wbcr-gonzales-text' value=''>";
+			}
+			echo "<a href='javascript:void(0)' class='wbcr-add-custom-url' data-name='disabled{$id}[custom][]'>" . __('Add new URL', 'gonzales') . "</a>";
+			echo "</div>";
+			echo "<div class='wbcr-assets-manager regex'";
+			if( !$is_disabled || empty($disabled['regex']) ) {
+				echo " style='display: none;'";
+			}
+			echo ">";
+			echo "<span><strong>" . __('Enter regular expression', 'gonzales') . ":</strong></span><br>";
+			$regex = isset( $disabled['regex'] ) ? $disabled['regex'] : '' ;
+			echo "<input type='text' name='disabled{$id}[regex]' class='wbcr-gonzales-text' value='" . $regex . "'>";
+			echo "</div>";
+			echo "</span>";
+			echo "</td>";
+		}
 		
 		public function formSave()
 		{
 			if( isset($_GET['wbcr_assets_manager']) && isset($_POST['wbcr_assets_manager_save']) ) {
-				
+
 				if( !current_user_can('manage_options') || !wp_verify_nonce(filter_input(INPUT_POST, 'wbcr_assets_manager_save'), 'wbcr_assets_manager_nonce') ) {
 					return false;
 				}
-				
+
 				$options = $this->getOption('assets_manager_options', array());
 				$current_url = esc_url($this->getCurrentUrl());
-				
+
 				if( isset($_POST['disabled']) && !empty($_POST['disabled']) ) {
 					foreach($_POST['disabled'] as $type => $assets) {
 						if( !empty($assets) ) {
 							foreach($assets as $handle => $where) {
-								
 								$handle = sanitize_text_field($handle);
 								$where = sanitize_text_field($where['state']);
 								
@@ -637,6 +758,7 @@
 				}
 
 				$this->updateOption('assets_manager_options', $options);
+				$this->updateOption('assets_manager_plugin_scripts', $_POST['plugins']);
 
 				// todo: test cache control
 				if( function_exists('w3tc_pgcache_flush') ) {
@@ -650,6 +772,68 @@
 				}
 			}
 		}
+
+		/**
+		 * Get disabled from options
+		 *
+		 * @param $type
+		 * @param $handle
+		 *
+		 * @return null
+		 */
+		private function getDisabledFromOptions( $type, $handle ) {
+			$options = $this->getOption( 'assets_manager_options', array() );
+			$plugin_scripts = $this->getOption( 'assets_manager_plugin_scripts', array() );
+
+			if ( ! empty( $plugin_scripts ) ) {
+				foreach ( $plugin_scripts as $plugin_name => $scripts ) {
+					if (
+						isset( $scripts[ $type ] )
+						&& in_array( $handle, $scripts[ $type ] )
+						&& isset( $options['disabled']['plugins'][ $plugin_name ] )
+					) {
+						return $options['disabled']['plugins'][ $plugin_name ];
+					}
+				}
+			}
+
+			if ( isset( $options['disabled'] ) && isset( $options['disabled'][ $type ] ) && isset( $options['disabled'][ $type ][ $handle ] ) ) {
+				return $options['disabled'][ $type ][ $handle ];
+			}
+
+			return null;
+		}
+
+		/**
+		 * Get enabled from options
+		 *
+		 * @param $type
+		 * @param $handle
+		 *
+		 * @return null
+		 */
+		private function getEnabledFromOptions( $type, $handle ) {
+			$options = $this->getOption( 'assets_manager_options', array() );
+			$plugin_scripts = $this->getOption( 'assets_manager_plugin_scripts', array() );
+
+			if ( ! empty( $plugin_scripts ) ) {
+				foreach ( $plugin_scripts as $plugin_name => $scripts ) {
+					if (
+						isset( $scripts[ $type ] )
+						&& in_array( $handle, $scripts[ $type ] )
+						&& isset( $options['enabled']['plugins'][ $plugin_name ] )
+					) {
+						return $options['enabled']['plugins'][ $plugin_name ];
+					}
+				}
+			}
+
+			if ( isset( $options['enabled'] ) && isset( $options['enabled'][ $type ] ) && isset( $options['enabled'][ $type ][ $handle ] ) ) {
+				return $options['enabled'][ $type ][ $handle ];
+			}
+
+			return null;
+		}
 		
 		function unloadAssets($src, $handle)
 		{
@@ -657,19 +841,11 @@
 				? 'js'
 				: 'css';
 
-			$options = $this->getOption('assets_manager_options', array());
 			$current_url = esc_url($this->getCurrentUrl());
-			
-			$disabled = null;
-			$enabled = null;
-			
-			if( isset($options['disabled']) && isset($options['disabled'][$type]) && isset($options['disabled'][$type][$handle]) ) {
-				$disabled = &$options['disabled'][$type][$handle];
-			}
-			if( isset($options['enabled']) && isset($options['enabled'][$type]) && isset($options['enabled'][$type][$handle]) ) {
-				$enabled = &$options['enabled'][$type][$handle];
-			}
-			
+
+			$disabled = $this->getDisabledFromOptions( $type, $handle );
+			$enabled  = $this->getEnabledFromOptions( $type, $handle );
+
 			if(
 				(isset($disabled['everywhere']) && $disabled['everywhere'] == 1)
 				|| (isset($disabled['current']) && is_array($disabled['current']) && in_array($current_url, $disabled['current']))
@@ -780,26 +956,21 @@
 							$url_short = str_replace(get_home_url(), '', $url);
 
 							if( false !== strpos($url, get_theme_root_uri()) ) {
-								$resource_name = 'theme';
+								$resource_type = 'theme';
 							} elseif( false !== strpos($url, plugins_url()) ) {
-								$resource_name = 'plugins';
+								$resource_type = 'plugins';
 							} else {
-								$resource_name = 'misc';
+								$resource_type = 'misc';
 							}
 
-							$sub_name = '';
-							if ( 'plugins' == $resource_name ) {
+							$resource_name = '';
+							if ( 'plugins' == $resource_type ) {
 								$clean_url = str_replace( WP_PLUGIN_URL . '/', '', $url );
 								$url_parts = explode( '/', $clean_url );
-								$sub_name = isset( $url_parts[0] ) ? $url_parts[0] : '';
-
-								if ( ! isset( $this->resource_data[ $sub_name ] ) ) {
-									$data = $this->getPluginData( $sub_name );
-									$this->resource_data[ $sub_name ] = $data;
-								}
+								$resource_name = isset( $url_parts[0] ) ? $url_parts[0] : '';
 							}
 
-							$this->collection[$resource_name][$sub_name][$type][$el] = array(
+							$this->collection[$resource_type][$resource_name][$type][$el] = array(
 								'url_full' => $url,
 								'url_short' => $url_short,
 								//'state' => $this->get_visibility($type, $el),

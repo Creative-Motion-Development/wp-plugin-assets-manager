@@ -1,7 +1,7 @@
 /**
  * Assets manager styles
- * @author Webcraftic <wordpress.webraftic@gmail.com> 
- * @copyright Webcraftic 12.11.2017 
+ * @author Webcraftic <wordpress.webraftic@gmail.com>
+ * @copyright Webcraftic 12.11.2017
  */
 html,
 body {
@@ -15,7 +15,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   overflow-y: auto;
   font-family: "Open Sans", Arial, sans-serif;
 }
@@ -50,7 +50,7 @@ body {
 #wbcr-assets-manager .wbcr-header p {
   font-size: 14px;
   color: #a9a9a9;
-  margin: 0px auto 15px auto;
+  margin: 0 auto 15px auto;
 }
 #wbcr-assets-manager .wbcr-header .wbcr-description {
   padding-right: 300px;
@@ -58,8 +58,8 @@ body {
 #wbcr-assets-manager table {
   table-layout: fixed;
   width: 100%;
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
   border: none;
   text-align: left;
   font-size: 14px;
@@ -86,7 +86,7 @@ body {
   background: #ffffff;
 }
 #wbcr-assets-manager table tbody tr:last-child {
-  border-bottom: 0px;
+  border-bottom: 0;
 }
 #wbcr-assets-manager table td {
   padding: 5px;
@@ -134,7 +134,7 @@ body {
   vertical-align: middle;
 }
 #wbcr-assets-manager table input[type='text'] {
-    font-size: 14px;
+  font-size: 14px;
 }
 #wbcr-assets-manager table label {
   display: inline-block;
@@ -142,7 +142,8 @@ body {
   width: auto;
   font-weight: normal;
 }
-#wbcr-assets-manager .wbcr-state {
+#wbcr-assets-manager .wbcr-state,
+#wbcr-assets-manager .wbcr-resource-state {
   margin: 0 auto;
   width: 40px;
   height: 40px;
@@ -152,11 +153,13 @@ body {
   font-size: 12px;
   border-radius: 100%;
 }
-#wbcr-assets-manager .wbcr-state.wbcr-state-0 {
+#wbcr-assets-manager .wbcr-state.wbcr-state-0,
+#wbcr-assets-manager .wbcr-resource-state.wbcr-state-0 {
   background: #dff5c4;
   color: #798c64;
 }
-#wbcr-assets-manager .wbcr-state.wbcr-state-1 {
+#wbcr-assets-manager .wbcr-state.wbcr-state-1,
+#wbcr-assets-manager .wbcr-resource-state.wbcr-state-1 {
   background: #ffb1af;
   color: #a25f5f;
 }
@@ -233,8 +236,11 @@ body {
 #wbcr-assets-manager .wbcr-resource-block {
   padding: 5px;
 }
-#wbcr-assets-manager .wbcr-resource-tbody {
-    border-bottom: 5px solid #ececec;
+#wbcr-assets-manager .wbcr-resource-table {
+  border-bottom: 5px solid #ececec;
+}
+#wbcr-assets-manager .wbcr-resource {
+  border-top: 10px solid #ececec;
 }
 #wbcr-assets-manager .wbcr-resource-name {
   font-weight: bold;
