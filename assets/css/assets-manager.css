@@ -153,6 +153,11 @@ body {
   font-size: 12px;
   border-radius: 100%;
 }
+#wbcr-assets-manager .wbcr-state.wbcr-imp-state-1,
+#wbcr-assets-manager .wbcr-resource-state.wbcr-imp-state-1 {
+  background: #ffb1af !important;
+  color: #a25f5f !important;
+}
 #wbcr-assets-manager .wbcr-state.wbcr-state-0,
 #wbcr-assets-manager .wbcr-resource-state.wbcr-state-0 {
   background: #dff5c4;

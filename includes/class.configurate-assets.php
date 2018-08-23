@@ -164,6 +164,7 @@
 			foreach($this->collection as $resource_type => $resources) {
 				echo "<h3>" . $resource_type . "</h3>";
 				foreach($resources as $resource_name => $types) {
+					$plugin_state = false;
 
 					if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
 						$plugin_data = $this->getPluginData( $resource_name );
@@ -175,7 +176,7 @@
 							$is_enabled = $this->getIsEnabled( $options, $resource_type, $resource_name );
 							$enabled = $this->getEnabled( $is_enabled, $options, $resource_type, $resource_name );
 
-							$state = $this->getState( $is_disabled, $disabled, $current_url );
+							$plugin_state = $this->getState( $is_disabled, $disabled, $current_url );
 
 							echo "<div class='wbcr-section " . ($is_first_plugin ? "" : "wbcr-resource") . "'>";
 							echo "<table class='wbcr-resource-table'>";
@@ -189,7 +190,8 @@
 							echo "</thead>";
 							echo "<tbody>";
 							echo "<tr>";
-							echo '<td><div class="wbcr-state wbcr-state-' . $state . '">' . __( 'Yes', 'gonzales' ) . '</div></td>';
+							echo '<td><div class="wbcr-state wbcr-state-' . (int)$plugin_state . '">';
+							echo ( ! $plugin_state ? __( 'Yes', 'gonzales' ) : __( 'No', 'gonzales' ) ) . '</div></td>';
 							echo '<td><div class="wbcr-resource-block">';
 							echo '<span class="wbcr-resource-name">' . $plugin_data['Name'] . '</span><br>';
 							echo "<b>Author:</b> " . $plugin_data['Author'] . "<br>";
@@ -198,7 +200,7 @@
 							$id = '[' . $resource_type . '][' . $resource_name . ']';
 
 							$this->getStateControrlHTML(
-								$id, $state, $is_disabled, $is_enabled, $resource_type, $resource_name, $disabled, $enabled, $current_url
+								$id, $plugin_state, $is_disabled, $is_enabled, $resource_type, $resource_name, $disabled, $enabled, $current_url
 							);
 							echo "</tr>";
 							echo "</tbody>";
@@ -213,7 +215,7 @@
 					echo "<table>";
 					echo "<thead>";
 					echo "<tr>";
-					echo "<th style='width: 100px;'>" . __('Type', 'gonzales') . "</th>";
+					echo "<th style='width: 100px;'>" . __('Loaded', 'gonzales') . "</th>";
 					echo "<th style='width: 75px;'>" . __('Size', 'gonzales') . "</th>";
 					echo "<th style='width: 40%;'>" . __('Script', 'gonzales') . "</th>";
 					echo "<th style='width: 10%;'>" . __('In use', 'gonzales') . "</th>";
@@ -252,8 +254,11 @@
 								echo "<tr>";
 
 								$state = $this->getState( $is_disabled, $disabled, $current_url );
+								$display_state = $plugin_state === 1 ? 1 : $state;
 
-								echo '<td><div class="wbcr-state wbcr-state-' . (int)$state . '">' . strtoupper($type_name) . '</div></td>';
+								echo '<td><div class="wbcr-state wbcr-state-' . (int)$state . ( $plugin_state == 1 ? ' wbcr-imp-state-1' : '');
+								echo ( 'plugins' == $resource_type ? ' wbcr-state-' . $resource_name : '' ) . '">';
+								echo ( ! $display_state ? __( 'Yes', 'gonzales' ) : __( 'No', 'gonzales' ) ) . '</div></td>';
 
 								//Size
 								echo "<td class='wbcr-assets-manager-size'>";
@@ -431,7 +436,8 @@
 		private function getStateControrlHTML( $id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url ) {
 			//Disable
 			echo "<td class='wbcr-assets-manager-disable'>";
-			echo "<select name='disabled{$id}[state]' class='wbcr-gonzales-disable-select'>";
+			echo "<select name='disabled{$id}[state]' class='wbcr-gonzales-disable-select'";
+			echo ('plugins' == $type_name ? "data-handle='{$handle}'" : "" ) . ">";
 			echo "<option value='' class='wbcr-gonzales-option-enabled'>" . __('Enabled', 'gonzales') . "</option>";
 			echo "<option value='disable' class='wbcr-gonzales-option-disable' ";
 			if( $state ) {
@@ -842,6 +848,7 @@
 				: 'css';
 
 			$current_url = esc_url($this->getCurrentUrl());
+			$free_current_url = untrailingslashit( $current_url );
 
 			$disabled = $this->getDisabledFromOptions( $type, $handle );
 			$enabled  = $this->getEnabledFromOptions( $type, $handle );
@@ -849,8 +856,8 @@
 			if(
 				(isset($disabled['everywhere']) && $disabled['everywhere'] == 1)
 				|| (isset($disabled['current']) && is_array($disabled['current']) && in_array($current_url, $disabled['current']))
-				|| (isset($disabled['custom']) && is_array($disabled['custom']) && !empty($disabled['custom']))
-				|| (isset($disabled['regex']) && !empty($disabled['regex']))
+				|| (isset($disabled['custom']) && is_array($disabled['custom']) && !empty($disabled['custom']) && !empty($free_current_url))
+				|| (isset($disabled['regex']) && !empty($disabled['regex']) && !empty($free_current_url))
 			) {
 
 				if( isset($enabled['current']) && is_array($enabled['current']) && in_array($current_url, $enabled['current']) ) {
@@ -879,7 +886,7 @@
 								$found_match = true;
 								break;
 							}
-							// Если url'ы идентичны
+						// Если url'ы идентичны
 						} else if( untrailingslashit( esc_url( $free_url ) ) === $current_url ) {
 							$found_match = true;
 							break;
@@ -899,16 +906,6 @@
 					return $src;
 				}
 
-				if( is_front_page() || is_home() ) {
-					if( 'page' != get_option('show_on_front') ) {
-						return false;
-					} else {
-						if( isset($enabled['post_types']) && in_array('page', $enabled['post_types']) ) {
-							return $src;
-						}
-					}
-				}
-
 				if( isset($enabled['post_types']) && in_array(get_post_type(), $enabled['post_types']) ) {
 					return $src;
 				}
@@ -920,7 +917,7 @@
 				if( isset($enabled['categories']) && in_array(get_query_var('cat'), $enabled['categories']) ) {
 					return $src;
 				}
-				
+
 				return false;
 			}
 			
@@ -995,6 +992,14 @@
 			if( current_user_can('manage_options') && isset($_GET['wbcr_assets_manager']) ) {
 				wp_enqueue_style('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', array(), $this->plugin->getPluginVersion());
 				wp_enqueue_script('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', array(), $this->plugin->getPluginVersion(), true);
+
+				$translations = [
+					'text' => [
+						'yes' => __( 'Yes', 'gonzales' ),
+						'no'  => __( 'No', 'gonzales' )
+					]
+				];
+				wp_localize_script( 'wbcr-assets-manager', 'wbcram_data', $translations );
 			}
 		}
 		
