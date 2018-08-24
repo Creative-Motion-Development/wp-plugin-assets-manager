@@ -105,9 +105,6 @@ html, body {
     td.wbcr-assets-manager-size {
       font-size: 12px;
     }
-    td.wbcr-script {
-      white-space: nowrap;
-    }
 
     .wbcr-assets-manager-disable *:after, .wbcr-assets-manager-disable *:before {
       display: none;
@@ -142,12 +139,19 @@ html, body {
     }
     input[type='text'] {
       font-size: 14px;
+      height: 30px;
     }
     label {
       display: inline-block;
       margin: 0 10px 0 0;
       width: auto;
       font-weight: normal;
+    }
+    a.wbcr-anchor {
+      display: block;
+      position: relative;
+      top: -30px;
+      visibility: hidden;
     }
   }
 
@@ -180,6 +184,9 @@ html, body {
     color: #a25f5f;
   }
 
+  .wbcr-script span.wbcr-use-by-comment {
+    font-size: 12px;
+  }
   .wbcr-script span {
     display: block;
     max-width: 100%;
@@ -189,7 +196,7 @@ html, body {
     font-weight: bold;
   }
   .wbcr-script a {
-    display: inline-block;
+    display: inline;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;

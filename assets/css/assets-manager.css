@@ -97,9 +97,6 @@ body {
 #wbcr-assets-manager table td.wbcr-assets-manager-size {
   font-size: 12px;
 }
-#wbcr-assets-manager table td.wbcr-script {
-  white-space: nowrap;
-}
 #wbcr-assets-manager table .wbcr-assets-manager-disable *:after,
 #wbcr-assets-manager table .wbcr-assets-manager-disable *:before {
   display: none;
@@ -135,12 +132,19 @@ body {
 }
 #wbcr-assets-manager table input[type='text'] {
   font-size: 14px;
+  height: 30px;
 }
 #wbcr-assets-manager table label {
   display: inline-block;
   margin: 0 10px 0 0;
   width: auto;
   font-weight: normal;
+}
+#wbcr-assets-manager table a.wbcr-anchor {
+  display: block;
+  position: relative;
+  top: -30px;
+  visibility: hidden;
 }
 #wbcr-assets-manager .wbcr-state,
 #wbcr-assets-manager .wbcr-resource-state {
@@ -171,6 +175,9 @@ body {
 #wbcr-assets-manager .wbcr-use-by-comment {
   color: #a25f5f;
 }
+#wbcr-assets-manager .wbcr-script span.wbcr-use-by-comment {
+  font-size: 12px;
+}
 #wbcr-assets-manager .wbcr-script span {
   display: block;
   max-width: 100%;
@@ -180,7 +187,7 @@ body {
   font-weight: bold;
 }
 #wbcr-assets-manager .wbcr-script a {
-  display: inline-block;
+  display: inline;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

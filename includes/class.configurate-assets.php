@@ -158,7 +158,17 @@
 			echo "<a href='" . admin_url($setting_page_url) . "' class='wbcr-hide-panel'>" . __('Hide panel in adminbar?', 'gonzales') . "</a>";
 			echo "</div>";
 
-			krsort($this->collection);
+			uksort($this->collection, function($a, $b) {
+				if ( 'plugins' == $a ) {
+					return -1;
+				}
+
+				if ( 'plugins' == $b ) {
+					return 1;
+				}
+
+				return strcasecmp($a, $b);
+			});
 
 			$is_first_plugin = true;
 			foreach($this->collection as $resource_type => $resources) {
@@ -183,9 +193,9 @@
 							echo "<thead>";
 							echo "<tr>";
 							echo "<th style='width: 100px;'>" . __( 'Loaded', 'gonzales' ) . "</th>";
-							echo "<th style='width: 55%;'>" . __( 'Plugin info', 'gonzales' ) . "</th>";
+							echo "<th style='width: 100%;'>" . __( 'Plugin info', 'gonzales' ) . "</th>";
 							echo "<th style='width: 200px;'>" . __( 'State', 'gonzales' ) . "</th>";
-							echo "<th>" . __( 'Enable', 'gonzales' ) . "</th>";
+							echo "<th style='width: 300px;' class='wbcr-enable-th'>" . __( 'Enable', 'gonzales' ) . "</th>";
 							echo "</tr>";
 							echo "</thead>";
 							echo "<tbody>";
@@ -217,10 +227,9 @@
 					echo "<tr>";
 					echo "<th style='width: 100px;'>" . __('Loaded', 'gonzales') . "</th>";
 					echo "<th style='width: 75px;'>" . __('Size', 'gonzales') . "</th>";
-					echo "<th style='width: 40%;'>" . __('Script', 'gonzales') . "</th>";
-					echo "<th style='width: 10%;'>" . __('In use', 'gonzales') . "</th>";
+					echo "<th style='width: 100%;'>" . __('Script', 'gonzales') . "</th>";
 					echo "<th style='width: 200px;'>" . __('State', 'gonzales') . "</th>";
-					echo "<th>" . __('Enable', 'gonzales') . "</th>";
+					echo "<th style='width: 300px;' class='wbcr-enable-th'>" . __('Enable', 'gonzales') . "</th>";
 					echo "</tr>";
 					echo "</thead>";
 					echo "<tbody>";
@@ -245,14 +254,13 @@
 									}
 								}
 
-								$id = '[' . $type_name . '][' . $handle . ']';
-
 								$comment = (!empty($deps)
 									? '<span style="color:#fb7976;" class="wbcr-use-by-comment">' . __('In use by', 'gonzales') . ' ' . implode(', ', $deps) . '</span>'
 									: '');
 
 								echo "<tr>";
 
+								// Loaded
 								$state = $this->getState( $is_disabled, $disabled, $current_url );
 								$display_state = $plugin_state === 1 ? 1 : $state;
 
@@ -265,14 +273,18 @@
 								echo $row['size'] . ' KB';
 								echo "</td>";
 
-								//Handle + Path
-								echo "<td class='wbcr-script'><span>" . $handle . "</span><a href='" . $row['url_full'] . "' target='_blank'>" . str_replace(get_home_url(), '', $row['url_full']) . "</a></td>";
+								// Handle + Path + In use
+								echo "<td class='wbcr-script'><span>" . $handle . "</span>";
+								echo "<a id='" . $type_name . "-" . $handle . "' class='wbcr-anchor'></a>";
+								echo "<a href='" . $row['url_full'] . "' target='_blank'>";
+								echo str_replace(get_home_url(), '', $row['url_full']) . "</a>";
 
-								echo "<td>";
+								echo "<br>";
 								echo $comment;
 								echo "</td>";
 
 								// State Controls
+								$id = '[' . $type_name . '][' . $handle . ']';
 								$this->getStateControrlHTML(
 									$id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url
 								);

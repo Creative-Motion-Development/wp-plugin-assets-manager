@@ -5,6 +5,19 @@
  * @version 1.0
  */
 
+function wbcrResizeEnableColumn() {
+    var w = jQuery(window).width();
+    if ( w > 1280) {
+        jQuery('.wbcr-enable-th').width(450);
+    } else if ( w > 1024) {
+        jQuery('.wbcr-enable-th').width(300);
+    } else if ( w > 800) {
+        jQuery('.wbcr-enable-th').width(200);
+    } else {
+        jQuery('.wbcr-enable-th').width(150);
+    }
+}
+
 (function($) {
 	'use strict';
 
@@ -65,6 +78,12 @@
                 $(this).text(wbcram_data.text.yes);
 			}
 		});
+
+        wbcrResizeEnableColumn();
+
+		$(window).resize( function() {
+            wbcrResizeEnableColumn();
+		})
 	});
 
 })(jQuery);
