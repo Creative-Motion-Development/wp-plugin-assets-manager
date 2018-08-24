@@ -901,7 +901,10 @@
 				if(
 					isset( $disabled['regex'] )
 					&& $disabled['regex']
-					&& ! @preg_match( '/' . trim( str_replace( '\\\\', '\\', $disabled['regex'] ), '/' ) . '/', $current_url )
+					&& ! @preg_match(
+						'/' . trim( str_replace( '\\\\', '\\', $disabled['regex'] ), '/' ) . '/',
+						ltrim( $current_url, '/\\' )
+					)
 				) {
 					return $src;
 				}
