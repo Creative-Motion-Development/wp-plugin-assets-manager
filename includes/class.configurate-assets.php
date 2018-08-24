@@ -142,7 +142,14 @@
 						<p>" . __('If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales') . "</p>";
 			echo "</div>";
 			echo "</div>";
-			
+
+			// Information
+			echo "<div class='wbcr-information __info-query'>Всего запросов - 124</div>";
+			echo "<div class='wbcr-information __info-all-weight'>2</div>";
+			echo "<div class='wbcr-information __info-opt-weight'>3</div>";
+			echo "<div class='wbcr-information __info-off-js'>4</div>";
+			echo "<div class='wbcr-information __info-off-css'>5</div>";
+
 			//Form
 			echo "<form method='POST'>";
 			
@@ -288,6 +295,8 @@
 								$this->getStateControrlHTML(
 									$id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url
 								);
+
+								echo "<input type='hidden' class='wbcr-info-data' data-type='{$type_name}' data-off='{$state}' value='{$row['size']}'>";
 
 								echo "</tr>";
 
@@ -1010,8 +1019,13 @@
 
 				$translations = [
 					'text' => [
-						'yes' => __( 'Yes', 'gonzales' ),
-						'no'  => __( 'No', 'gonzales' )
+						'yes'          => __( 'Yes', 'gonzales' ),
+						'no'           => __( 'No', 'gonzales' ),
+						'total_query'  => __( 'Total requests', 'gonzales' ),
+						'total_weight' => __( 'Total weight', 'gonzales' ),
+						'opt_weight'   => __( 'Optimized weight', 'gonzales' ),
+						'off_js'       => __( 'Disabled js', 'gonzales' ),
+						'off_css'      => __( 'Disabled css', 'gonzales' )
 					]
 				];
 				wp_localize_script( 'wbcr-assets-manager', 'wbcram_data', $translations );

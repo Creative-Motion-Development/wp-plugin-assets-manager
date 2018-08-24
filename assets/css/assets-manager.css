@@ -259,3 +259,14 @@ body {
   font-size: 20px;
   text-transform: uppercase;
 }
+#wbcr-assets-manager .wbcr-information {
+  float: left;
+  font-size: 18px;
+  width: auto;
+  padding: 5px 15px;
+  border: 5px solid #dadada;
+  margin: 0 10px 5px 0;
+  color: #696969;
+  border-radius: 5px;
+  display: none;
+}
