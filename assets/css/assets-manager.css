@@ -259,6 +259,11 @@ body {
   font-size: 20px;
   text-transform: uppercase;
 }
+#wbcr-assets-manager .wbcr-info-wrap {
+  display: none;
+  position: relative;
+  top: 3px;
+}
 #wbcr-assets-manager .wbcr-information {
   float: left;
   font-size: 18px;
@@ -268,5 +273,4 @@ body {
   margin: 0 10px 5px 0;
   color: #696969;
   border-radius: 5px;
-  display: none;
 }

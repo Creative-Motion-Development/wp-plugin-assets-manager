@@ -144,11 +144,13 @@
 			echo "</div>";
 
 			// Information
+			echo "<div class='wbcr-info-wrap'>";
 			echo "<div class='wbcr-information __info-query'>Всего запросов - 124</div>";
 			echo "<div class='wbcr-information __info-all-weight'>2</div>";
 			echo "<div class='wbcr-information __info-opt-weight'>3</div>";
 			echo "<div class='wbcr-information __info-off-js'>4</div>";
 			echo "<div class='wbcr-information __info-off-css'>5</div>";
+			echo "</div>";
 
 			//Form
 			echo "<form method='POST'>";
