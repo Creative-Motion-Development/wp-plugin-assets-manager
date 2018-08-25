@@ -51,10 +51,10 @@
 
 			if( !$is_panel && ((is_admin() && !$on_backend) || (!is_admin() && !$on_frontend)) ) {
 				if( !is_admin() ) {
-					add_action('wp_enqueue_scripts', array($this, 'appendAsset'));
+					add_action('wp_enqueue_scripts', array($this, 'appendAsset'), -100001);
 					add_action('wp_footer', array($this, 'assetsManager'), 100001);
 				} else {
-					add_action('admin_enqueue_scripts', array($this, 'appendAsset'));
+					add_action('admin_enqueue_scripts', array($this, 'appendAsset'), -100001);
 					add_action('admin_footer', array($this, 'assetsManager'), 100001);
 				}
 			}
