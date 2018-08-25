@@ -298,7 +298,7 @@
 									$id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url
 								);
 
-								echo "<input type='hidden' class='wbcr-info-data' data-type='{$type_name}' data-off='{$state}' value='{$row['size']}'>";
+								echo "<input type='hidden' class='wbcr-info-data' data-type='{$type_name}' data-off='{$display_state}' value='{$row['size']}'>";
 
 								echo "</tr>";
 
