@@ -118,6 +118,12 @@ function wbcrCalculateInformation() {
             $(this).before("<input type='text' name='" + name + "' class='wbcr-gonzales-text' value=''>");
 		});
 
+		$('.wbcr-reset-button').on('click', function() {
+		    $('select.wbcr-gonzales-disable-select').each(function() {
+		        $(this).val("").trigger('change');
+            })
+		});
+
 		$('.wbcr-state').bind('cssClassChanged', function() {
 		    var el = $(this).parent('td').parent('tr').find('.wbcr-info-data');
 		    if ($(this).hasClass('wbcr-state-1') || $(this).hasClass('wbcr-imp-state-1')) {

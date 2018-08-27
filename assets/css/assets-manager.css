@@ -274,3 +274,14 @@ body {
   color: #696969;
   border-radius: 5px;
 }
+#wbcr-assets-manager .wbcr-reset-column {
+  text-align: right;
+  vertical-align: bottom;
+}
+#wbcr-assets-manager .wbcr-reset-button {
+  height: 35px;
+  padding: 1px 25px;
+  font-weight: normal;
+  background-color: #878787;
+  color: white;
+}

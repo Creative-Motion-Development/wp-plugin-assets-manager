@@ -29,8 +29,7 @@
 			parent::__construct($plugin);
 			$this->plugin = $plugin;
 		}
-		
-		
+
 		/**
 		 * Initilize entire machine
 		 */
@@ -144,6 +143,9 @@
 			echo "</div>";
 
 			// Information
+			echo "<table>";
+			echo "<tr>";
+			echo "<td width='100%'>";
 			echo "<div class='wbcr-info-wrap'>";
 			echo "<div class='wbcr-information __info-query'>Всего запросов - 124</div>";
 			echo "<div class='wbcr-information __info-all-weight'>2</div>";
@@ -151,10 +153,15 @@
 			echo "<div class='wbcr-information __info-off-js'>4</div>";
 			echo "<div class='wbcr-information __info-off-css'>5</div>";
 			echo "</div>";
+			echo "</td>";
+			echo "<td width='180px' class='wbcr-reset-column'>";
+			echo "<button class='wbcr-reset-button'>" . __('Reset settings', 'gonzales') . "</button>";
+			echo "</td>";
+			echo "</tr>";
+			echo "</table>";
 
 			//Form
 			echo "<form method='POST'>";
-			
 			wp_nonce_field('wbcr_assets_manager_nonce', 'wbcr_assets_manager_save');
 			echo "<div class='wbcr-float-panel'>";
 			echo "<input type='submit' value='" . __('Save settings', 'gonzales') . "' />";
