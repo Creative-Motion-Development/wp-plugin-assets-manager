@@ -285,3 +285,16 @@ body {
   background-color: #878787;
   color: white;
 }
+#wbcr-assets-manager .wbcr-label {
+  position: relative;
+  top: 5px;
+  color: white;
+  font-weight: normal;
+}
+#wbcr-assets-manager .wbcr-label>input {
+  position: relative;
+  top: 1px;
+}
+#wbcr-assets-manager .wbcr-warning {
+  color:red;
+}

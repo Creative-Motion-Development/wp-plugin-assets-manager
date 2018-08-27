@@ -167,6 +167,10 @@
 			echo "<input type='submit' value='" . __('Save settings', 'gonzales') . "' />";
 
 			echo "<a href='" . remove_query_arg('wbcr_assets_manager') . "' class='wbcr-close'></a>";
+			$for_admin = $this->getOption( 'for_admin_only', 0 );
+			echo "<label class='wbcr-label" . ( $for_admin ? ' wbcr-warning' : '' ) . "'>";
+			echo "<input type='checkbox' value='1' name='wbcr_for_admin'" . checked($for_admin, 1, false). ">" . __('For administrator only', 'gonzales') . "</label>";
+			echo "</label>";
 			$setting_page_url = !defined('LOADING_GONZALES_AS_ADDON')
 				? 'options-general.php'
 				: 'admin.php';
@@ -793,6 +797,9 @@
 					}
 				}
 
+				$for_admin = isset( $_POST['wbcr_for_admin'] ) ? 1 : 0;
+				$this->updateOption( 'for_admin_only', $for_admin );
+
 				$this->updateOption('assets_manager_options', $options);
 				$this->updateOption('assets_manager_plugin_scripts', $_POST['plugins']);
 
@@ -874,6 +881,11 @@
 		function unloadAssets($src, $handle)
 		{
 			if( isset($_GET['wbcr_assets_manager']) ) {
+				return $src;
+			}
+
+			$for_admin = $this->getOption( 'for_admin_only', 0 );
+			if( $for_admin && ! $this->is_admin_user() ) {
 				return $src;
 			}
 
@@ -1044,8 +1056,7 @@
 				wp_localize_script( 'wbcr-assets-manager', 'wbcram_data', $translations );
 			}
 		}
-		
-		
+
 		/**
 		 * Exception for address starting from "//example.com" instead of
 		 * "http://example.com". WooCommerce likes such a format
@@ -1138,5 +1149,14 @@
 			}
 
 			return $data;
+		}
+
+		/**
+		 * Is admin user
+		 *
+		 * @return bool
+		 */
+		private function is_admin_user() {
+			return is_user_logged_in() && current_user_can('manage_options');
 		}
 	}

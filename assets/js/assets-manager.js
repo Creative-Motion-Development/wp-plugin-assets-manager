@@ -124,6 +124,14 @@ function wbcrCalculateInformation() {
             })
 		});
 
+		$('input[name="wbcr_for_admin"]').on('change', function() {
+		    if ($(this).prop('checked')) {
+		        $(this).parent('label').addClass('wbcr-warning');
+            } else {
+                $(this).parent('label').removeClass('wbcr-warning');
+            }
+		});
+
 		$('.wbcr-state').bind('cssClassChanged', function() {
 		    var el = $(this).parent('td').parent('tr').find('.wbcr-info-data');
 		    if ($(this).hasClass('wbcr-state-1') || $(this).hasClass('wbcr-imp-state-1')) {
