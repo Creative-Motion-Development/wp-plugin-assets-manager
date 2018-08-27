@@ -866,6 +866,10 @@
 		
 		function unloadAssets($src, $handle)
 		{
+			if( isset($_GET['wbcr_assets_manager']) ) {
+				return $src;
+			}
+
 			$type = (current_filter() == 'script_loader_src')
 				? 'js'
 				: 'css';
