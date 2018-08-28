@@ -124,7 +124,7 @@
 
 			$current_url = esc_url($this->getCurrentUrl());
 			$options = $this->getOption('assets_manager_options', array());
-			
+
 			echo "<div id='wbcr-assets-manager-wrapper' ";
 			if( isset($_GET['wbcr_assets_manager']) ) {
 				echo "style='display: block;'";
@@ -147,11 +147,11 @@
 			echo "<tr>";
 			echo "<td width='100%'>";
 			echo "<div class='wbcr-info-wrap'>";
-			echo "<div class='wbcr-information __info-query'>Всего запросов - 124</div>";
-			echo "<div class='wbcr-information __info-all-weight'>2</div>";
-			echo "<div class='wbcr-information __info-opt-weight'>3</div>";
-			echo "<div class='wbcr-information __info-off-js'>4</div>";
-			echo "<div class='wbcr-information __info-off-css'>5</div>";
+			echo "<div class='wbcr-information __info-query'>" . __( 'Total requests', 'gonzales' ) . ": 0</div>";
+			echo "<div class='wbcr-information __info-all-weight'>" . __( 'Total weight', 'gonzales' ) . ": 0 Kb</div>";
+			echo "<div class='wbcr-information __info-opt-weight'>" . __( 'Optimized weight', 'gonzales' ) . ": 0 Kb</div>";
+			echo "<div class='wbcr-information __info-off-js'>" . __( 'Disabled js', 'gonzales' ) . ": 0</div>";
+			echo "<div class='wbcr-information __info-off-css'>" . __( 'Disabled css', 'gonzales' ) . ": 0</div>";
 			echo "</div>";
 			echo "</td>";
 			echo "<td width='180px' class='wbcr-reset-column'>";
@@ -593,6 +593,24 @@
 			echo "<input type='text' name='disabled{$id}[regex]' class='wbcr-gonzales-text' value='" . $regex . "'>";
 			echo "</div>";
 			echo "</span>";
+
+			if (
+				isset( $disabled['current'] )
+				&& ! empty( $disabled['current'] )
+			) {
+				$custom_urls = "";
+
+				foreach ( $disabled['current'] as $item_url ) {
+					if ( $current_url != $item_url ) {
+						$full_url    = site_url() . $item_url;
+						$custom_urls .= "<span><a href='" . $full_url . "'>" . $full_url . "</a></span>";
+					}
+				}
+
+				if ( ! empty( $custom_urls ) ) {
+					echo "<div class='wbcr-disabled-info'>Также отключено для:" . $custom_urls . "</div>";
+				}
+			}
 			echo "</td>";
 		}
 		

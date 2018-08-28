@@ -298,3 +298,11 @@ body {
 #wbcr-assets-manager .wbcr-warning {
   color:red;
 }
+#wbcr-assets-manager .wbcr-disabled-info {
+  color: #b00000;
+  font-size: 12px;
+}
+#wbcr-assets-manager .wbcr-disabled-info span {
+  display: table;
+  line-height: 1.3;
+}
