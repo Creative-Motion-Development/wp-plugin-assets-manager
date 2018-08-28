@@ -608,7 +608,7 @@
 				}
 
 				if ( ! empty( $custom_urls ) ) {
-					echo "<div class='wbcr-disabled-info'>Также отключено для:" . $custom_urls . "</div>";
+					echo "<div class='wbcr-disabled-info'>" . __('Also disabled for', 'gonzales') . ":" . $custom_urls . "</div>";
 				}
 			}
 			echo "</td>";
