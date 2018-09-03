@@ -51,6 +51,14 @@ function wbcrResizeEnableColumn() {
 			}
 		});
 
+		$('.wbcr-gonzales-sided-select').on('change', function(ev) {
+		    if ($(this).val() == 1) {
+                $(this).addClass("wbcr-sided-yes");
+            } else {
+                $(this).removeClass("wbcr-sided-yes");
+            }
+        });
+
 		$('.wbcr-gonzales-action-select').on('change', function(ev) {
 			var selectElement = $(this).children(':selected');
 			$(this).attr('class', 'wbcr-gonzales-action-select').addClass(selectElement.val());
@@ -70,7 +78,10 @@ function wbcrResizeEnableColumn() {
 		$('.wbcr-reset-button').on('click', function() {
 		    $('select.wbcr-gonzales-disable-select').each(function() {
 		        $(this).val("").trigger('change');
-            })
+            });
+		    $('select.wbcr-gonzales-sided-select').each(function() {
+		        $(this).val(0).trigger('change');
+            });
 		});
 
 		$('.wbcr-state').bind('cssClassChanged', function() {

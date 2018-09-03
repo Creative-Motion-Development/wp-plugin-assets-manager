@@ -306,3 +306,8 @@ body {
   display: table;
   line-height: 1.3;
 }
+#wbcr-assets-manager .wbcr-sided-yes,
+#wbcr-assets-manager .wbcr-sided-yes:focus,
+#wbcr-assets-manager .wbcr-sided-yes:hover {
+  background-color: #ffdfda;
+}

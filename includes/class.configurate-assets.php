@@ -22,6 +22,20 @@
 		private $collection = array();
 
 		/**
+		 * Plugins for additional columns
+		 *
+		 * @var array
+		 */
+		private $sided_plugins = array();
+
+		/**
+		 * Css and js files excluded in sided plugins
+		 *
+		 * @var array
+		 */
+		private $sided_plugin_files = array();
+
+		/**
 		 * @param Wbcr_Factory000_Plugin $plugin
 		 */
 		public function __construct(Wbcr_Factory000_Plugin $plugin)
@@ -84,9 +98,20 @@
 				add_action('admin_init', array($this, 'formSave'));
 			}
 
+			add_action( 'plugins_loaded', array( $this, 'pluginsLoaded' ) );
+
 			add_filter( 'wbcr_gnz_show_float_panel', array( $this, 'showFloatPanel' ) );
 			add_filter( 'wbcr_gnz_control_html', array( $this, 'showControlHtml' ), 10, 4 );
 			add_filter( 'wbcr_gnz_unset_disabled', array( $this, 'unsetDisabled' ), 10, 2 );
+			add_filter( 'wbcr_gnz_get_additional_head_columns', array( $this, 'getAdditionalHeadColumns' ) );
+			add_filter( 'wbcr_gnz_get_additional_controls_columns', array( $this, 'getAdditionalControlsColumns' ), 10, 3 );
+
+			add_filter( 'autoptimize_filter_js_exclude', array( $this, 'aoptFilterJsExclude' ), 10, 2 );
+			add_filter( 'autoptimize_filter_css_exclude', array( $this, 'aoptFilterCssExclude' ), 10, 2 );
+			add_filter( 'wmac_filter_js_exclude', array( $this, 'wmacFilterJsExclude' ), 10, 2 );
+			add_filter( 'wmac_filter_css_exclude', array( $this, 'wmacFilterCssExclude' ), 10, 2 );
+			add_filter( 'wmac_filter_js_minify_excluded', array( $this, 'wmacFilterJsMinifyExclude' ), 10, 2 );
+			add_filter( 'wmac_filter_css_minify_excluded', array( $this, 'wmacFilterCssMinifyExclude' ), 10, 2 );
 		}
 
 		function clearfyAdminBarMenu($menu_items)
@@ -118,6 +143,17 @@
 				'href' => $current_url
 			);
 			$wp_admin_bar->add_node($args);
+		}
+
+		/**
+		 * Action plugins loaded
+		 */
+		public function pluginsLoaded() {
+			$this->sided_plugins = array(
+				'aopt' => 'autoptimize/autoptimize.php',
+				'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php'
+			);
+			$this->sided_plugins = apply_filters( 'wbcr_gnz_sided_plugins', $this->sided_plugins );
 		}
 
 		function assetsManager()
@@ -204,6 +240,7 @@
 					echo "<th style='width: 100px;'>" . __('Loaded', 'gonzales') . "</th>";
 					echo "<th style='width: 75px;'>" . __('Size', 'gonzales') . "</th>";
 					echo "<th style='width: 100%;'>" . __('Script', 'gonzales') . "</th>";
+					echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
 					echo "<th style='width: 200px;'>" . __('State', 'gonzales') . "</th>";
 					echo "<th style='width: 300px;' class='wbcr-enable-th'>" . __('Enable', 'gonzales') . "</th>";
 					echo "</tr>";
@@ -258,6 +295,9 @@
 								echo "<br>";
 								echo $comment;
 								echo "</td>";
+
+								// Controls for other plugins
+								echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_short'] );
 
 								// State Controls
 								$id = '[' . $type_name . '][' . $handle . ']';
@@ -708,9 +748,25 @@
 					}
 				}
 
+				if ( isset( $_POST['sided_plugins'] ) && ! empty( $_POST['sided_plugins'] ) ) {
+					$sided_plugins_options = [];
+					foreach ( $_POST['sided_plugins'] as $plugin => $types ) {
+						foreach ( $types as $type => $urls ) {
+							foreach ( $urls as $url => $active ) {
+
+								if ( ! empty( $url ) && $active ) {
+									$sided_plugins_options[ $plugin ][ $type ][] = $url;
+								}
+							}
+						}
+					}
+
+					$this->updateOption( 'assets_manager_sided_plugins', $sided_plugins_options );
+				}
+
 				do_action('wbcr_gnz_form_save');
 
-				$this->updateOption('assets_manager_options', $options);
+				$this->updateOption( 'assets_manager_options', $options );
 
 				// todo: test cache control
 				if( function_exists('w3tc_pgcache_flush') ) {
@@ -1024,6 +1080,247 @@
 			}
 
 			return $disabled;
+		}
+
+		/**
+		 * Get sided plugin name
+		 * 
+		 * @param string $index
+		 *
+		 * @return string
+		 */
+		private function getSidedPluginName( $index ) {
+			if ( isset( $this->sided_plugins[ $index ] ) ) {
+				$parts  = explode( '/', $this->sided_plugins[ $index ] );
+				return isset( $parts[0] ) ? $parts[0] : $this->sided_plugins[ $index ];
+			}
+			
+			return "";
+		}
+
+		/**
+		 * Get exclude sided plugin files
+		 *
+		 * @param $index
+		 * @param $type
+		 *
+		 * @return mixed
+		 */
+		private function getSidedPluginFiles( $index, $type ) {
+			if (
+				isset( $this->sided_plugin_files[ $index ][ $type ] )
+				&& ! empty( $this->sided_plugin_files[ $index ][ $type ] )
+			) {
+				return $this->sided_plugin_files[ $index ][ $type ];
+			}
+
+			$this->sided_plugin_files[ $index ][ $type ] = [];
+
+			$options = $this->getOption( 'assets_manager_sided_plugins', [] );
+			$plugin  = $this->getSidedPluginName( $index );
+
+			if ( $plugin && $options ) {
+				if ( isset( $options[ $plugin ][ $type ] ) ) {
+					$urls = $options[ $plugin ][ $type ];
+
+					if ( is_array( $urls ) ) {
+						foreach ( $urls as $url ) {
+							$parts = explode( '/', $url );
+							$file  = array_pop( $parts );
+							if ( empty( $file ) ) {
+								$file = $url;
+							}
+							$this->sided_plugin_files[ $index ][ $type ][] = $file;
+						}
+					}
+				}
+			}
+
+			return $this->sided_plugin_files[ $index ][ $type ];
+		}
+
+		/**
+		 * Get head columns
+		 *
+		 * @param $html
+		 *
+		 * @return string
+		 */
+		public function getAdditionalHeadColumns( $html )
+		{
+			if ( ! empty( $this->sided_plugins ) ) {
+				include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+				foreach ( $this->sided_plugins as $plugin_path ) {
+					if ( is_plugin_active( $plugin_path ) ) {
+						$data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin_path );
+						$html .= "<th style='width: 130px;'>" . $data['Name'] . " " . __( 'exclude', 'gonzales' ) . "</th>";
+					}
+				}
+			}
+
+			return $html;
+		}
+
+		/**
+		 * Get controls columns
+		 *
+		 * @param $html
+		 * @param $type
+		 * @param $handle
+		 *
+		 * @return string
+		 */
+		public function getAdditionalControlsColumns( $html, $type, $handle )
+		{
+			if ( ! empty( $this->sided_plugins ) ) {
+				$options = $this->getOption( 'assets_manager_sided_plugins', [] );
+				include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+				foreach ( $this->sided_plugins as $plugin_path ) {
+					if ( is_plugin_active( $plugin_path ) ) {
+						$parts  = explode( '/', $plugin_path );
+						$plugin = isset( $parts[0] ) ? $parts[0] : $plugin_path;
+
+						$active = isset( $options[ $plugin ][ $type ] )
+						          && is_array( $options[ $plugin ][ $type ] )
+						          && in_array( $handle, $options[ $plugin ][ $type ] );
+						$name = "sided_plugins[{$plugin}][{$type}][{$handle}]";
+
+						$html .= "<td>";
+
+						if ( ! empty( $handle ) ) {
+							$html .= "<select name='$name' class='wbcr-gonzales-sided-select";
+							$html .= ($active ? " wbcr-sided-yes" : "") . "'>";
+							$html .= "<option value='0'>" . __( 'No', 'gonzales' ) . "</option>";
+							$html .= "<option value='1'" . selected( $active, true, false ) . ">";
+							$html .= __( 'Yes', 'gonzales' ) . "</option>";
+							$html .= "</select>";
+						}
+						$html .= "</td>";
+					}
+				}
+			}
+
+			return $html;
+		}
+
+		/**
+		 * @param $index
+		 * @param $type
+		 * @param $exclude
+		 *
+		 * @return array
+		 */
+		private function filterExclusions( $index, $type, $exclude ) {
+			$files = $this->getSidedPluginFiles( $index, $type );
+
+			if ( ! empty( $files ) ) {
+				if ( is_array( $exclude ) ) {
+					$exclude = array_merge( $exclude, $files );
+				} else {
+					$dontmove = implode( ',', $files );
+					$exclude .= ! empty( $exclude ) ? ',' . $dontmove : $dontmove;
+				}
+			}
+
+			return $exclude;
+		}
+
+		/**
+		 * aopt filter js exclude
+		 *
+		 * @param $exclude
+		 * @param $content
+		 *
+		 * @return array
+		 */
+		public function aoptFilterJsExclude( $exclude, $content ) {
+			return $this->filterExclusions( 'aopt', 'js', $exclude );
+		}
+
+		/**
+		 * aopt filter css exclude
+		 *
+		 * @param $exclude
+		 * @param $content
+		 *
+		 * @return array
+		 */
+		public function aoptFilterCssExclude( $exclude, $content ) {
+			return $this->filterExclusions( 'aopt', 'css', $exclude );
+		}
+
+		/**
+		 * wmac filter js exclude
+		 *
+		 * @param $exclude
+		 * @param $content
+		 *
+		 * @return array
+		 */
+		public function wmacFilterJsExclude( $exclude, $content ) {
+			return $this->filterExclusions( 'wmac', 'js', $exclude );
+		}
+
+		/**
+		 * wmac filter css exclude
+		 *
+		 * @param $exclude
+		 * @param $content
+		 *
+		 * @return array
+		 */
+		public function wmacFilterCssExclude( $exclude, $content ) {
+			return $this->filterExclusions( 'wmac', 'css', $exclude );
+		}
+
+		/**
+		 * Filter js minify exclusions
+		 *
+		 * @param $index
+		 * @param $type
+		 * @param $result
+		 * @param $url
+		 *
+		 * @return bool
+		 */
+		private function filterJsMinifyExclusions( $index, $type, $result, $url ) {
+			$files = $this->getSidedPluginFiles( $index, $type );
+
+			if ( ! empty( $files ) ) {
+				foreach ( $files as $file ) {
+					if ( false !== strpos( $url, $file ) ) {
+						return false;
+					}
+				}
+			}
+
+			return $result;
+		}
+
+		/**
+		 * Action wmac_filter_js_minify_excluded
+		 * 
+		 * @param $result
+		 * @param $url
+		 *
+		 * @return mixed
+		 */
+		public function wmacFilterJsMinifyExclude( $result, $url ) {
+			return $this->filterJsMinifyExclusions( 'wmac', 'js', $result, $url );
+		}
+
+		/**
+		 * Action wmac_filter_css_minify_excluded
+		 *
+		 * @param $result
+		 * @param $url
+		 *
+		 * @return mixed
+		 */
+		public function wmacFilterCssMinifyExclude( $result, $url ) {
+			return $this->filterJsMinifyExclusions( 'wmac', 'css', $result, $url );
 		}
 
 	}
