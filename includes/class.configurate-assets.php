@@ -99,6 +99,7 @@
 			}
 
 			add_action( 'plugins_loaded', array( $this, 'pluginsLoaded' ) );
+			add_action( 'wbcr_gnz_form_save', array( $this, 'actionFormSave' ) );
 
 			add_filter( 'wbcr_gnz_show_float_panel', array( $this, 'showFloatPanel' ) );
 			add_filter( 'wbcr_gnz_control_html', array( $this, 'showControlHtml' ), 10, 4 );
@@ -748,22 +749,6 @@
 					}
 				}
 
-				if ( isset( $_POST['sided_plugins'] ) && ! empty( $_POST['sided_plugins'] ) ) {
-					$sided_plugins_options = [];
-					foreach ( $_POST['sided_plugins'] as $plugin => $types ) {
-						foreach ( $types as $type => $urls ) {
-							foreach ( $urls as $url => $active ) {
-
-								if ( ! empty( $url ) && $active ) {
-									$sided_plugins_options[ $plugin ][ $type ][] = $url;
-								}
-							}
-						}
-					}
-
-					$this->updateOption( 'assets_manager_sided_plugins', $sided_plugins_options );
-				}
-
 				do_action('wbcr_gnz_form_save');
 
 				$this->updateOption( 'assets_manager_options', $options );
@@ -1104,7 +1089,7 @@
 		 * @param $index
 		 * @param $type
 		 *
-		 * @return mixed
+		 * @return array
 		 */
 		private function getSidedPluginFiles( $index, $type ) {
 			if (
@@ -1321,6 +1306,125 @@
 		 */
 		public function wmacFilterCssMinifyExclude( $result, $url ) {
 			return $this->filterJsMinifyExclusions( 'wmac', 'css', $result, $url );
+		}
+
+		/**
+		 * Manage excluded files
+		 *
+		 * @param $sided_exclude_files
+		 * @param $index
+		 * @param $type
+		 */
+		private function manageExcludeFiles( $sided_exclude_files, $index, $type ) {
+			$exclude_files = [];
+
+			switch ( $index ) {
+				case 'wmac':
+					if ( class_exists( 'WMAC_Plugin' ) ) {
+						$exclude_files = WMAC_Plugin::app()->getOption( $type . '_exclude', '' );
+					}
+					break;
+				case 'aopt':
+					$exclude_files = get_option( 'autoptimize_' . $type . '_exclude', '' );
+					break;
+			}
+
+			$current_exclude_files = ! empty( $exclude_files )
+				? array_filter( array_map( 'trim', explode( ',', $exclude_files ) ) )
+				: [];
+
+			$delete_files = array_diff( $sided_exclude_files['before'][ $type ], $sided_exclude_files['after'][ $type ] );
+			$new_files    = array_diff( $sided_exclude_files['after'][ $type ], $current_exclude_files );
+
+			if ( empty( $current_exclude_files ) && ! empty( $new_files ) ) {
+				$current_exclude_files = $new_files;
+			} else if ( ! empty( $current_exclude_files ) ) {
+				$new_exclude_files = [];
+				foreach ( $current_exclude_files as $file ) {
+
+					if ( ! in_array( $file, $delete_files ) ) {
+						$new_exclude_files[] = $file;
+					}
+				}
+				$current_exclude_files = array_merge( $new_exclude_files, $new_files );
+			}
+
+			$current_exclude_files = array_filter( array_unique( $current_exclude_files ) );
+
+			switch ( $index ) {
+				case 'wmac':
+					if ( class_exists( 'WMAC_Plugin' ) ) {
+						WMAC_Plugin::app()->updateOption( $type . '_exclude', implode( ', ', $current_exclude_files ) );
+					}
+					break;
+				case 'aopt':
+					update_option( 'autoptimize_' . $type . '_exclude', implode( ', ', $current_exclude_files ) );
+					break;
+			}
+		}
+
+		/**
+		 * Action form save
+		 *
+		 * @param bool $empty_before
+		 */
+		public function actionFormSave( $empty_before = false ) {
+			$sided_exclude_files = [
+				'before' => [
+					'js' => [], 'css' => []
+				],
+				'after' => [
+					'js' => [], 'css' => []
+				]
+			];
+
+			if ( ! empty( $this->sided_plugins ) && ! $empty_before ) {
+				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
+					$sided_exclude_files['before']['js']  += $this->getSidedPluginFiles( $index, 'js' );
+					$sided_exclude_files['before']['css'] += $this->getSidedPluginFiles( $index, 'css' );
+				}
+			}
+
+			if (
+				isset( $_POST['sided_plugins'] )
+				&& ! empty( $_POST['sided_plugins'] )
+			) {
+				$sided_plugins_options = [];
+				foreach ( $_POST['sided_plugins'] as $plugin => $types ) {
+					foreach ( $types as $type => $urls ) {
+						foreach ( $urls as $url => $active ) {
+
+							if ( ! empty( $url ) && $active ) {
+								$sided_plugins_options[ $plugin ][ $type ][] = $url;
+							}
+						}
+					}
+				}
+
+				$this->updateOption( 'assets_manager_sided_plugins', $sided_plugins_options );
+			}
+
+			if ( ! empty( $this->sided_plugins ) ) {
+				$this->sided_plugin_files = [];
+				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
+					$sided_exclude_files['after']['js']  += $this->getSidedPluginFiles( $index, 'js' );
+					$sided_exclude_files['after']['css'] += $this->getSidedPluginFiles( $index, 'css' );
+
+					if (
+						! empty( $sided_exclude_files['before']['js'] )
+						|| ! empty( $sided_exclude_files['after']['js'] )
+					) {
+						$this->manageExcludeFiles( $sided_exclude_files, $index, 'js' );
+					}
+
+					if (
+						! empty( $sided_exclude_files['before']['css'] )
+						|| ! empty( $sided_exclude_files['after']['css'] )
+					) {
+						$this->manageExcludeFiles( $sided_exclude_files, $index, 'css' );
+					}
+				}
+			}
 		}
 
 	}
