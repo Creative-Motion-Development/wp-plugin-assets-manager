@@ -482,7 +482,7 @@
 			}
 			$html .= ">";
 			$html .= "<div>";
-			$html .= "<select name='action{$id}' class='wbcr-gonzales-action-select'>";
+			$html .= "<select name='wgz_action{$id}' class='wbcr-gonzales-action-select'>";
 			$html .= "<option value='current'" . selected( $is_disabled && ! empty( $disabled['current'] ), true, false ) . ">" . __( 'Current URL', 'gonzales' ) . "</option>";
 			$html .= "<option value='everywhere'" . selected( $is_disabled && ! empty( $disabled['everywhere'] ), true, false ) . ">" . __( 'Everywhere', 'gonzales' ) . "</option>";
 			$html .= "<option value='custom'" . selected( $is_disabled && ! empty( $disabled['custom'] ), true, false ) . ">" . __( 'Custom URL', 'gonzales' ) . "</option>";
@@ -607,8 +607,8 @@
 								$disabled = &$options['disabled'][$type][$handle];
 								
 								if( !empty($where) && 'disable' == $where ) {
-									$action = isset( $_POST['action'][ $type ][ $handle ] )
-										? $_POST['action'][ $type ][ $handle ]
+									$action = isset( $_POST['wgz_action'][ $type ][ $handle ] )
+										? $_POST['wgz_action'][ $type ][ $handle ]
 										: '';
 
 									if( "everywhere" == $action ) {
@@ -670,8 +670,8 @@
 								}
 								$enabled = &$options['enabled'][$type][$handle];
 
-								$action = isset( $_POST['action'][ $type ][ $handle ] )
-									? $_POST['action'][ $type ][ $handle ]
+								$action = isset( $_POST['wgz_action'][ $type ][ $handle ] )
+									? $_POST['wgz_action'][ $type ][ $handle ]
 									: '';
 								
 								if(
