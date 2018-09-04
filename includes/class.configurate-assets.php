@@ -152,7 +152,8 @@
 		public function pluginsLoaded() {
 			$this->sided_plugins = array(
 				'aopt' => 'autoptimize/autoptimize.php',
-				'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php'
+				'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php',
+				'wclp' => 'wp-plugin-clearfy/clearfy.php'
 			);
 			$this->sided_plugins = apply_filters( 'wbcr_gnz_sided_plugins', $this->sided_plugins );
 		}
@@ -298,7 +299,7 @@
 								echo "</td>";
 
 								// Controls for other plugins
-								echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_short'] );
+								echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_full'] );
 
 								// State Controls
 								$id = '[' . $type_name . '][' . $handle . ']';
@@ -1086,12 +1087,13 @@
 		/**
 		 * Get exclude sided plugin files
 		 *
-		 * @param $index
-		 * @param $type
+		 * @param string $index
+		 * @param string $type
+		 * @param bool $full
 		 *
 		 * @return array
 		 */
-		private function getSidedPluginFiles( $index, $type ) {
+		private function getSidedPluginFiles( $index, $type, $full=false ) {
 			if (
 				isset( $this->sided_plugin_files[ $index ][ $type ] )
 				&& ! empty( $this->sided_plugin_files[ $index ][ $type ] )
@@ -1110,11 +1112,17 @@
 
 					if ( is_array( $urls ) ) {
 						foreach ( $urls as $url ) {
-							$parts = explode( '/', $url );
-							$file  = array_pop( $parts );
-							if ( empty( $file ) ) {
+
+							if ( $full ) {
 								$file = $url;
+							} else {
+								$parts = explode( '/', $url );
+								$file  = array_pop( $parts );
+								if ( empty( $file ) ) {
+									$file = $url;
+								}
 							}
+
 							$this->sided_plugin_files[ $index ][ $type ][] = $file;
 						}
 					}
@@ -1127,7 +1135,7 @@
 		/**
 		 * Get head columns
 		 *
-		 * @param $html
+		 * @param string $html
 		 *
 		 * @return string
 		 */
@@ -1150,9 +1158,9 @@
 		/**
 		 * Get controls columns
 		 *
-		 * @param $html
-		 * @param $type
-		 * @param $handle
+		 * @param string $html
+		 * @param string $type
+		 * @param string $handle
 		 *
 		 * @return string
 		 */
@@ -1319,18 +1327,25 @@
 			$exclude_files = [];
 
 			switch ( $index ) {
+				case 'aopt':
+					$exclude_files = get_option( 'autoptimize_' . $type . '_exclude', '' );
+					break;
 				case 'wmac':
 					if ( class_exists( 'WMAC_Plugin' ) ) {
 						$exclude_files = WMAC_Plugin::app()->getOption( $type . '_exclude', '' );
 					}
 					break;
-				case 'aopt':
-					$exclude_files = get_option( 'autoptimize_' . $type . '_exclude', '' );
+				case 'wclp':
+					if ( class_exists( 'WCL_Plugin' ) ) {
+						$exclude_files = WCL_Plugin::app()->getOption( 'remove_version_exclude', '' );
+					}
 					break;
 			}
 
+			// For clearfy need new line
+			$delimeter = $index == 'wclp' ? "\n" : ",";
 			$current_exclude_files = ! empty( $exclude_files )
-				? array_filter( array_map( 'trim', explode( ',', $exclude_files ) ) )
+				? array_filter( array_map( 'trim', explode( $delimeter, $exclude_files ) ) )
 				: [];
 
 			$delete_files = array_diff( $sided_exclude_files['before'][ $type ], $sided_exclude_files['after'][ $type ] );
@@ -1352,13 +1367,18 @@
 			$current_exclude_files = array_filter( array_unique( $current_exclude_files ) );
 
 			switch ( $index ) {
+				case 'aopt':
+					update_option( 'autoptimize_' . $type . '_exclude', implode( ', ', $current_exclude_files ) );
+					break;
 				case 'wmac':
 					if ( class_exists( 'WMAC_Plugin' ) ) {
 						WMAC_Plugin::app()->updateOption( $type . '_exclude', implode( ', ', $current_exclude_files ) );
 					}
 					break;
-				case 'aopt':
-					update_option( 'autoptimize_' . $type . '_exclude', implode( ', ', $current_exclude_files ) );
+				case 'wclp':
+					if ( class_exists( 'WCL_Plugin' ) ) {
+						WCL_Plugin::app()->updateOption( 'remove_version_exclude', implode( $delimeter, $current_exclude_files ) );
+					}
 					break;
 			}
 		}
@@ -1380,8 +1400,10 @@
 
 			if ( ! empty( $this->sided_plugins ) && ! $empty_before ) {
 				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-					$sided_exclude_files['before']['js']  += $this->getSidedPluginFiles( $index, 'js' );
-					$sided_exclude_files['before']['css'] += $this->getSidedPluginFiles( $index, 'css' );
+					// For clearfy need full url
+					$full = ($index == 'wclp' ? true : false);
+					$sided_exclude_files['before']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
+					$sided_exclude_files['before']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
 				}
 			}
 
@@ -1407,8 +1429,10 @@
 			if ( ! empty( $this->sided_plugins ) ) {
 				$this->sided_plugin_files = [];
 				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-					$sided_exclude_files['after']['js']  += $this->getSidedPluginFiles( $index, 'js' );
-					$sided_exclude_files['after']['css'] += $this->getSidedPluginFiles( $index, 'css' );
+					// For clearfy need full url
+					$full = ($index == 'wclp' ? true : false);
+					$sided_exclude_files['after']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
+					$sided_exclude_files['after']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
 
 					if (
 						! empty( $sided_exclude_files['before']['js'] )
