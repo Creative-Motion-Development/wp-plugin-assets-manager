@@ -101,11 +101,9 @@
 			add_action( 'plugins_loaded', array( $this, 'pluginsLoaded' ) );
 			add_action( 'wbcr_gnz_form_save', array( $this, 'actionFormSave' ) );
 
-			add_filter( 'wbcr_gnz_show_float_panel', array( $this, 'showFloatPanel' ) );
-			add_filter( 'wbcr_gnz_control_html', array( $this, 'showControlHtml' ), 10, 4 );
 			add_filter( 'wbcr_gnz_unset_disabled', array( $this, 'unsetDisabled' ), 10, 2 );
 			add_filter( 'wbcr_gnz_get_additional_head_columns', array( $this, 'getAdditionalHeadColumns' ) );
-			add_filter( 'wbcr_gnz_get_additional_controls_columns', array( $this, 'getAdditionalControlsColumns' ), 10, 3 );
+			add_filter( 'wbcr_gnz_get_additional_controls_columns', array( $this, 'getAdditionalControlsColumns' ), 10, 4 );
 
 			add_filter( 'autoptimize_filter_js_exclude', array( $this, 'aoptFilterJsExclude' ), 10, 2 );
 			add_filter( 'autoptimize_filter_css_exclude', array( $this, 'aoptFilterCssExclude' ), 10, 2 );
@@ -167,50 +165,47 @@
 			$current_url = esc_url($this->getCurrentUrl());
 			$options = $this->getOption('assets_manager_options', array());
 
-			echo "<div id='wbcr-assets-manager-wrapper' ";
+			echo '<div id="wbcr-gnz-wrapper" ';
 			if( isset($_GET['wbcr_assets_manager']) ) {
-				echo "style='display: block;'";
+				echo 'style="display: block;"';
 			}
-			echo ">";
+			echo '>';
 			
-			echo "<div id='wbcr-assets-manager'>";
-			
-			//Header
-			echo "<div class='wbcr-header'>";
-			echo "<h2>Webcraftic " . __('Assets manager', 'gonzales') . " (Beta)</h2>";
-			echo "<div class='wbcr-description'>";
-			echo "<p>" . __('Below you can disable/enable CSS and JS files on a per page/post basis, as well as by custom post types. We recommend testing this locally or on a staging site first, as you could break the appearance of your live site. If you aren\'t sure about a certain script, you can try clicking on it, as a lot of authors will mention their plugin or theme in the header of the source code.', 'gonzales') . "</p>
-						<p>" . __('If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales') . "</p>";
-			echo "</div>";
-			echo "</div>";
-
-			// Information
-			echo "<table>";
-			echo "<tr>";
-			echo "<td width='100%'>";
-			echo apply_filters( 'wbcr_gnz_show_information', '' );
-			echo "</td>";
-			echo "<td width='180px' class='wbcr-reset-column'>";
-			echo "<button class='wbcr-reset-button'>" . __('Reset settings', 'gonzales') . "</button>";
-			echo "</td>";
-			echo "</tr>";
-			echo "</table>";
+			echo '<div id="wbcr-gnz">';
 
 			//Form
-			echo "<form method='POST'>";
+			echo '<form method="POST">';
 			wp_nonce_field('wbcr_assets_manager_nonce', 'wbcr_assets_manager_save');
-			echo "<div class='wbcr-float-panel'>";
-			echo "<input type='submit' value='" . __('Save settings', 'gonzales') . "' />";
-			echo "<a href='" . remove_query_arg('wbcr_assets_manager') . "' class='wbcr-close'></a>";
 
-			echo apply_filters( 'wbcr_gnz_show_float_panel', '' );
+			//Header
+			echo '<header class="panel">';
+			echo '<div class="panel__left">';
+			echo '<div class="panel__logo"></div>';
+			echo '<ul class="panel__data  panel__data-main">';
+			echo '<li class="panel__data-item __info-query">' . __( 'Total requests', 'gonzales' ) . ': --</li>';
+			echo '<li class="panel__data-item __info-all-weight">' . __( 'Total weight', 'gonzales' ) . ': <span class="panel__color-1">-- Kb</span></li>';
+			echo '<li class="panel__data-item __info-opt-weight">' . __( 'Optimized weight', 'gonzales' ) . ': <span class="panel__color-2">-- Kb</span></li>';
+			echo '</ul>';
+			echo '<div class="panel__data-hidden  tooltip  tooltip-bottom" data-tooltip="' . __( 'Total requests', 'gonzales' ) . ': --; ' . __( 'Total weight', 'gonzales' ) . ': -- Kb; ' . __( 'Optimized weight', 'gonzales' ) . ': -- Kb">';
+			echo '<img src="' . WGZ_PLUGIN_URL . '/assets/img/info.svg" width="36" height="36" alt=""/>';
+			echo '</div>';
+			echo '<ul class="panel__data">';
+			echo '<li class="panel__data-item __info-off-js">' . __( 'Disabled js', 'gonzales' ) . ': --</li>';
+			echo '<li class="panel__data-item __info-off-css">' . __( 'Disabled css', 'gonzales' ) . ': --</li>';
+			echo '</ul>';
+			echo '</div>';
+			echo '<div class="panel__right">';
+			echo '<button class="panel__reset wbcr-reset-button" type="button">' . __( 'Reset', 'gonzales' ) . '</button>';
+			echo '<input class="panel__save" type="submit" value="' . __( 'Save', 'gonzales' ) . '">';
+			echo '<label class="panel__checkbox  tooltip  tooltip-bottom" data-tooltip="' . __( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) . '.">';
+			echo apply_filters( 'wbcr_gnz_test_mode_checkbox', '<input class="panel__checkbox-input visually-hidden" type="checkbox" disabled="disabled" checked/><span class="panel__checkbox-text">' . __( 'Test mode (PRO)', 'gonzales' ) . '</span>' );
+			echo '</label>';
+			echo '<button class="panel__close wbcr-close-button" type="button" aria-label="' . __( 'Close', 'gonzales' ) . '" data-href="'.remove_query_arg('wbcr_assets_manager').'"></button>';
+			echo '</div>';
+			echo '</header>';
 
-			$setting_page_url = !defined('LOADING_GONZALES_AS_ADDON')
-				? 'options-general.php'
-				: 'admin.php';
-			$setting_page_url .= '?page=gonzales-' . $this->plugin->getPluginName();
-			echo "<a href='" . admin_url($setting_page_url) . "' class='wbcr-hide-panel'>" . __('Hide panel in adminbar?', 'gonzales') . "</a>";
-			echo "</div>";
+			// Main content
+			echo '<main class="content">';
 
 			uksort($this->collection, function($a, $b) {
 				if ( 'plugins' == $a ) {
@@ -224,30 +219,97 @@
 				return strcasecmp($a, $b);
 			});
 
+			// Tabs
+			echo '<ul class="tabs">';
+			foreach ( $this->collection as $resource_type => $resources ) {
+				echo '<li class="tabs__item">';
+				echo '<button class="tabs__button  tabs__button--' . $resource_type . '" type="button" data-hash="' . $resource_type . '" aria-label="' . $resource_type . '"></button>';
+				echo '</li>';
+			}
+			echo '</ul>';
+
+			// Info
+			echo '<div class="info">';
+			echo '<p>' . __( 'Below you can disable/enable CSS and JS files on a per page/post basis, as well as by custom post types. We recommend testing this locally or on a staging site first, as you could break the appearance of your live site. If you aren\'t sure about a certain script, you can try clicking on it, as a lot of authors will mention their plugin or theme in the header of the source code.', 'gonzales' ) . '</p>';
+			echo '<p>' . __( 'If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales' ) . '</p>';
+			echo '<div class="info__go-to-premium">';
+			echo '<p>' . __( 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales' ) . '</p>';
+			echo '<a class="button_pro" href="#">' . __( 'Upgrade to Premium', 'gonzales' ) . '</a>';
+			echo '</div>';
+			echo '</div>';
+
 			global $plugin_state;
 
 			foreach($this->collection as $resource_type => $resources) {
-				echo "<h3>" . $resource_type . "</h3>";
+				// Tabs content
+				echo '<div class="tabs-content">';
+				echo '<div class="table">';
+				echo '<table>';
+				echo '<col class="table__loaded"/>';
+				echo '<col class="table__size"/>';
+				echo '<col class="table__script"/>';
+				echo '<col class="table__state"/>';
+				echo '<col class="table__turn-on"/>';
+
 				foreach($resources as $resource_name => $types) {
 					$plugin_state = false;
 
-					echo apply_filters(
-						'wbcr_gnz_before_scripts_table', '', $this, $options, $resource_type, $resource_name, $current_url
-					);
+					if (
+						'plugins' == $resource_type
+						&& ! empty( $resource_name )
+					) {
+						$plugin_data = $this->getPluginData( $resource_name );
+						echo '<tbody>';
 
-					echo "<div class='wbcr-section'>";
-					echo "<table>";
-					echo "<thead>";
-					echo "<tr>";
-					echo "<th style='width: 100px;'>" . __('Loaded', 'gonzales') . "</th>";
-					echo "<th style='width: 75px;'>" . __('Size', 'gonzales') . "</th>";
-					echo "<th style='width: 100%;'>" . __('Script', 'gonzales') . "</th>";
+						if ( ! empty( $plugin_data ) ) {
+							$is_disabled = $this->getIsDisabled( $options, $resource_type, $resource_name );
+							$disabled    = $this->getDisabled( $is_disabled, $options, $resource_type, $resource_name );
+
+							$is_enabled = $this->getIsEnabled( $options, $resource_type, $resource_name );
+							$enabled    = $this->getEnabled( $is_enabled, $options, $resource_type, $resource_name );
+
+							$plugin_state = $this->getState( $is_disabled, $disabled, $current_url );
+
+							echo '<tr class="table__alternate">';
+							echo '<th>' . __( 'Loaded', 'gonzales' ) . '</th>';
+							echo '<th colspan="2">' . __( 'Plugin', 'gonzales' ) . '</th>';
+
+							echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
+
+							echo '<th class="table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
+							echo '<th class="table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
+							echo '</tr>';
+							echo '<tr>';
+							echo '<td>';
+							echo '<div class="table__loaded-state table__loaded-' . ( $plugin_state ? 'yes' : 'no' ) . ' wbcr-state"></div>';
+							echo '</td>';
+							echo '<td colspan="2" class="table__item">';
+							echo '<div class="table__item-name">' . $plugin_data['Name'] . '</div>';
+							echo '<div class="table__item-author"><strong>' . __( 'Author', 'gonzales' ) . ':</strong> ' . $plugin_data['Author'] . '</div>';
+							echo '<div class="table__item-version"><strong>' . __( 'Version', 'gonzales' ) . ':</strong> ' . $plugin_data['Version'] . '</div>';
+							echo '</td>';
+
+							echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $resource_type, $resource_name, $resource_name );
+
+							// State Controls
+							$id = '[' . $resource_type . '][' . $resource_name . ']';
+							echo $this->getStateControrlHTML(
+								$id, $plugin_state, $is_disabled, $is_enabled, $resource_type, $resource_name, $disabled, $enabled, $current_url
+							);
+							echo '</tr>';
+						}
+					}
+
+					echo '<tr class="table__alternate">';
+					echo '<th>' . __( 'Loaded', 'gonzales' ) . '</th>';
+					echo '<th>' . __( 'Size', 'gonzales' ) . '</th>';
+					echo '<th>' . __( 'Resource', 'gonzales' ) . '</th>';
+
 					echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
-					echo "<th style='width: 200px;'>" . __('State', 'gonzales') . "</th>";
-					echo "<th style='width: 300px;' class='wbcr-enable-th'>" . __('Enable', 'gonzales') . "</th>";
-					echo "</tr>";
-					echo "</thead>";
-					echo "<tbody>";
+
+					echo '<th class="table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
+					echo '<th class="table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
+					echo '</tr>';
 
 					foreach($types as $type_name => $rows) {
 
@@ -270,36 +332,39 @@
 								}
 
 								$comment = (!empty($deps)
-									? '<span style="color:#fb7976;" class="wbcr-use-by-comment">' . __('In use by', 'gonzales') . ' ' . implode(', ', $deps) . '</span>'
+									? '<span class="wbcr-use-by-comment">' . __('In use by', 'gonzales') . ' ' . implode(', ', $deps) . '</span>'
 									: '');
 
-								echo "<tr>";
+								echo '<tr>';
 
 								// Loaded
 								$state = $this->getState( $is_disabled, $disabled, $current_url );
 								$display_state = $plugin_state === 1 ? 1 : $state;
-
-								echo '<td><div class="wbcr-state wbcr-state-' . (int)$state . ( $plugin_state == 1 ? ' wbcr-imp-state-1' : '');
+								echo '<td>';
+								echo '<div class="table__loaded-state table__loaded-'. ( $plugin_state ? 'yes' : 'no');
+								echo ' wbcr-state' . ( $state ? ' table__loaded-super-yes' : '');
 								echo ( 'plugins' == $resource_type ? ' wbcr-state-' . $resource_name : '' ) . '">';
-								echo ( ! $display_state ? __( 'Yes', 'gonzales' ) : __( 'No', 'gonzales' ) ) . '</div></td>';
+								echo '</div>';
+								echo '</td>';
 
-								//Size
-								echo "<td class='wbcr-assets-manager-size'>";
-								echo $row['size'] . ' KB';
-								echo "</td>";
+								// Size
+								echo '<td>';
+								echo '<div class="table__size-value">' . $row['size'] . ' KB</div>';
+								echo '</td>';
 
 								// Handle + Path + In use
-								echo "<td class='wbcr-script'><span>" . $handle . "</span>";
+								echo '<td>';
+								echo '<div class="table__script-name">' . $handle . '</div>';
 								echo "<a id='" . $type_name . "-" . $handle . "' class='wbcr-anchor'></a>";
+								echo '<div class="table__script-path">';
 								echo "<a href='" . $row['url_full'] . "' target='_blank'>";
 								echo str_replace(get_home_url(), '', $row['url_full']) . "</a>";
-
-								echo "<br>";
-								echo $comment;
-								echo "</td>";
+								echo '</div>';
+								echo '<div>' . $comment . '</div>';
+								echo '</td>';
 
 								// Controls for other plugins
-								echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_full'] );
+								echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_full'], $resource_name );
 
 								// State Controls
 								$id = '[' . $type_name . '][' . $handle . ']';
@@ -308,7 +373,7 @@
 								);
 
 								echo "<input type='hidden' class='wbcr-info-data' data-type='{$type_name}' data-off='{$display_state}' value='{$row['size']}'>";
-								echo "</tr>";
+								echo '</tr>';
 
 								echo apply_filters(
 									'wbcr_gnz_after_scripts_table_row',
@@ -318,15 +383,23 @@
 						}
 					}
 
-					echo "</tbody>";
-					echo "</table>";
-					echo "</div>";
+					if (
+						'plugins' == $resource_type
+						&& ! empty( $resource_name )
+					) {
+						echo '</tbody>';
+					}
 				}
+
+				echo '</table>';
+				echo '</div>';
+				echo '</div>';
 			}
-			
-			echo "</form>";
-			echo "</div>";
-			echo "</div>";
+
+			echo '</form>';
+			echo '</div>';
+			echo '</div>';
+			echo '</main>';
 		}
 
 		/**
@@ -458,68 +531,79 @@
 		 * @return string
 		 */
 		public function getStateControrlHTML( $id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url ) {
-			//Disable
-			$html = "<td class='wbcr-assets-manager-disable'>";
-			$html .= "<select name='disabled{$id}[state]' class='wbcr-gonzales-disable-select'";
-			$html .= ('plugins' == $type_name ? "data-handle='{$handle}'" : "" ) . ">";
-			$html .= "<option value='' class='wbcr-gonzales-option-enabled'>" . __('Enabled', 'gonzales') . "</option>";
-			$html .= "<option value='disable' class='wbcr-gonzales-option-disable' ";
-			if( $state ) {
-				$html .= "selected";
+			// Disable
+			$html = '<td>';
+			$html .= '<label class="switch">';
+			$html .= '<input class="switch__input visually-hidden wbcr-gnz-disable" type="checkbox"' . checked( $state, true, false );
+			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "" ) . '/>';
+			$html .= '<input type="hidden" name="disabled' . $id . '[state]" value="' . ( $state ? 'disable' : '' ) . '"/>';
+			$html .= '<span class="switch__inner" data-off="' . __( 'No', 'gonzales' ) . '" data-on="' . __( 'Yes', 'gonzales' ) . '"></span>';
+			$html .= '<span class="switch__slider"></span>';
+			$html .= '</label>';
+			$html .= '</td>';
+
+			// Enable
+			$class_name = 'wbcr-assets-manager-enable';
+			if ( 'plugins' == $type_name ) {
+				$class_name = apply_filters( 'wbcr_gnz_control_classname', 'wbcr-gnz' );
 			}
-			$html .= ">" . __('Disable', 'gonzales') . "</option>";
-			$html .= "</select>";
-			$html .= "</td>";
-			//Enable
-			$html .= "<td>";
-			$html .= "<span class='wbcr-assets-manager-enable-placeholder' ";
-			if( $state ) {
-				$html .= "style='display: none;'";
+			$html .= '<td>';
+			$html .= '<div class="table__note ' . $class_name . '-placeholder"';
+			if ( $state ) {
+				$html .= ' style="display: none;"';
 			}
-			$html .= ">" . __('Disable everwhere to view enable settings.', 'gonzales') . "</span>";
-			$html .= "<span class='wbcr-assets-manager-enable'";
-			if( ! $state ) {
-				$html .= " style='display: none;'";
+			$html .= '><p>' . __( 'Click the switch in the <b>Load resource?</b> column to display the conditions for loading the resource.', 'gonzales' ) . '</p>';
+			$html .= '</div>';
+			$html .= '<span class="' . $class_name . '"';
+			if ( ! $state ) {
+				$html .= ' style="display: none;"';
 			}
-			$html .= ">";
-			$html .= "<div>";
-			$html .= "<select name='wgz_action{$id}' class='wbcr-gonzales-action-select'>";
-			$html .= "<option value='current'" . selected( $is_disabled && ! empty( $disabled['current'] ), true, false ) . ">" . __( 'Current URL', 'gonzales' ) . "</option>";
-			$html .= "<option value='everywhere'" . selected( $is_disabled && ! empty( $disabled['everywhere'] ), true, false ) . ">" . __( 'Everywhere', 'gonzales' ) . "</option>";
-			$html .= "<option value='custom'" . selected( $is_disabled && ! empty( $disabled['custom'] ), true, false ) . ">" . __( 'Custom URL', 'gonzales' ) . "</option>";
-			$html .= "<option value='regex'" . selected( $is_disabled && ! empty( $disabled['regex'] ), true, false ) . ">" . __( 'Regular expression', 'gonzales' ) . "</option>";
-			$html .= "</select>";
-			$html .= "</div>";
-			$html .= "<div class='wbcr-assets-manager everywhere'";
+			$html .= '>';
+			$html .= '<select class="table__select wbcr-gnz-action-select" name="wgz_action' . $id . '">';
+			$html .= '<option value="current"' . selected( $is_disabled && ! empty( $disabled['current'] ), true, false ) . '>' . __( 'Current URL', 'gonzales' ) . '</option>';
+			$html .= '<option value="everywhere"' . selected( $is_disabled && ! empty( $disabled['everywhere'] ), true, false ) . '>' . __( 'Everywhere', 'gonzales' ) . '</option>';
+			$options = '<option value="custom"' . selected( $is_disabled && ! empty( $disabled['custom'] ), true, false ) . ' class="table__select-pro">' . __( 'Custom URL (PRO)', 'gonzales' ) . '</option>';
+			$options .= '<option value="regex"' . selected( $is_disabled && ! empty( $disabled['regex'] ), true, false ) . ' class="table__select-pro">' . __( 'Regular expression (PRO)', 'gonzales' ) . '</option>';
+			$html .= apply_filters('wbcr_gnz_select_options', $options, $is_disabled, $disabled );
+			$html .= '</select>';
+
+			// Everywhere
+			$html .= "<span class='wbcr-assets-manager everywhere'";
 			if( !$is_disabled || empty($disabled['everywhere']) ) {
 				$html .= " style='display: none;'";
 			}
 			$html .= ">";
+			$html .= '<div class="table__label">' . __( 'Exclude', 'gonzales' ) . ':</div>';
+			$html .= '<ul class="table__options">';
+
+			$html .= '<li class="table__options-item">';
 			$html .= "<input type='hidden' name='enabled{$id}[current]' value='' />";
-			$html .= "<span><strong>" . __('Exclude', 'gonzales') . ":</strong></span><br>";
-			$html .= "<label for='" . $type_name . "-" . $handle . "-enable-current'>";
-			$html .= "<input type='checkbox' name='enabled{$id}[current]' id='" . $type_name . "-" . $handle . "-enable-current' value='" . $current_url . "' ";
-
-			if( $is_enabled && in_array($current_url, $enabled['current']) ) {
-				$html .= "checked";
+			$html .= '<label class="table__checkbox">';
+			$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[current]" value="' . $current_url . '"';
+			if ( $is_enabled && in_array( $current_url, $enabled['current'] ) ) {
+				$html .= ' checked';
 			}
+			$html .= '/>';
+			$html .= '<span class="table__checkbox-text">' . __( 'Current URL', 'gonzales' ) . '</span>';
+			$html .= '</label>';
+			$html .= '</li>';
 
-			$html .= " />" . __('Current URL', 'gonzales');
-			$html .= "</label>";
-
-			$post_types = get_post_types(array('public' => true), 'objects', 'and');
-			if( !empty($post_types) ) {
+			$post_types = get_post_types( array( 'public' => true ), 'objects', 'and' );
+			if ( ! empty( $post_types ) ) {
 				$html .= "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
-				foreach($post_types as $key => $value) {
-					$html .= "<label for='" . $type_name . "-" . $handle . "-enable-" . $key . "'>";
-					$html .= "<input type='checkbox' name='enabled{$id}[post_types][]' id='" . $type_name . "-" . $handle . "-enable-" . $key . "' value='" . $key . "' ";
-					if( isset($enabled['post_types']) ) {
-						if( in_array($key, $enabled['post_types']) ) {
-							$html .= "checked";
+				foreach ( $post_types as $key => $value ) {
+					$html .= '<li class="table__options-item">';
+					$html .= '<label class="table__checkbox">';
+					$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[post_types][]" value="' . $key . '"';
+					if ( isset( $enabled['post_types'] ) ) {
+						if ( in_array( $key, $enabled['post_types'] ) ) {
+							$html .= ' checked';
 						}
 					}
-					$html .= " />" . $value->label;
-					$html .= "</label>";
+					$html .= '/>';
+					$html .= '<span class="table__checkbox-text">' . $value->label . '</span>';
+					$html .= '</label>';
+					$html .= '</li>';
 				}
 			}
 
@@ -528,15 +612,18 @@
 				unset($taxonomies['category']);
 				$html .= "<input type='hidden' name='enabled{$id}[taxonomies]' value='' />";
 				foreach($taxonomies as $key => $value) {
-					$html .= "<label for='" . $type_name . "-" . $handle . "-enable-" . $key . "'>";
-					$html .= "<input type='checkbox' name='enabled{$id}[taxonomies][]' id='" . $type_name . "-" . $handle . "-enable-" . $key . "' value='" . $key . "' ";
-					if( isset($enabled['taxonomies']) ) {
-						if( in_array($key, $enabled['taxonomies']) ) {
-							$html .= "checked";
+					$html .= '<li class="table__options-item">';
+					$html .= '<label class="table__checkbox">';
+					$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[taxonomies][]" value="' . $key . '"';
+					if ( isset( $enabled['taxonomies'] ) ) {
+						if ( in_array( $key, $enabled['taxonomies'] ) ) {
+							$html .= ' checked';
 						}
 					}
-					$html .= " />" . $value->label;
-					$html .= "</label>";
+					$html .= '/>';
+					$html .= '<span class="table__checkbox-text">' . $value->label . '</span>';
+					$html .= '</label>';
+					$html .= '</li>';
 				}
 			}
 
@@ -544,23 +631,48 @@
 			if( !empty($categories) ) {
 				$html .= "<input type='hidden' name='enabled{$id}[categories]' value='' />";
 				foreach($categories as $key => $cat) {
-					$html .= "<label for='" . $type_name . "-" . $handle . "-enable-" . $cat->term_id . "'>";
-					$html .= "<input type='checkbox' name='enabled{$id}[categories][]' id='" . $type_name . "-" . $handle . "-enable-" . $cat->term_id . "' value='" . $cat->term_id . "' ";
-					if( isset($enabled['categories']) ) {
-						if( in_array($cat->term_id, $enabled['categories']) ) {
-							$html .= "checked";
+					$html .= '<li class="table__options-item">';
+					$html .= '<label class="table__checkbox">';
+					$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[categories][]" value="' . $cat->term_id . '"';
+					if ( isset( $enabled['categories'] ) ) {
+						if ( in_array( $cat->term_id, $enabled['categories'] ) ) {
+							$html .= ' checked';
 						}
 					}
-					$html .= " />" . $cat->name;
-					$html .= "</label>";
+					$html .= '/>';
+					$html .= '<span class="table__checkbox-text">' . $cat->name . '</span>';
+					$html .= '</label>';
+					$html .= '</li>';
 				}
 			}
 
-			$html .= "</div>";
+			$html .= '</ul>';
+			$html .= '</span>';
 
-			$html .= apply_filters('wbcr_gnz_control_html', '', $id, $is_disabled, $disabled );
+			// Custom URL
+			$control_html = '<div class="table__field wbcr-assets-manager custom"';
+			if ( ! $is_disabled || empty( $disabled['custom'] ) ) {
+				$control_html .= ' style="display: none;"';
+			}
+			$control_html .= '>';
+			$control_html .= '<label class="table__label" for="disabled' . $id . '[custom][]" title="' . __( 'Example', 'gonzales' ) . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __( 'Enter URL (set * for mask)', 'gonzales' ) . ':</label>';
+			$control_html .= '<div class="table__field-item">';
+			$control_html .= '<input class="table__field-input" name="disabled' . $id . '[custom][]" type="text" value="" disabled="disabled">';
+			$control_html .= '<button class="table__field-add" type="button" aria-label="' . __( 'Add field', 'gonzales' ) . '" disabled></button>';
+			$control_html .= '</div>';
+			$control_html .= '</div>';
+			// Regex
+			$control_html .= "<div class='table__field wbcr-assets-manager regex'";
+			if ( ! $is_disabled || empty( $disabled['regex'] ) ) {
+				$control_html .= " style='display: none;'";
+			}
+			$control_html .= ">";
+			$control_html .= '<label class="table__label" for="disabled' . $id . '[regex]">' . __( 'Enter regular expression', 'gonzales' ) . ':</label>';
+			$control_html .= '<textarea class="table__textarea" rows="3" name="disabled' . $id . '[regex]" disabled="disabled"></textarea>';
+			$control_html .= "</div>";
+			$html         .= apply_filters( 'wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled );
 
-			$html .= "</span>";
+			$html .= '</span>';
 
 			if (
 				isset( $disabled['current'] )
@@ -570,16 +682,19 @@
 
 				foreach ( $disabled['current'] as $item_url ) {
 					if ( $current_url != $item_url ) {
-						$full_url    = site_url() . $item_url;
+						$full_url = site_url() . $item_url;
 						$custom_urls .= "<span><a href='" . $full_url . "'>" . $full_url . "</a></span>";
 					}
 				}
 
 				if ( ! empty( $custom_urls ) ) {
-					$html .= "<div class='wbcr-disabled-info'>" . __('Also disabled for', 'gonzales') . ":" . $custom_urls . "</div>";
+					$html .= '<div class="table__also">';
+					$html .= '<div class="table__label">' . __( 'Also disabled for pages', 'gonzales' ) . ':</div>';
+					$html .= '<div class="table__also-url">' . $custom_urls . '</div>';
+					$html .= '</div>';
 				}
 			}
-			$html .= "</td>";
+			$html .= '</td>';
 
 			return $html;
 		}
@@ -901,7 +1016,12 @@
 								$resource_type = 'misc';
 							}
 
-							$resource_name = apply_filters( 'wbcr_gnz_get_resource_name', '', $resource_type, $url );
+							$resource_name = '';
+							if ( 'plugins' == $resource_type ) {
+								$clean_url = str_replace( WP_PLUGIN_URL . '/', '', $url );
+								$url_parts = explode( '/', $clean_url );
+								$resource_name = isset( $url_parts[0] ) ? $url_parts[0] : '';
+							}
 
 							$this->collection[$resource_type][$resource_name][$type][$el] = array(
 								'url_full' => $url,
@@ -928,14 +1048,6 @@
 			if( current_user_can('manage_options') && isset($_GET['wbcr_assets_manager']) ) {
 				wp_enqueue_style('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', array(), $this->plugin->getPluginVersion());
 				wp_enqueue_script('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', array(), $this->plugin->getPluginVersion(), true);
-
-				$translations = [
-					'text' => [
-						'yes' => __( 'Yes', 'gonzales' ),
-						'no'  => __( 'No', 'gonzales' )
-					]
-				];
-				wp_localize_script( 'wbcr-assets-manager', 'wbcram_data', $translations );
 			}
 		}
 
@@ -1003,53 +1115,6 @@
 		}
 
 		/**
-		 * Show for admin only form
-		 *
-		 * @param string $html
-		 *
-		 * @return string
-		 */
-		public function showFloatPanel( $html ) {
-			$html = "<label class='wbcr-label'>";
-			$html .= "<input type='checkbox' value='1' name='wbcr_for_admin' disabled='disabled' checked>" . __('For administrator only', 'gonzales') . "</label>";
-			$html .= "</label>";
-
-			return $html;
-		}
-
-		/**
-		 * Show control html
-		 *
-		 * @param string $html
-		 * @param string $id
-		 * @param bool $is_disabled
-		 * @param array $disabled
-		 *
-		 * @return string
-		 */
-		public function showControlHtml( $html, $id, $is_disabled, $disabled ) {
-			$html = "<div class='wbcr-assets-manager custom'";
-			if( !$is_disabled || empty($disabled['custom']) ) {
-				$html .= " style='display: none;'";
-			}
-			$html .= ">";
-			$html .= "<span title='" . __('Example', 'gonzales') . ': ' . site_url() . "/post/*, " . site_url() . "/page-*'><strong>" . __('Enter URL (set * for mask)', 'gonzales') . ":</strong></span><br>";
-			$html .= "<input type='text' name='disabled{$id}[custom][]' class='wbcr-gonzales-text' disabled='disabled' value='' style='background-color: #f3f3f3'>";
-			$html .= "</div>";
-
-			$html .= "<div class='wbcr-assets-manager regex'";
-			if( !$is_disabled || empty($disabled['regex']) ) {
-				$html .= " style='display: none;'";
-			}
-			$html .= ">";
-			$html .= "<span><strong>" . __('Enter regular expression', 'gonzales') . ":</strong></span><br>";
-			$html .= "<input type='text' name='disabled{$id}[regex]' class='wbcr-gonzales-text' disabled='disabled' value='' style='background-color: #f3f3f3'>";
-			$html .= "</div>";
-
-			return $html;
-		}
-
-		/**
 		 * Unset disabled
 		 *
 		 * @param $disabled
@@ -1066,6 +1131,37 @@
 			}
 
 			return $disabled;
+		}
+
+		/**
+		 * Get plugin data from folder name
+		 *
+		 * @param $name
+		 *
+		 * @return array
+		 */
+		private function getPluginData( $name )
+		{
+			$data = [];
+
+			if ( $name ) {
+				if ( ! function_exists( 'get_plugins' ) ) {
+					// подключим файл с функцией get_plugins()
+					require_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
+				$all_plugins = get_plugins();
+				if ( ! empty( $all_plugins ) ) {
+					foreach ( $all_plugins as $plugin_path => $plugin_data ) {
+						if ( strpos( $plugin_path, $name . '/' ) !== false ) {
+							$data = $plugin_data;
+							$data['path'] = $plugin_path;
+							break;
+						}
+					}
+				}
+			}
+
+			return $data;
 		}
 
 		/**
@@ -1144,10 +1240,11 @@
 			if ( ! empty( $this->sided_plugins ) ) {
 				include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
-				foreach ( $this->sided_plugins as $plugin_path ) {
+				foreach ( $this->sided_plugins as $index => $plugin_path ) {
 					if ( is_plugin_active( $plugin_path ) ) {
 						$data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin_path );
-						$html .= "<th style='width: 130px;'>" . $data['Name'] . " " . __( 'exclude', 'gonzales' ) . "</th>";
+						$text = $index == 'wclp' ? __( 'clear version?', 'gonzales' ) : __( 'optimize?', 'gonzales' );
+						$html .= '<th class="table__column_switch"><span class="table__th-external-plugin">' . $data['Name'] . ':</span><em>' . $text . '</em></th>';
 					}
 				}
 			}
@@ -1161,16 +1258,17 @@
 		 * @param string $html
 		 * @param string $type
 		 * @param string $handle
+		 * @param string $plugin_handle
 		 *
 		 * @return string
 		 */
-		public function getAdditionalControlsColumns( $html, $type, $handle )
+		public function getAdditionalControlsColumns( $html, $type, $handle, $plugin_handle )
 		{
 			if ( ! empty( $this->sided_plugins ) ) {
 				$options = $this->getOption( 'assets_manager_sided_plugins', [] );
 				include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
-				foreach ( $this->sided_plugins as $plugin_path ) {
+				foreach ( $this->sided_plugins as $index => $plugin_path ) {
 					if ( is_plugin_active( $plugin_path ) ) {
 						$parts  = explode( '/', $plugin_path );
 						$plugin = isset( $parts[0] ) ? $parts[0] : $plugin_path;
@@ -1183,12 +1281,12 @@
 						$html .= "<td>";
 
 						if ( ! empty( $handle ) ) {
-							$html .= "<select name='$name' class='wbcr-gonzales-sided-select";
-							$html .= ($active ? " wbcr-sided-yes" : "") . "'>";
-							$html .= "<option value='0'>" . __( 'No', 'gonzales' ) . "</option>";
-							$html .= "<option value='1'" . selected( $active, true, false ) . ">";
-							$html .= __( 'Yes', 'gonzales' ) . "</option>";
-							$html .= "</select>";
+							$html .= '<label class="switch">';
+							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable' . ( 'plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '' ) . '" type="checkbox"' . checked( $active, 1, false ) . ( 'plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '' ) . '/>';
+							$html .= '<input type="hidden" name="' . $name . '" value="' . ( $active ? 1 : 0 ) . '"/>';
+							$html .= '<span class="switch__inner" data-off="' . __( 'No', 'gonzales' ) . '" data-on="' . __( 'Yes', 'gonzales' ) . '"></span>';
+							$html .= '<span class="switch__slider"></span>';
+							$html .= '</label>';
 						}
 						$html .= "</td>";
 					}
@@ -1389,19 +1487,15 @@
 		 * @param bool $empty_before
 		 */
 		public function actionFormSave( $empty_before = false ) {
-			$sided_exclude_files = [
-				'before' => [
-					'js' => [], 'css' => []
-				],
-				'after' => [
-					'js' => [], 'css' => []
-				]
-			];
-
 			if ( ! empty( $this->sided_plugins ) && ! $empty_before ) {
 				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
+					$sided_exclude_files['before'] = [
+						'js'  => [],
+						'css' => []
+					];
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
+
 					$sided_exclude_files['before']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
 					$sided_exclude_files['before']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
 				}
@@ -1429,8 +1523,13 @@
 			if ( ! empty( $this->sided_plugins ) ) {
 				$this->sided_plugin_files = [];
 				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
+					$sided_exclude_files['after'] = [
+						'js'  => [],
+						'css' => []
+					];
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
+
 					$sided_exclude_files['after']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
 					$sided_exclude_files['after']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
 
