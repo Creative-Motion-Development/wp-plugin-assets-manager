@@ -10,17 +10,17 @@
 
 	$(function() {
 		$('.wbcr-gnz-disable').on('change', function(ev) {
-            var class_name = 'table__loaded-super-yes';
+            var class_name = 'table__loaded-super-no';
             var handle = $(this).data('handle');
             if (handle != undefined) {
-                class_name = 'table__loaded-yes';
+                class_name = 'table__loaded-no';
             }
 
 			if( $(this).prop('checked') == true ) {
                 $(this).closest('label').find('input[type="hidden"]').val('disable');
 				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').hide();
 				$(this).closest('tr').find('.wbcr-assets-manager-enable').show();
-                $(this).closest('tr').find('.wbcr-state').removeClass('table__loaded-no');
+                $(this).closest('tr').find('.wbcr-state').removeClass('table__loaded-yes');
                 $(this).closest('tr').find('.wbcr-state').addClass(class_name).trigger('cssClassChanged');
 
                 if (typeof wbcrChangeHandleState == 'function') {
@@ -32,7 +32,7 @@
 				$(this).closest('tr').find('.wbcr-assets-manager-enable').hide();
 				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').show();
                 $(this).closest('tr').find('.wbcr-state').removeClass(class_name);
-                $(this).closest('tr').find('.wbcr-state').addClass('table__loaded-no').trigger('cssClassChanged');
+                $(this).closest('tr').find('.wbcr-state').addClass('table__loaded-yes').trigger('cssClassChanged');
 
                 if (typeof wbcrChangeHandleState == 'function') {
                     wbcrChangeHandleState(this, 0);
@@ -50,14 +50,14 @@
 		});
 
         $('.wbcr-gnz-sided-disable').on('change', function(ev) {
-            $(this).closest('label').find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
+            $(this).closest('label').find('input[type="hidden"]').val($(this).prop('checked') ? 0 : 1);
 
             var handle = $(this).data('handle');
             if (handle != undefined) {
                 $('.wbcr-gnz-sided-' + handle)
                     .prop('checked', $(this).prop('checked'))
                     .closest('label')
-                    .find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
+                    .find('input[type="hidden"]').val($(this).prop('checked') ? 0 : 1);
             }
         });
 
@@ -74,7 +74,7 @@
 
 		$('.wbcr-state').bind('cssClassChanged', function() {
 		    var el = $(this).parent('td').parent('tr').find('.wbcr-info-data');
-		    if ($(this).hasClass('table__loaded-yes') || $(this).hasClass('table__loaded-super-yes')) {
+		    if ($(this).hasClass('table__loaded-no') || $(this).hasClass('table__loaded-super-no')) {
                 if (el.length > 0) {
                     el.data('off', 1);
                 }

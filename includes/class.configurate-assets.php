@@ -281,7 +281,7 @@
 							echo '</tr>';
 							echo '<tr>';
 							echo '<td>';
-							echo '<div class="table__loaded-state table__loaded-' . ( $plugin_state ? 'yes' : 'no' ) . ' wbcr-state"></div>';
+							echo '<div class="table__loaded-state table__loaded-' . ( $plugin_state ? 'no' : 'yes' ) . ' wbcr-state"></div>';
 							echo '</td>';
 							echo '<td colspan="2" class="table__item">';
 							echo '<div class="table__item-name">' . $plugin_data['Name'] . '</div>';
@@ -303,7 +303,7 @@
 					echo '<tr class="table__alternate">';
 					echo '<th>' . __( 'Loaded', 'gonzales' ) . '</th>';
 					echo '<th>' . __( 'Size', 'gonzales' ) . '</th>';
-					echo '<th>' . __( 'Resource', 'gonzales' ) . '</th>';
+					echo '<th class="wgz-th">' . __( 'Resource', 'gonzales' ) . '</th>';
 
 					echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
 
@@ -341,8 +341,8 @@
 								$state = $this->getState( $is_disabled, $disabled, $current_url );
 								$display_state = $plugin_state === 1 ? 1 : $state;
 								echo '<td>';
-								echo '<div class="table__loaded-state table__loaded-'. ( $plugin_state ? 'yes' : 'no');
-								echo ' wbcr-state' . ( $state ? ' table__loaded-super-yes' : '');
+								echo '<div class="table__loaded-state table__loaded-'. ( $plugin_state ? 'no' : 'yes');
+								echo ' wbcr-state' . ( $state ? ' table__loaded-super-no' : '');
 								echo ( 'plugins' == $resource_type ? ' wbcr-state-' . $resource_name : '' ) . '">';
 								echo '</div>';
 								echo '</td>';
@@ -353,7 +353,7 @@
 								echo '</td>';
 
 								// Handle + Path + In use
-								echo '<td>';
+								echo '<td class="wgz-td">';
 								echo '<div class="table__script-name">' . $handle . '</div>';
 								echo "<a id='" . $type_name . "-" . $handle . "' class='wbcr-anchor'></a>";
 								echo '<div class="table__script-path">';
@@ -1210,7 +1210,7 @@
 						foreach ( $urls as $url ) {
 
 							if ( $full ) {
-								$file = $url;
+								$file = ( false !== strpos( $url, site_url() ) ? $url : site_url() . '/' . trim( $url, '/\\' ) );
 							} else {
 								$parts = explode( '/', $url );
 								$file  = array_pop( $parts );
@@ -1253,6 +1253,53 @@
 		}
 
 		/**
+		 * Get active status for sided plugin
+		 *
+		 * @param $index
+		 * @param $options
+		 * @param $plugin
+		 * @param $type
+		 * @param $handle
+		 *
+		 * @return bool
+		 */
+		private function getActiveStatusForSidedPlugin( $index, $options, $plugin, $type, $handle )
+		{
+			$active = isset( $options[ $plugin ][ $type ] )
+			          && is_array( $options[ $plugin ][ $type ] )
+			          && in_array( $handle, $options[ $plugin ][ $type ] );
+			if ( ! $active && ! isset( $options[ $plugin ] ) ) {
+				switch ( $index ) {
+					case 'aopt':
+						if ( 'plugins' == $type ) {
+							$active = get_option( 'autoptimize_js', '' );
+							if ( 'on' != $active ) {
+								$active = get_option( 'autoptimize_css', '' );
+							}
+						} else {
+							$active = get_option( 'autoptimize_' . $type, '' );
+						}
+						$active = ( $active == 'on' ? true : false );
+						break;
+					case 'wmac':
+						if ( class_exists( 'WMAC_Plugin' ) ) {
+							if ( 'plugins' == $type ) {
+								$active = WMAC_Plugin::app()->getOption( 'js_optimize', false );
+								if ( ! $active ) {
+									$active = WMAC_Plugin::app()->getOption( 'css_optimize', false );
+								}
+							} else {
+								$active = WMAC_Plugin::app()->getOption( $type . '_optimize', false );
+							}
+						}
+						break;
+				}
+			}
+
+			return boolval( $active );
+		}
+
+		/**
 		 * Get controls columns
 		 *
 		 * @param string $html
@@ -1273,16 +1320,20 @@
 						$parts  = explode( '/', $plugin_path );
 						$plugin = isset( $parts[0] ) ? $parts[0] : $plugin_path;
 
-						$active = isset( $options[ $plugin ][ $type ] )
-						          && is_array( $options[ $plugin ][ $type ] )
-						          && in_array( $handle, $options[ $plugin ][ $type ] );
-						$name = "sided_plugins[{$plugin}][{$type}][{$handle}]";
+						$active = $this->getActiveStatusForSidedPlugin( $index, $options, $plugin, $type, $handle );
+						$name   = "sided_plugins[{$plugin}][{$type}][{$handle}]";
 
 						$html .= "<td>";
 
-						if ( ! empty( $handle ) ) {
+						if (
+							! empty( $handle )
+							&& (
+								'plugins' != $type && false !== strpos( $handle, '.' . $type )
+								|| 'plugins' == $type
+							)
+						) {
 							$html .= '<label class="switch">';
-							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable' . ( 'plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '' ) . '" type="checkbox"' . checked( $active, 1, false ) . ( 'plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '' ) . '/>';
+							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable' . ( 'plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '' ) . '" type="checkbox"' . checked( $active, false, false ) . ( 'plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '' ) . '/>';
 							$html .= '<input type="hidden" name="' . $name . '" value="' . ( $active ? 1 : 0 ) . '"/>';
 							$html .= '<span class="switch__inner" data-off="' . __( 'No', 'gonzales' ) . '" data-on="' . __( 'Yes', 'gonzales' ) . '"></span>';
 							$html .= '<span class="switch__slider"></span>';
@@ -1489,15 +1540,15 @@
 		public function actionFormSave( $empty_before = false ) {
 			if ( ! empty( $this->sided_plugins ) && ! $empty_before ) {
 				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-					$sided_exclude_files['before'] = [
+					$sided_exclude_files[ $index ]['before'] = [
 						'js'  => [],
 						'css' => []
 					];
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
 
-					$sided_exclude_files['before']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
-					$sided_exclude_files['before']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
+					$sided_exclude_files[ $index ]['before']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
+					$sided_exclude_files[ $index ]['before']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
 				}
 			}
 
@@ -1516,35 +1567,34 @@
 						}
 					}
 				}
-
 				$this->updateOption( 'assets_manager_sided_plugins', $sided_plugins_options );
 			}
 
 			if ( ! empty( $this->sided_plugins ) ) {
 				$this->sided_plugin_files = [];
 				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-					$sided_exclude_files['after'] = [
+					$sided_exclude_files[ $index ]['after'] = [
 						'js'  => [],
 						'css' => []
 					];
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
 
-					$sided_exclude_files['after']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
-					$sided_exclude_files['after']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
+					$sided_exclude_files[ $index ]['after']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
+					$sided_exclude_files[ $index ]['after']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
 
 					if (
-						! empty( $sided_exclude_files['before']['js'] )
-						|| ! empty( $sided_exclude_files['after']['js'] )
+						! empty( $sided_exclude_files[ $index ]['before']['js'] )
+						|| ! empty( $sided_exclude_files[ $index ]['after']['js'] )
 					) {
-						$this->manageExcludeFiles( $sided_exclude_files, $index, 'js' );
+						$this->manageExcludeFiles( $sided_exclude_files[ $index ], $index, 'js' );
 					}
 
 					if (
-						! empty( $sided_exclude_files['before']['css'] )
-						|| ! empty( $sided_exclude_files['after']['css'] )
+						! empty( $sided_exclude_files[ $index ]['before']['css'] )
+						|| ! empty( $sided_exclude_files[ $index ]['after']['css'] )
 					) {
-						$this->manageExcludeFiles( $sided_exclude_files, $index, 'css' );
+						$this->manageExcludeFiles( $sided_exclude_files[ $index ], $index, 'css' );
 					}
 				}
 			}

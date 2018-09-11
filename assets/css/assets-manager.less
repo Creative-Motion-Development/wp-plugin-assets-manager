@@ -4,6 +4,10 @@
  * @copyright Webcraftic 05.09.2018
  */
 
+html, body {
+  overflow: hidden !important;
+}
+
 /*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */
 html {
   line-height: 1.15;
@@ -642,12 +646,12 @@ body {
     border-width: 0 0 2px 2px;
   }
 
-  .table__loaded-no {
-    background: #C8CFD7;
+  .table__loaded-super-no {
+    background: #C8CFD7 !important;
   }
 
-  .table__loaded-super-yes {
-    background: #FFCB1E !important;
+  .table__loaded-no {
+    background: #C8CFD7;
   }
 
   .table__loaded-yes {
@@ -925,16 +929,16 @@ body {
   }
 
   .switch__inner::before {
-    content: attr(data-on);
+    content: attr(data-off);
     padding: 0 0 0 12px;
-    background: #414B56;
+    background: #C8CFD7;
   }
 
   .switch__inner::after {
-    content: attr(data-off);
+    content: attr(data-on);
     padding: 0 12px 0 0;
     text-align: right;
-    background: #C8CFD7;
+    background: #414B56;
   }
 
   .switch__slider {
@@ -945,7 +949,7 @@ body {
     height: 20px;
     transition: .3s;
     border-radius: 50%;
-    background: #97A4B2;
+    background: #FFCB1E;
   }
 
   .switch__input:checked ~ .switch__inner,
@@ -957,7 +961,7 @@ body {
   .switch__input:checked ~ .switch__slider,
   .switch__input:checked:focus ~ .switch__slider {
     left: 45px;
-    background: #FFCB1E;
+    background: #97A4B2;
   }
 
   .tooltip {
@@ -1022,6 +1026,14 @@ body {
 
   .wbcr-use-by-comment a {
     color: #6e6e6e;
+  }
+
+  .wgz-td, .wgz-th {
+    max-width: 1000px;
+  }
+
+  .wgz-td {
+    word-wrap: break-word;
   }
 }
 

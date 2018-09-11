@@ -3,6 +3,10 @@
  * @author Webcraftic <wordpress.webraftic@gmail.com>
  * @copyright Webcraftic 05.09.2018
  */
+html,
+body {
+  overflow: hidden !important;
+}
 /*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */
 html {
   line-height: 1.15;
@@ -555,11 +559,11 @@ body {
   border: solid #FFF;
   border-width: 0 0 2px 2px;
 }
+#wbcr-gnz .table__loaded-super-no {
+  background: #C8CFD7 !important;
+}
 #wbcr-gnz .table__loaded-no {
   background: #C8CFD7;
-}
-#wbcr-gnz .table__loaded-super-yes {
-  background: #FFCB1E !important;
 }
 #wbcr-gnz .table__loaded-yes {
   background: #FFCB1E;
@@ -791,15 +795,15 @@ body {
   width: 100%;
 }
 #wbcr-gnz .switch__inner::before {
-  content: attr(data-on);
+  content: attr(data-off);
   padding: 0 0 0 12px;
-  background: #414B56;
+  background: #C8CFD7;
 }
 #wbcr-gnz .switch__inner::after {
-  content: attr(data-off);
+  content: attr(data-on);
   padding: 0 12px 0 0;
   text-align: right;
-  background: #C8CFD7;
+  background: #414B56;
 }
 #wbcr-gnz .switch__slider {
   position: absolute;
@@ -809,7 +813,7 @@ body {
   height: 20px;
   transition: 0.3s;
   border-radius: 50%;
-  background: #97A4B2;
+  background: #FFCB1E;
 }
 #wbcr-gnz .switch__input:checked ~ .switch__inner,
 #wbcr-gnz .switch__input:checked:focus ~ .switch__inner {
@@ -819,7 +823,7 @@ body {
 #wbcr-gnz .switch__input:checked ~ .switch__slider,
 #wbcr-gnz .switch__input:checked:focus ~ .switch__slider {
   left: 45px;
-  background: #FFCB1E;
+  background: #97A4B2;
 }
 #wbcr-gnz .tooltip {
   position: relative;
@@ -874,6 +878,13 @@ body {
 }
 #wbcr-gnz .wbcr-use-by-comment a {
   color: #6e6e6e;
+}
+#wbcr-gnz .wgz-td,
+#wbcr-gnz .wgz-th {
+  max-width: 1000px;
+}
+#wbcr-gnz .wgz-td {
+  word-wrap: break-word;
 }
 @media screen and (max-width: 1700px) {
   .wbcr-gnz .panel__data-main {
