@@ -98,19 +98,19 @@
 				add_action('admin_init', array($this, 'formSave'));
 			}
 
-			add_action( 'plugins_loaded', array( $this, 'pluginsLoaded' ) );
-			add_action( 'wbcr_gnz_form_save', array( $this, 'actionFormSave' ) );
+			add_action('plugins_loaded', array($this, 'pluginsLoaded'));
+			add_action('wbcr_gnz_form_save', array($this, 'actionFormSave'));
 
-			add_filter( 'wbcr_gnz_unset_disabled', array( $this, 'unsetDisabled' ), 10, 2 );
-			add_filter( 'wbcr_gnz_get_additional_head_columns', array( $this, 'getAdditionalHeadColumns' ) );
-			add_filter( 'wbcr_gnz_get_additional_controls_columns', array( $this, 'getAdditionalControlsColumns' ), 10, 4 );
+			add_filter('wbcr_gnz_unset_disabled', array($this, 'unsetDisabled'), 10, 2);
+			add_filter('wbcr_gnz_get_additional_head_columns', array($this, 'getAdditionalHeadColumns'));
+			add_filter('wbcr_gnz_get_additional_controls_columns', array($this, 'getAdditionalControlsColumns'), 10, 4);
 
-			add_filter( 'autoptimize_filter_js_exclude', array( $this, 'aoptFilterJsExclude' ), 10, 2 );
-			add_filter( 'autoptimize_filter_css_exclude', array( $this, 'aoptFilterCssExclude' ), 10, 2 );
-			add_filter( 'wmac_filter_js_exclude', array( $this, 'wmacFilterJsExclude' ), 10, 2 );
-			add_filter( 'wmac_filter_css_exclude', array( $this, 'wmacFilterCssExclude' ), 10, 2 );
-			add_filter( 'wmac_filter_js_minify_excluded', array( $this, 'wmacFilterJsMinifyExclude' ), 10, 2 );
-			add_filter( 'wmac_filter_css_minify_excluded', array( $this, 'wmacFilterCssMinifyExclude' ), 10, 2 );
+			add_filter('autoptimize_filter_js_exclude', array($this, 'aoptFilterJsExclude'), 10, 2);
+			add_filter('autoptimize_filter_css_exclude', array($this, 'aoptFilterCssExclude'), 10, 2);
+			add_filter('wmac_filter_js_exclude', array($this, 'wmacFilterJsExclude'), 10, 2);
+			add_filter('wmac_filter_css_exclude', array($this, 'wmacFilterCssExclude'), 10, 2);
+			add_filter('wmac_filter_js_minify_excluded', array($this, 'wmacFilterJsMinifyExclude'), 10, 2);
+			add_filter('wmac_filter_css_minify_excluded', array($this, 'wmacFilterCssMinifyExclude'), 10, 2);
 		}
 
 		function clearfyAdminBarMenu($menu_items)
@@ -118,7 +118,7 @@
 			$current_url = add_query_arg(array('wbcr_assets_manager' => 1));
 
 			$menu_items['assetsManager'] = array(
-				'title' => __('Script Manager', 'gonzales') . ' (Beta)',
+				'title' => '<span class="dashicons dashicons-list-view"></span> ' . __('Script Manager', 'gonzales'),
 				'href' => $current_url
 			);
 
@@ -138,7 +138,7 @@
 
 			$args = array(
 				'id' => 'assetsManager',
-				'title' => __('Script Manager', 'gonzales') . ' (Beta)',
+				'title' => __('Script Manager', 'gonzales'),
 				'href' => $current_url
 			);
 			$wp_admin_bar->add_node($args);
@@ -147,13 +147,24 @@
 		/**
 		 * Action plugins loaded
 		 */
-		public function pluginsLoaded() {
+		public function pluginsLoaded()
+		{
 			$this->sided_plugins = array(
 				'aopt' => 'autoptimize/autoptimize.php',
-				'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php',
-				'wclp' => 'wp-plugin-clearfy/clearfy.php'
+				'wmac' => 'minify-and-combine/minify-and-combine.php',
+				'wclp' => 'clearfy/clearfy.php',
+				'wclmac' => 'clearfy/clearfy.php',
 			);
-			$this->sided_plugins = apply_filters( 'wbcr_gnz_sided_plugins', $this->sided_plugins );
+
+			#comp remove
+			// Пока плагины не скомпилированы, они имеют другие имена директорий.
+			// После компиляции плагина этот кусок кода будет удален.
+			$this->sided_plugins['wmac'] = 'wp-plugin-minify-and-combine/minify-and-combine.php';
+			$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
+			$this->sided_plugins['wclmac'] = 'wp-plugin-clearfy/clearfy.php';
+			#endcomp
+
+			$this->sided_plugins = apply_filters('wbcr_gnz_sided_plugins', $this->sided_plugins);
 		}
 
 		function assetsManager()
@@ -178,41 +189,42 @@
 			wp_nonce_field('wbcr_assets_manager_nonce', 'wbcr_assets_manager_save');
 
 			//Header
-			echo '<header class="panel">';
-			echo '<div class="panel__left">';
-			echo '<div class="panel__logo"></div>';
-			echo '<ul class="panel__data  panel__data-main">';
-			echo '<li class="panel__data-item __info-query">' . __( 'Total requests', 'gonzales' ) . ': --</li>';
-			echo '<li class="panel__data-item __info-all-weight">' . __( 'Total weight', 'gonzales' ) . ': <span class="panel__color-1">-- Kb</span></li>';
-			echo '<li class="panel__data-item __info-opt-weight">' . __( 'Optimized weight', 'gonzales' ) . ': <span class="panel__color-2">-- Kb</span></li>';
+			echo '<header class="wbcr-gnz-panel">';
+			echo '<div class="wbcr-gnz-panel__left">';
+			echo '<div class="wbcr-gnz-panel__logo"></div>';
+			echo '<ul class="wbcr-gnz-panel__data  panel__data-main">';
+			echo '<li class="wbcr-gnz-panel__data-item __info-query">' . __('Total requests', 'gonzales') . ': --</li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-all-weight">' . __('Total weight', 'gonzales') . ': <span class="wbcr-gnz-panel__color-1">--</span></li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-opt-weight">' . __('Optimized weight', 'gonzales') . ': <span class="wbcr-gnz-panel__color-2">--</span></li>';
 			echo '</ul>';
-			echo '<div class="panel__data-hidden  tooltip  tooltip-bottom" data-tooltip="' . __( 'Total requests', 'gonzales' ) . ': --; ' . __( 'Total weight', 'gonzales' ) . ': -- Kb; ' . __( 'Optimized weight', 'gonzales' ) . ': -- Kb">';
+			echo '<div class="wbcr-gnz-panel__data-hidden  tooltip  tooltip-bottom" data-tooltip="' . __('Total requests', 'gonzales') . ': --; ' . __('Total weight', 'gonzales') . ': -- Kb; ' . __('Optimized weight', 'gonzales') . ': -- Kb">';
 			echo '<img src="' . WGZ_PLUGIN_URL . '/assets/img/info.svg" width="36" height="36" alt=""/>';
 			echo '</div>';
-			echo '<ul class="panel__data">';
-			echo '<li class="panel__data-item __info-off-js">' . __( 'Disabled js', 'gonzales' ) . ': --</li>';
-			echo '<li class="panel__data-item __info-off-css">' . __( 'Disabled css', 'gonzales' ) . ': --</li>';
+			echo '<ul class="wbcr-gnz-panel__data">';
+			echo '<li class="wbcr-gnz-panel__data-item __info-off-js">' . __('Disabled js', 'gonzales') . ': --</li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-off-css">' . __('Disabled css', 'gonzales') . ': --</li>';
 			echo '</ul>';
+			echo '<div class="wbcr-gnz-panel__premium"><div class="tooltip tooltip-bottom" data-tooltip="' . __('Это общая статистика, с помощью которой вы можете видеть свой результат оптимизации. Статистика доступна только в платной версии плагина.', 'gonzales') . '.">PRO</div></div>';
 			echo '</div>';
-			echo '<div class="panel__right">';
-			echo '<button class="panel__reset wbcr-reset-button" type="button">' . __( 'Reset', 'gonzales' ) . '</button>';
-			echo '<input class="panel__save" type="submit" value="' . __( 'Save', 'gonzales' ) . '">';
-			echo '<label class="panel__checkbox  tooltip  tooltip-bottom" data-tooltip="' . __( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) . '.">';
-			echo apply_filters( 'wbcr_gnz_test_mode_checkbox', '<input class="panel__checkbox-input visually-hidden" type="checkbox" disabled="disabled" checked/><span class="panel__checkbox-text">' . __( 'Test mode (PRO)', 'gonzales' ) . '</span>' );
+			echo '<div class="wbcr-gnz-panel__right">';
+			echo '<button class="wbcr-gnz-panel__reset wbcr-reset-button" type="button">' . __('Reset', 'gonzales') . '</button>';
+			echo '<input class="wbcr-gnz-panel__save" type="submit" value="' . __('Save', 'gonzales') . '">';
+			echo '<label class="wbcr-gnz-panel__checkbox  tooltip  tooltip-bottom" data-tooltip="' . __('In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales') . '.">';
+			echo apply_filters('wbcr_gnz_test_mode_checkbox', '<input class="wbcr-gnz-panel__checkbox-input visually-hidden" type="checkbox" disabled="disabled" checked/><span class="wbcr-gnz-panel__checkbox-text-premium">' . __('Safe mode <b>PRO</b>', 'gonzales') . '</span>');
 			echo '</label>';
-			echo '<button class="panel__close wbcr-close-button" type="button" aria-label="' . __( 'Close', 'gonzales' ) . '" data-href="'.remove_query_arg('wbcr_assets_manager').'"></button>';
+			echo '<button class="wbcr-gnz-panel__close wbcr-close-button" type="button" aria-label="' . __('Close', 'gonzales') . '" data-href="' . remove_query_arg('wbcr_assets_manager') . '"></button>';
 			echo '</div>';
 			echo '</header>';
 
 			// Main content
 			echo '<main class="content">';
 
-			uksort($this->collection, function($a, $b) {
-				if ( 'plugins' == $a ) {
+			uksort($this->collection, function ($a, $b) {
+				if( 'plugins' == $a ) {
 					return -1;
 				}
 
-				if ( 'plugins' == $b ) {
+				if( 'plugins' == $b ) {
 					return 1;
 				}
 
@@ -221,7 +233,7 @@
 
 			// Tabs
 			echo '<ul class="tabs">';
-			foreach ( $this->collection as $resource_type => $resources ) {
+			foreach($this->collection as $resource_type => $resources) {
 				echo '<li class="tabs__item">';
 				echo '<button class="tabs__button  tabs__button--' . $resource_type . '" type="button" data-hash="' . $resource_type . '" aria-label="' . $resource_type . '"></button>';
 				echo '</li>';
@@ -230,11 +242,11 @@
 
 			// Info
 			echo '<div class="info">';
-			echo '<p>' . __( 'Below you can disable/enable CSS and JS files on a per page/post basis, as well as by custom post types. We recommend testing this locally or on a staging site first, as you could break the appearance of your live site. If you aren\'t sure about a certain script, you can try clicking on it, as a lot of authors will mention their plugin or theme in the header of the source code.', 'gonzales' ) . '</p>';
-			echo '<p>' . __( 'If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales' ) . '</p>';
+			echo '<p>' . __('Below you can disable/enable CSS and JS files on a per page/post basis, as well as by custom post types. We recommend testing this locally or on a staging site first, as you could break the appearance of your live site. If you aren\'t sure about a certain script, you can try clicking on it, as a lot of authors will mention their plugin or theme in the header of the source code.', 'gonzales') . '</p>';
+			echo '<p>' . __('If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales') . '</p>';
 			echo '<div class="info__go-to-premium">';
-			echo '<p>' . __( 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales' ) . '</p>';
-			echo '<a class="button_pro" href="#">' . __( 'Upgrade to Premium', 'gonzales' ) . '</a>';
+			echo '<p>' . __('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales') . '</p>';
+			echo '<a class="button_pro" href="#">' . __('Upgrade to Premium', 'gonzales') . '</a>';
 			echo '</div>';
 			echo '</div>';
 
@@ -254,72 +266,68 @@
 				foreach($resources as $resource_name => $types) {
 					$plugin_state = false;
 
-					if (
-						'plugins' == $resource_type
-						&& ! empty( $resource_name )
-					) {
-						$plugin_data = $this->getPluginData( $resource_name );
+					if( 'plugins' == $resource_type && !empty($resource_name) ) {
+						$plugin_data = $this->getPluginData($resource_name);
+
 						echo '<tbody>';
 
-						if ( ! empty( $plugin_data ) ) {
-							$is_disabled = $this->getIsDisabled( $options, $resource_type, $resource_name );
-							$disabled    = $this->getDisabled( $is_disabled, $options, $resource_type, $resource_name );
+						if( !empty($plugin_data) ) {
+							$is_disabled = $this->getIsDisabled($options, $resource_type, $resource_name);
+							$disabled = $this->getDisabled($is_disabled, $options, $resource_type, $resource_name);
 
-							$is_enabled = $this->getIsEnabled( $options, $resource_type, $resource_name );
-							$enabled    = $this->getEnabled( $is_enabled, $options, $resource_type, $resource_name );
+							$is_enabled = $this->getIsEnabled($options, $resource_type, $resource_name);
+							$enabled = $this->getEnabled($is_enabled, $options, $resource_type, $resource_name);
 
-							$plugin_state = $this->getState( $is_disabled, $disabled, $current_url );
+							$plugin_state = $this->getState($is_disabled, $disabled, $current_url);
 
 							echo '<tr class="table__alternate">';
-							echo '<th>' . __( 'Loaded', 'gonzales' ) . '</th>';
-							echo '<th colspan="2">' . __( 'Plugin', 'gonzales' ) . '</th>';
+							echo '<th>' . __('Loaded', 'gonzales') . '</th>';
+							echo '<th colspan="2">' . __('Plugin', 'gonzales') . '</th>';
 
-							echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
+							echo apply_filters('wbcr_gnz_get_additional_head_columns', '');
 
-							echo '<th class="table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
-							echo '<th class="table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
+							echo '<th class="table__column_switch"><b>' . __('Load resource?', 'gonzales') . '</b></th>';
+							echo '<th class="table__column_condition">' . __('Conditions', 'gonzales') . '</th>';
 							echo '</tr>';
 							echo '<tr>';
 							echo '<td>';
-							echo '<div class="table__loaded-state table__loaded-' . ( $plugin_state ? 'no' : 'yes' ) . ' wbcr-state"></div>';
+							echo '<div class="table__loaded-state table__loaded-' . ($plugin_state ? 'no' : 'yes') . ' wbcr-state"></div>';
 							echo '</td>';
 							echo '<td colspan="2" class="table__item">';
 							echo '<div class="table__item-name">' . $plugin_data['Name'] . '</div>';
-							echo '<div class="table__item-author"><strong>' . __( 'Author', 'gonzales' ) . ':</strong> ' . $plugin_data['Author'] . '</div>';
-							echo '<div class="table__item-version"><strong>' . __( 'Version', 'gonzales' ) . ':</strong> ' . $plugin_data['Version'] . '</div>';
+							echo '<div class="table__item-author"><strong>' . __('Author', 'gonzales') . ':</strong> ' . $plugin_data['Author'] . '</div>';
+							echo '<div class="table__item-version"><strong>' . __('Version', 'gonzales') . ':</strong> ' . $plugin_data['Version'] . '</div>';
 							echo '</td>';
 
-							echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $resource_type, $resource_name, $resource_name );
+							echo apply_filters('wbcr_gnz_get_additional_controls_columns', '', $resource_type, $resource_name, $resource_name);
 
 							// State Controls
 							$id = '[' . $resource_type . '][' . $resource_name . ']';
-							echo $this->getStateControrlHTML(
-								$id, $plugin_state, $is_disabled, $is_enabled, $resource_type, $resource_name, $disabled, $enabled, $current_url
-							);
+							echo $this->getStateControrlHTML($id, $plugin_state, $is_disabled, $is_enabled, $resource_type, $resource_name, $disabled, $enabled, $current_url);
 							echo '</tr>';
 						}
 					}
 
 					echo '<tr class="table__alternate">';
-					echo '<th>' . __( 'Loaded', 'gonzales' ) . '</th>';
-					echo '<th>' . __( 'Size', 'gonzales' ) . '</th>';
-					echo '<th class="wgz-th">' . __( 'Resource', 'gonzales' ) . '</th>';
+					echo '<th>' . __('Loaded', 'gonzales') . '</th>';
+					echo '<th>' . __('Size', 'gonzales') . '</th>';
+					echo '<th class="wgz-th">' . __('Resource', 'gonzales') . '</th>';
 
-					echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
+					echo apply_filters('wbcr_gnz_get_additional_head_columns', '');
 
-					echo '<th class="table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
-					echo '<th class="table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
+					echo '<th class="table__column_switch"><b>' . __('Load resource?', 'gonzales') . '</b></th>';
+					echo '<th class="table__column_condition">' . __('Conditions', 'gonzales') . '</th>';
 					echo '</tr>';
 
 					foreach($types as $type_name => $rows) {
 
 						if( !empty($rows) ) {
 							foreach($rows as $handle => $row) {
-								$is_disabled = $this->getIsDisabled( $options, $type_name, $handle );
-								$disabled = $this->getDisabled( $is_disabled, $options, $type_name, $handle );
+								$is_disabled = $this->getIsDisabled($options, $type_name, $handle);
+								$disabled = $this->getDisabled($is_disabled, $options, $type_name, $handle);
 
-								$is_enabled = $this->getIsEnabled( $options, $type_name, $handle );
-								$enabled = $this->getEnabled( $is_enabled, $options, $type_name, $handle );
+								$is_enabled = $this->getIsEnabled($options, $type_name, $handle);
+								$enabled = $this->getEnabled($is_enabled, $options, $type_name, $handle);
 
 								/**
 								 * Find dependency
@@ -331,19 +339,17 @@
 									}
 								}
 
-								$comment = (!empty($deps)
-									? '<span class="wbcr-use-by-comment">' . __('In use by', 'gonzales') . ' ' . implode(', ', $deps) . '</span>'
-									: '');
+								$comment = (!empty($deps) ? '<span class="wbcr-use-by-comment">' . __('In use by', 'gonzales') . ' ' . implode(', ', $deps) . '</span>' : '');
 
 								echo '<tr>';
 
 								// Loaded
-								$state = $this->getState( $is_disabled, $disabled, $current_url );
+								$state = $this->getState($is_disabled, $disabled, $current_url);
 								$display_state = $plugin_state === 1 ? 1 : $state;
 								echo '<td>';
-								echo '<div class="table__loaded-state table__loaded-'. ( $plugin_state ? 'no' : 'yes');
-								echo ' wbcr-state' . ( $state ? ' table__loaded-super-no' : '');
-								echo ( 'plugins' == $resource_type ? ' wbcr-state-' . $resource_name : '' ) . '">';
+								echo '<div class="table__loaded-state table__loaded-' . ($plugin_state ? 'no' : 'yes');
+								echo ' wbcr-state' . ($state ? ' table__loaded-super-no' : '');
+								echo ('plugins' == $resource_type ? ' wbcr-state-' . $resource_name : '') . '">';
 								echo '</div>';
 								echo '</td>';
 
@@ -360,32 +366,28 @@
 								echo "<a href='" . $row['url_full'] . "' target='_blank'>";
 								echo str_replace(get_home_url(), '', $row['url_full']) . "</a>";
 								echo '</div>';
+								echo '<div class="table__script-version">';
+								echo __('Version', 'gonzales') . ': ' . (!empty($row['ver']) ? $row['ver'] : __('--', 'gonzales'));
+								echo '</div>';
 								echo '<div>' . $comment . '</div>';
 								echo '</td>';
 
 								// Controls for other plugins
-								echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_full'], $resource_name );
+								echo apply_filters('wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_full'], $resource_name);
 
 								// State Controls
 								$id = '[' . $type_name . '][' . $handle . ']';
-								echo $this->getStateControrlHTML(
-									$id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url
-								);
+								echo $this->getStateControrlHTML($id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url);
 
 								echo "<input type='hidden' class='wbcr-info-data' data-type='{$type_name}' data-off='{$display_state}' value='{$row['size']}'>";
 								echo '</tr>';
 
-								echo apply_filters(
-									'wbcr_gnz_after_scripts_table_row',
-									'', $resource_type, $resource_name, $type_name, $handle
-								);
+								echo apply_filters('wbcr_gnz_after_scripts_table_row', '', $resource_type, $resource_name, $type_name, $handle);
 							}
 						}
 					}
 
-					if (
-						'plugins' == $resource_type
-						&& ! empty( $resource_name )
+					if( 'plugins' == $resource_type && !empty($resource_name)
 					) {
 						echo '</tbody>';
 					}
@@ -411,7 +413,7 @@
 		 *
 		 * @return bool
 		 */
-		public function getIsDisabled( $options, $type_name, $handle )
+		public function getIsDisabled($options, $type_name, $handle)
 		{
 			return isset($options['disabled']) && isset($options['disabled'][$type_name]) && isset($options['disabled'][$type_name][$handle]);
 		}
@@ -426,7 +428,7 @@
 		 *
 		 * @return array
 		 */
-		public function getDisabled( $is_disabled, $options, $type_name, $handle )
+		public function getDisabled($is_disabled, $options, $type_name, $handle)
 		{
 			$disabled = array();
 
@@ -439,7 +441,7 @@
 					$disabled['everywhere'] = array();
 				}
 
-				$disabled = apply_filters( 'wbcr_gnz_get_disabled', $disabled );
+				$disabled = apply_filters('wbcr_gnz_get_disabled', $disabled);
 			}
 
 			return $disabled;
@@ -454,7 +456,7 @@
 		 *
 		 * @return bool
 		 */
-		public function getIsEnabled( $options, $type_name, $handle )
+		public function getIsEnabled($options, $type_name, $handle)
 		{
 			return isset($options['enabled']) && isset($options['enabled'][$type_name]) && isset($options['enabled'][$type_name][$handle]);
 		}
@@ -469,7 +471,7 @@
 		 *
 		 * @return array
 		 */
-		public function getEnabled( $is_enabled, $options, $type_name, $handle )
+		public function getEnabled($is_enabled, $options, $type_name, $handle)
 		{
 			$enabled = array();
 
@@ -483,7 +485,7 @@
 					$enabled['everywhere'] = array();
 				}
 
-				$enabled = apply_filters( 'wbcr_gnz_get_enabled', $enabled );
+				$enabled = apply_filters('wbcr_gnz_get_enabled', $enabled);
 			}
 
 			return $enabled;
@@ -498,17 +500,10 @@
 		 *
 		 * @return int
 		 */
-		public function getState( $is_disabled, $disabled, $current_url )
+		public function getState($is_disabled, $disabled, $current_url)
 		{
 			$state = 0;
-			if(
-				$is_disabled
-				&& (
-					$disabled['everywhere'] == 1
-					|| in_array($current_url, $disabled['current'])
-					|| apply_filters( 'wbcr_gnz_check_state_disabled', false, $disabled )
-				)
-			) {
+			if( $is_disabled && ($disabled['everywhere'] == 1 || in_array($current_url, $disabled['current']) || apply_filters('wbcr_gnz_check_state_disabled', false, $disabled)) ) {
 				$state = 1;
 			}
 
@@ -530,41 +525,42 @@
 		 *
 		 * @return string
 		 */
-		public function getStateControrlHTML( $id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url ) {
+		public function getStateControrlHTML($id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url)
+		{
 			// Disable
 			$html = '<td>';
 			$html .= '<label class="switch">';
-			$html .= '<input class="switch__input visually-hidden wbcr-gnz-disable" type="checkbox"' . checked( $state, true, false );
-			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "" ) . '/>';
-			$html .= '<input type="hidden" name="disabled' . $id . '[state]" value="' . ( $state ? 'disable' : '' ) . '"/>';
-			$html .= '<span class="switch__inner" data-off="' . __( 'No', 'gonzales' ) . '" data-on="' . __( 'Yes', 'gonzales' ) . '"></span>';
+			$html .= '<input class="switch__input visually-hidden wbcr-gnz-disable" type="checkbox"' . checked($state, true, false);
+			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "") . '/>';
+			$html .= '<input type="hidden" name="disabled' . $id . '[state]" value="' . ($state ? 'disable' : '') . '"/>';
+			$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
 			$html .= '<span class="switch__slider"></span>';
 			$html .= '</label>';
 			$html .= '</td>';
 
 			// Enable
 			$class_name = 'wbcr-assets-manager-enable';
-			if ( 'plugins' == $type_name ) {
-				$class_name = apply_filters( 'wbcr_gnz_control_classname', 'wbcr-gnz' );
+			if( 'plugins' == $type_name ) {
+				$class_name = apply_filters('wbcr_gnz_control_classname', 'wbcr-gnz');
 			}
 			$html .= '<td>';
 			$html .= '<div class="table__note ' . $class_name . '-placeholder"';
-			if ( $state ) {
+			if( $state ) {
 				$html .= ' style="display: none;"';
 			}
-			$html .= '><p>' . __( 'Click the switch in the <b>Load resource?</b> column to display the conditions for loading the resource.', 'gonzales' ) . '</p>';
+			$html .= '><p>' . __('Click the switch in the <b>Load resource?</b> column to display the conditions for loading the resource.', 'gonzales') . '</p>';
 			$html .= '</div>';
 			$html .= '<span class="' . $class_name . '"';
-			if ( ! $state ) {
+			if( !$state ) {
 				$html .= ' style="display: none;"';
 			}
 			$html .= '>';
 			$html .= '<select class="table__select wbcr-gnz-action-select" name="wgz_action' . $id . '">';
-			$html .= '<option value="current"' . selected( $is_disabled && ! empty( $disabled['current'] ), true, false ) . '>' . __( 'Current URL', 'gonzales' ) . '</option>';
-			$html .= '<option value="everywhere"' . selected( $is_disabled && ! empty( $disabled['everywhere'] ), true, false ) . '>' . __( 'Everywhere', 'gonzales' ) . '</option>';
-			$options = '<option value="custom"' . selected( $is_disabled && ! empty( $disabled['custom'] ), true, false ) . ' class="table__select-pro">' . __( 'Custom URL (PRO)', 'gonzales' ) . '</option>';
-			$options .= '<option value="regex"' . selected( $is_disabled && ! empty( $disabled['regex'] ), true, false ) . ' class="table__select-pro">' . __( 'Regular expression (PRO)', 'gonzales' ) . '</option>';
-			$html .= apply_filters('wbcr_gnz_select_options', $options, $is_disabled, $disabled );
+			$html .= '<option value="current"' . selected($is_disabled && !empty($disabled['current']), true, false) . '>' . __('Current URL', 'gonzales') . '</option>';
+			$html .= '<option value="everywhere"' . selected($is_disabled && !empty($disabled['everywhere']), true, false) . '>' . __('Everywhere', 'gonzales') . '</option>';
+			$options = '<option value="custom"' . selected($is_disabled && !empty($disabled['custom']), true, false) . ' class="table__select-pro">' . __('Custom URL (PRO)', 'gonzales') . '</option>';
+			$options .= '<option value="regex"' . selected($is_disabled && !empty($disabled['regex']), true, false) . ' class="table__select-pro">' . __('Regular expression (PRO)', 'gonzales') . '</option>';
+			$html .= apply_filters('wbcr_gnz_select_options', $options, $is_disabled, $disabled);
 			$html .= '</select>';
 
 			// Everywhere
@@ -573,30 +569,30 @@
 				$html .= " style='display: none;'";
 			}
 			$html .= ">";
-			$html .= '<div class="table__label">' . __( 'Exclude', 'gonzales' ) . ':</div>';
+			$html .= '<div class="table__label">' . __('Exclude', 'gonzales') . ':</div>';
 			$html .= '<ul class="table__options">';
 
 			$html .= '<li class="table__options-item">';
 			$html .= "<input type='hidden' name='enabled{$id}[current]' value='' />";
 			$html .= '<label class="table__checkbox">';
 			$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[current]" value="' . $current_url . '"';
-			if ( $is_enabled && in_array( $current_url, $enabled['current'] ) ) {
+			if( $is_enabled && in_array($current_url, $enabled['current']) ) {
 				$html .= ' checked';
 			}
 			$html .= '/>';
-			$html .= '<span class="table__checkbox-text">' . __( 'Current URL', 'gonzales' ) . '</span>';
+			$html .= '<span class="table__checkbox-text">' . __('Current URL', 'gonzales') . '</span>';
 			$html .= '</label>';
 			$html .= '</li>';
 
-			$post_types = get_post_types( array( 'public' => true ), 'objects', 'and' );
-			if ( ! empty( $post_types ) ) {
+			$post_types = get_post_types(array('public' => true), 'objects', 'and');
+			if( !empty($post_types) ) {
 				$html .= "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
-				foreach ( $post_types as $key => $value ) {
+				foreach($post_types as $key => $value) {
 					$html .= '<li class="table__options-item">';
 					$html .= '<label class="table__checkbox">';
 					$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[post_types][]" value="' . $key . '"';
-					if ( isset( $enabled['post_types'] ) ) {
-						if ( in_array( $key, $enabled['post_types'] ) ) {
+					if( isset($enabled['post_types']) ) {
+						if( in_array($key, $enabled['post_types']) ) {
 							$html .= ' checked';
 						}
 					}
@@ -608,6 +604,7 @@
 			}
 
 			$taxonomies = get_taxonomies(array('public' => true), 'objects', 'and');
+
 			if( !empty($taxonomies) ) {
 				unset($taxonomies['category']);
 				$html .= "<input type='hidden' name='enabled{$id}[taxonomies]' value='' />";
@@ -615,8 +612,8 @@
 					$html .= '<li class="table__options-item">';
 					$html .= '<label class="table__checkbox">';
 					$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[taxonomies][]" value="' . $key . '"';
-					if ( isset( $enabled['taxonomies'] ) ) {
-						if ( in_array( $key, $enabled['taxonomies'] ) ) {
+					if( isset($enabled['taxonomies']) ) {
+						if( in_array($key, $enabled['taxonomies']) ) {
 							$html .= ' checked';
 						}
 					}
@@ -628,14 +625,15 @@
 			}
 
 			$categories = get_categories();
+
 			if( !empty($categories) ) {
 				$html .= "<input type='hidden' name='enabled{$id}[categories]' value='' />";
 				foreach($categories as $key => $cat) {
 					$html .= '<li class="table__options-item">';
 					$html .= '<label class="table__checkbox">';
 					$html .= '<input class="table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[categories][]" value="' . $cat->term_id . '"';
-					if ( isset( $enabled['categories'] ) ) {
-						if ( in_array( $cat->term_id, $enabled['categories'] ) ) {
+					if( isset($enabled['categories']) ) {
+						if( in_array($cat->term_id, $enabled['categories']) ) {
 							$html .= ' checked';
 						}
 					}
@@ -651,45 +649,43 @@
 
 			// Custom URL
 			$control_html = '<div class="table__field wbcr-assets-manager custom"';
-			if ( ! $is_disabled || empty( $disabled['custom'] ) ) {
+			if( !$is_disabled || empty($disabled['custom']) ) {
 				$control_html .= ' style="display: none;"';
 			}
 			$control_html .= '>';
-			$control_html .= '<label class="table__label" for="disabled' . $id . '[custom][]" title="' . __( 'Example', 'gonzales' ) . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __( 'Enter URL (set * for mask)', 'gonzales' ) . ':</label>';
+			$control_html .= '<label class="table__label" for="disabled' . $id . '[custom][]" title="' . __('Example', 'gonzales') . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __('Enter URL (set * for mask)', 'gonzales') . ':</label>';
 			$control_html .= '<div class="table__field-item">';
 			$control_html .= '<input class="table__field-input" name="disabled' . $id . '[custom][]" type="text" value="" disabled="disabled">';
-			$control_html .= '<button class="table__field-add" type="button" aria-label="' . __( 'Add field', 'gonzales' ) . '" disabled></button>';
+			$control_html .= '<button class="table__field-add" type="button" aria-label="' . __('Add field', 'gonzales') . '" disabled></button>';
 			$control_html .= '</div>';
 			$control_html .= '</div>';
 			// Regex
 			$control_html .= "<div class='table__field wbcr-assets-manager regex'";
-			if ( ! $is_disabled || empty( $disabled['regex'] ) ) {
+			if( !$is_disabled || empty($disabled['regex']) ) {
 				$control_html .= " style='display: none;'";
 			}
 			$control_html .= ">";
-			$control_html .= '<label class="table__label" for="disabled' . $id . '[regex]">' . __( 'Enter regular expression', 'gonzales' ) . ':</label>';
+			$control_html .= '<label class="table__label" for="disabled' . $id . '[regex]">' . __('Enter regular expression', 'gonzales') . ':</label>';
 			$control_html .= '<textarea class="table__textarea" rows="3" name="disabled' . $id . '[regex]" disabled="disabled"></textarea>';
 			$control_html .= "</div>";
-			$html         .= apply_filters( 'wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled );
+			$html .= apply_filters('wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled);
 
 			$html .= '</span>';
 
-			if (
-				isset( $disabled['current'] )
-				&& ! empty( $disabled['current'] )
+			if( isset($disabled['current']) && !empty($disabled['current'])
 			) {
 				$custom_urls = "";
 
-				foreach ( $disabled['current'] as $item_url ) {
-					if ( $current_url != $item_url ) {
+				foreach($disabled['current'] as $item_url) {
+					if( $current_url != $item_url ) {
 						$full_url = site_url() . $item_url;
 						$custom_urls .= "<span><a href='" . $full_url . "'>" . $full_url . "</a></span>";
 					}
 				}
 
-				if ( ! empty( $custom_urls ) ) {
+				if( !empty($custom_urls) ) {
 					$html .= '<div class="table__also">';
-					$html .= '<div class="table__label">' . __( 'Also disabled for pages', 'gonzales' ) . ':</div>';
+					$html .= '<div class="table__label">' . __('Also disabled for pages', 'gonzales') . ':</div>';
 					$html .= '<div class="table__also-url">' . $custom_urls . '</div>';
 					$html .= '</div>';
 				}
@@ -723,16 +719,14 @@
 								$disabled = &$options['disabled'][$type][$handle];
 								
 								if( !empty($where) && 'disable' == $where ) {
-									$action = isset( $_POST['wgz_action'][ $type ][ $handle ] )
-										? $_POST['wgz_action'][ $type ][ $handle ]
-										: '';
+									$action = isset($_POST['wgz_action'][$type][$handle]) ? $_POST['wgz_action'][$type][$handle] : '';
 
 									if( "everywhere" == $action ) {
-										$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, $action );
+										$disabled = apply_filters('wbcr_gnz_unset_disabled', $disabled, $action);
 
 										$disabled['everywhere'] = 1;
 									} elseif( "current" == $action ) {
-										$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, $action );
+										$disabled = apply_filters('wbcr_gnz_unset_disabled', $disabled, $action);
 										
 										if( !isset($disabled['current']) || !is_array($disabled['current']) ) {
 											$disabled['current'] = array();
@@ -742,13 +736,11 @@
 											array_push($disabled['current'], $current_url);
 										}
 									} else {
-										$post_value = isset( $_POST['disabled'][$type][$handle] )
-											? $_POST['disabled'][$type][$handle]
-											: null ;
-										$disabled = apply_filters( 'wbcr_gnz_pre_save_disabled', $disabled, $action, $post_value );
+										$post_value = isset($_POST['disabled'][$type][$handle]) ? $_POST['disabled'][$type][$handle] : null;
+										$disabled = apply_filters('wbcr_gnz_pre_save_disabled', $disabled, $action, $post_value);
 									}
 								} else {
-									$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, 'current' );
+									$disabled = apply_filters('wbcr_gnz_unset_disabled', $disabled, 'current');
 									
 									if( isset($disabled['current']) ) {
 										$current_key = array_search($current_url, $disabled['current']);
@@ -786,13 +778,9 @@
 								}
 								$enabled = &$options['enabled'][$type][$handle];
 
-								$action = isset( $_POST['wgz_action'][ $type ][ $handle ] )
-									? $_POST['wgz_action'][ $type ][ $handle ]
-									: '';
+								$action = isset($_POST['wgz_action'][$type][$handle]) ? $_POST['wgz_action'][$type][$handle] : '';
 								
-								if(
-									"everywhere" == $action
-									&& (!empty($where['current']) || $where['current'] === "0")
+								if( "everywhere" == $action && (!empty($where['current']) || $where['current'] === "0")
 								) {
 									if( !isset($enabled['current']) || !is_array($enabled['current']) ) {
 										$enabled['current'] = array();
@@ -867,7 +855,7 @@
 
 				do_action('wbcr_gnz_form_save');
 
-				$this->updateOption( 'assets_manager_options', $options );
+				$this->updateOption('assets_manager_options', $options);
 
 				// todo: test cache control
 				if( function_exists('w3tc_pgcache_flush') ) {
@@ -890,16 +878,17 @@
 		 *
 		 * @return null
 		 */
-		private function getDisabledFromOptions( $type, $handle ) {
-			$options = $this->getOption( 'assets_manager_options', array() );
+		private function getDisabledFromOptions($type, $handle)
+		{
+			$options = $this->getOption('assets_manager_options', array());
 
-			$results = apply_filters( 'wbcr_gnz_get_disabled_from_options', false, $options, $type, $handle );
-			if ( false !== $results ) {
+			$results = apply_filters('wbcr_gnz_get_disabled_from_options', false, $options, $type, $handle);
+			if( false !== $results ) {
 				return $results;
 			}
 
-			if ( isset( $options['disabled'] ) && isset( $options['disabled'][ $type ] ) && isset( $options['disabled'][ $type ][ $handle ] ) ) {
-				return $options['disabled'][ $type ][ $handle ];
+			if( isset($options['disabled']) && isset($options['disabled'][$type]) && isset($options['disabled'][$type][$handle]) ) {
+				return $options['disabled'][$type][$handle];
 			}
 
 			return null;
@@ -913,16 +902,17 @@
 		 *
 		 * @return null
 		 */
-		private function getEnabledFromOptions( $type, $handle ) {
-			$options = $this->getOption( 'assets_manager_options', array() );
+		private function getEnabledFromOptions($type, $handle)
+		{
+			$options = $this->getOption('assets_manager_options', array());
 
-			$results = apply_filters( 'wbcr_gnz_get_enabled_from_options', false, $options, $type, $handle );
-			if ( false !== $results ) {
+			$results = apply_filters('wbcr_gnz_get_enabled_from_options', false, $options, $type, $handle);
+			if( false !== $results ) {
 				return $results;
 			}
 
-			if ( isset( $options['enabled'] ) && isset( $options['enabled'][ $type ] ) && isset( $options['enabled'][ $type ][ $handle ] ) ) {
-				return $options['enabled'][ $type ][ $handle ];
+			if( isset($options['enabled']) && isset($options['enabled'][$type]) && isset($options['enabled'][$type][$handle]) ) {
+				return $options['enabled'][$type][$handle];
 			}
 
 			return null;
@@ -934,30 +924,24 @@
 				return $src;
 			}
 
-			if( apply_filters( 'wbcr_gnz_check_unload_assets', false ) ) {
+			if( apply_filters('wbcr_gnz_check_unload_assets', false) ) {
 				return $src;
 			}
 
-			$type = (current_filter() == 'script_loader_src')
-				? 'js'
-				: 'css';
+			$type = (current_filter() == 'script_loader_src') ? 'js' : 'css';
 
 			$current_url = esc_url($this->getCurrentUrl());
 
-			$disabled = $this->getDisabledFromOptions( $type, $handle );
-			$enabled  = $this->getEnabledFromOptions( $type, $handle );
+			$disabled = $this->getDisabledFromOptions($type, $handle);
+			$enabled = $this->getEnabledFromOptions($type, $handle);
 
-			if(
-				(isset($disabled['everywhere']) && $disabled['everywhere'] == 1)
-				|| (isset($disabled['current']) && is_array($disabled['current']) && in_array($current_url, $disabled['current']))
-				|| apply_filters( 'wbcr_gnz_check_disabled_is_set', false, $disabled, $current_url )
-			) {
+			if( (isset($disabled['everywhere']) && $disabled['everywhere'] == 1) || (isset($disabled['current']) && is_array($disabled['current']) && in_array($current_url, $disabled['current'])) || apply_filters('wbcr_gnz_check_disabled_is_set', false, $disabled, $current_url) ) {
 
 				if( isset($enabled['current']) && is_array($enabled['current']) && in_array($current_url, $enabled['current']) ) {
 					return $src;
 				}
 
-				if ( apply_filters( 'wbcr_gnz_check_unload_disabled', false, $disabled, $current_url ) ) {
+				if( apply_filters('wbcr_gnz_check_unload_disabled', false, $disabled, $current_url) ) {
 					return $src;
 				}
 
@@ -990,7 +974,7 @@
 				'js' => array('wbcr-assets-manager', 'wbcr-comments-plus-url-span', 'admin-bar'),
 				'css' => array('wbcr-assets-manager', 'wbcr-comments-plus-url-span', 'admin-bar', 'dashicons'),
 			);
-			$denied = apply_filters( 'wbcr_gnz_denied_assets', $denied );
+			$denied = apply_filters('wbcr_gnz_denied_assets', $denied);
 
 			/**
 			 * Imitate full untouched list without dequeued assets
@@ -1017,10 +1001,10 @@
 							}
 
 							$resource_name = '';
-							if ( 'plugins' == $resource_type ) {
-								$clean_url = str_replace( WP_PLUGIN_URL . '/', '', $url );
-								$url_parts = explode( '/', $clean_url );
-								$resource_name = isset( $url_parts[0] ) ? $url_parts[0] : '';
+							if( 'plugins' == $resource_type ) {
+								$clean_url = str_replace(WP_PLUGIN_URL . '/', '', $url);
+								$url_parts = explode('/', $clean_url);
+								$resource_name = isset($url_parts[0]) ? $url_parts[0] : '';
 							}
 
 							$this->collection[$resource_type][$resource_name][$type][$el] = array(
@@ -1028,9 +1012,8 @@
 								'url_short' => $url_short,
 								//'state' => $this->get_visibility($type, $el),
 								'size' => $this->getAssetSize($url),
-								'deps' => (isset($data->registered[$el]->deps)
-									? $data->registered[$el]->deps
-									: array()),
+								'ver' => $data->registered[$el]->ver,
+								'deps' => (isset($data->registered[$el]->deps) ? $data->registered[$el]->deps : array()),
 							);
 						}
 					}
@@ -1061,9 +1044,7 @@
 		private function prepareCorrectUrl($url)
 		{
 			if( isset($url[0]) && isset($url[1]) && '/' == $url[0] && '/' == $url[1] ) {
-				$out = (is_ssl()
-						? 'https:'
-						: 'http:') . $url;
+				$out = (is_ssl() ? 'https:' : 'http:') . $url;
 			} else {
 				$out = $url;
 			}
@@ -1122,12 +1103,12 @@
 		 *
 		 * @return mixed
 		 */
-		public function unsetDisabled( $disabled, $action )
+		public function unsetDisabled($disabled, $action)
 		{
-			if ( "everywhere" == $action ) {
-				unset( $disabled['current'] );
-			} elseif ( "current" == $action ) {
-				unset( $disabled['everywhere'] );
+			if( "everywhere" == $action ) {
+				unset($disabled['current']);
+			} elseif( "current" == $action ) {
+				unset($disabled['everywhere']);
 			}
 
 			return $disabled;
@@ -1140,19 +1121,19 @@
 		 *
 		 * @return array
 		 */
-		private function getPluginData( $name )
+		private function getPluginData($name)
 		{
 			$data = [];
 
-			if ( $name ) {
-				if ( ! function_exists( 'get_plugins' ) ) {
+			if( $name ) {
+				if( !function_exists('get_plugins') ) {
 					// подключим файл с функцией get_plugins()
 					require_once ABSPATH . 'wp-admin/includes/plugin.php';
 				}
 				$all_plugins = get_plugins();
-				if ( ! empty( $all_plugins ) ) {
-					foreach ( $all_plugins as $plugin_path => $plugin_data ) {
-						if ( strpos( $plugin_path, $name . '/' ) !== false ) {
+				if( !empty($all_plugins) ) {
+					foreach($all_plugins as $plugin_path => $plugin_data) {
+						if( strpos($plugin_path, $name . '/') !== false ) {
 							$data = $plugin_data;
 							$data['path'] = $plugin_path;
 							break;
@@ -1166,18 +1147,21 @@
 
 		/**
 		 * Get sided plugin name
-		 * 
+		 *
 		 * @param string $index
 		 *
 		 * @return string
 		 */
-		private function getSidedPluginName( $index ) {
-			if ( isset( $this->sided_plugins[ $index ] ) ) {
-				$parts  = explode( '/', $this->sided_plugins[ $index ] );
-				return isset( $parts[0] ) ? $parts[0] : $this->sided_plugins[ $index ];
+		private function getSidedPluginName($index)
+		{
+			return $index;
+			/*if( isset($this->sided_plugins[$index]) ) {
+				$parts = explode('/', $this->sided_plugins[$index]);
+
+				return isset($parts[0]) ? $parts[0] : $this->sided_plugins[$index];
 			}
 			
-			return "";
+			return "";*/
 		}
 
 		/**
@@ -1189,43 +1173,41 @@
 		 *
 		 * @return array
 		 */
-		private function getSidedPluginFiles( $index, $type, $full=false ) {
-			if (
-				isset( $this->sided_plugin_files[ $index ][ $type ] )
-				&& ! empty( $this->sided_plugin_files[ $index ][ $type ] )
-			) {
-				return $this->sided_plugin_files[ $index ][ $type ];
+		private function getSidedPluginFiles($index, $type, $full = false)
+		{
+			if( isset($this->sided_plugin_files[$index][$type]) && !empty($this->sided_plugin_files[$index][$type]) ) {
+				return $this->sided_plugin_files[$index][$type];
 			}
 
-			$this->sided_plugin_files[ $index ][ $type ] = [];
+			$this->sided_plugin_files[$index][$type] = [];
 
-			$options = $this->getOption( 'assets_manager_sided_plugins', [] );
-			$plugin  = $this->getSidedPluginName( $index );
+			$options = $this->getOption('assets_manager_sided_plugins', []);
+			$plugin = $this->getSidedPluginName($index);
 
-			if ( $plugin && $options ) {
-				if ( isset( $options[ $plugin ][ $type ] ) ) {
-					$urls = $options[ $plugin ][ $type ];
+			if( $plugin && $options ) {
+				if( isset($options[$plugin][$type]) ) {
+					$urls = $options[$plugin][$type];
 
-					if ( is_array( $urls ) ) {
-						foreach ( $urls as $url ) {
+					if( is_array($urls) ) {
+						foreach($urls as $url) {
 
-							if ( $full ) {
-								$file = ( false !== strpos( $url, site_url() ) ? $url : site_url() . '/' . trim( $url, '/\\' ) );
+							if( $full ) {
+								$file = (false !== strpos($url, site_url()) ? $url : site_url() . '/' . trim($url, '/\\'));
 							} else {
-								$parts = explode( '/', $url );
-								$file  = array_pop( $parts );
-								if ( empty( $file ) ) {
+								$parts = explode('/', $url);
+								$file = array_pop($parts);
+								if( empty($file) ) {
 									$file = $url;
 								}
 							}
 
-							$this->sided_plugin_files[ $index ][ $type ][] = $file;
+							$this->sided_plugin_files[$index][$type][] = $file;
 						}
 					}
 				}
 			}
 
-			return $this->sided_plugin_files[ $index ][ $type ];
+			return $this->sided_plugin_files[$index][$type];
 		}
 
 		/**
@@ -1235,16 +1217,24 @@
 		 *
 		 * @return string
 		 */
-		public function getAdditionalHeadColumns( $html )
+		public function getAdditionalHeadColumns($html)
 		{
-			if ( ! empty( $this->sided_plugins ) ) {
-				include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+			if( !empty($this->sided_plugins) ) {
+				include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-				foreach ( $this->sided_plugins as $index => $plugin_path ) {
-					if ( is_plugin_active( $plugin_path ) ) {
-						$data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin_path );
-						$text = $index == 'wclp' ? __( 'clear version?', 'gonzales' ) : __( 'optimize?', 'gonzales' );
-						$html .= '<th class="table__column_switch"><span class="table__th-external-plugin">' . $data['Name'] . ':</span><em>' . $text . '</em></th>';
+				foreach($this->sided_plugins as $index => $plugin_path) {
+					if( is_plugin_active($plugin_path) ) {
+						$data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin_path);
+						$text = $index == 'wclp' ? __('remove version?', 'gonzales') : __('optimize?', 'gonzales');
+
+						if( $index == 'wclp' ) {
+							$title = 'Clearfy';
+						} else if( $index == 'wclmac' ) {
+							$title = __('Minify and Combine', 'gonzales');
+						} else {
+							$title = $data['Name'];
+						}
+						$html .= '<th class="table__column_switch"><span class="table__th-external-plugin">' . $title . ':</span><em>' . $text . '</em></th>';
 					}
 				}
 			}
@@ -1263,40 +1253,54 @@
 		 *
 		 * @return bool
 		 */
-		private function getActiveStatusForSidedPlugin( $index, $options, $plugin, $type, $handle )
+		private function getActiveStatusForSidedPlugin($index, $options, $plugin, $type, $handle)
 		{
-			$active = isset( $options[ $plugin ][ $type ] )
-			          && is_array( $options[ $plugin ][ $type ] )
-			          && in_array( $handle, $options[ $plugin ][ $type ] );
-			if ( ! $active && ! isset( $options[ $plugin ] ) ) {
-				switch ( $index ) {
+			$active = isset($options[$plugin][$type]) && is_array($options[$plugin][$type]) && in_array($handle, $options[$plugin][$type]);
+			if( !$active && !isset($options[$plugin]) ) {
+
+				switch( $index ) {
 					case 'aopt':
-						if ( 'plugins' == $type ) {
-							$active = get_option( 'autoptimize_js', '' );
-							if ( 'on' != $active ) {
-								$active = get_option( 'autoptimize_css', '' );
+						if( 'plugins' == $type ) {
+							$active = get_option('autoptimize_js', '');
+							if( 'on' != $active ) {
+								$active = get_option('autoptimize_css', '');
 							}
 						} else {
-							$active = get_option( 'autoptimize_' . $type, '' );
+							$active = get_option('autoptimize_' . $type, '');
 						}
-						$active = ( $active == 'on' ? true : false );
+						$active = ($active == 'on' ? true : false);
 						break;
 					case 'wmac':
-						if ( class_exists( 'WMAC_Plugin' ) ) {
-							if ( 'plugins' == $type ) {
-								$active = WMAC_Plugin::app()->getOption( 'js_optimize', false );
-								if ( ! $active ) {
-									$active = WMAC_Plugin::app()->getOption( 'css_optimize', false );
+
+						if( class_exists('WMAC_Plugin') ) {
+							if( 'plugins' == $type ) {
+								$active = WMAC_Plugin::app()->getOption('js_optimize', false);
+								if( !$active ) {
+									$active = WMAC_Plugin::app()->getOption('css_optimize', false);
 								}
 							} else {
-								$active = WMAC_Plugin::app()->getOption( $type . '_optimize', false );
+								$active = WMAC_Plugin::app()->getOption($type . '_optimize', false);
+							}
+						}
+						break;
+
+					case 'wclmac':
+
+						if( class_exists('WCL_Plugin') ) {
+							if( 'plugins' == $type ) {
+								$active = WCL_Plugin::app()->getOption('js_optimize', false);
+								if( !$active ) {
+									$active = WCL_Plugin::app()->getOption('css_optimize', false);
+								}
+							} else {
+								$active = WCL_Plugin::app()->getOption($type . '_optimize', false);
 							}
 						}
 						break;
 				}
 			}
 
-			return boolval( $active );
+			return boolval($active);
 		}
 
 		/**
@@ -1309,33 +1313,28 @@
 		 *
 		 * @return string
 		 */
-		public function getAdditionalControlsColumns( $html, $type, $handle, $plugin_handle )
+		public function getAdditionalControlsColumns($html, $type, $handle, $plugin_handle)
 		{
-			if ( ! empty( $this->sided_plugins ) ) {
-				$options = $this->getOption( 'assets_manager_sided_plugins', [] );
-				include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+			if( !empty($this->sided_plugins) ) {
 
-				foreach ( $this->sided_plugins as $index => $plugin_path ) {
-					if ( is_plugin_active( $plugin_path ) ) {
-						$parts  = explode( '/', $plugin_path );
-						$plugin = isset( $parts[0] ) ? $parts[0] : $plugin_path;
+				$options = $this->getOption('assets_manager_sided_plugins', []);
 
-						$active = $this->getActiveStatusForSidedPlugin( $index, $options, $plugin, $type, $handle );
-						$name   = "sided_plugins[{$plugin}][{$type}][{$handle}]";
+				include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
+				foreach($this->sided_plugins as $index => $plugin_path) {
+					if( is_plugin_active($plugin_path) ) {
+						$plugin = $this->getSidedPluginName($index);
+
+						$active = $this->getActiveStatusForSidedPlugin($index, $options, $plugin, $type, $handle);
+						$name = "sided_plugins[{$plugin}][{$type}][{$handle}]";
 
 						$html .= "<td>";
 
-						if (
-							! empty( $handle )
-							&& (
-								'plugins' != $type && false !== strpos( $handle, '.' . $type )
-								|| 'plugins' == $type
-							)
-						) {
+						if( !empty($handle) && ('plugins' != $type && false !== strpos($handle, '.' . $type) || 'plugins' == $type) ) {
 							$html .= '<label class="switch">';
-							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable' . ( 'plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '' ) . '" type="checkbox"' . checked( $active, false, false ) . ( 'plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '' ) . '/>';
-							$html .= '<input type="hidden" name="' . $name . '" value="' . ( $active ? 1 : 0 ) . '"/>';
-							$html .= '<span class="switch__inner" data-off="' . __( 'No', 'gonzales' ) . '" data-on="' . __( 'Yes', 'gonzales' ) . '"></span>';
+							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable' . ('plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '') . '" type="checkbox"' . checked($active, false, false) . ('plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '') . '/>';
+							$html .= '<input type="hidden" name="' . $name . '" value="' . ($active ? 1 : 0) . '"/>';
+							$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
 							$html .= '<span class="switch__slider"></span>';
 							$html .= '</label>';
 						}
@@ -1354,15 +1353,16 @@
 		 *
 		 * @return array
 		 */
-		private function filterExclusions( $index, $type, $exclude ) {
-			$files = $this->getSidedPluginFiles( $index, $type );
+		private function filterExclusions($index, $type, $exclude)
+		{
+			$files = $this->getSidedPluginFiles($index, $type);
 
-			if ( ! empty( $files ) ) {
-				if ( is_array( $exclude ) ) {
-					$exclude = array_merge( $exclude, $files );
+			if( !empty($files) ) {
+				if( is_array($exclude) ) {
+					$exclude = array_merge($exclude, $files);
 				} else {
-					$dontmove = implode( ',', $files );
-					$exclude .= ! empty( $exclude ) ? ',' . $dontmove : $dontmove;
+					$dontmove = implode(',', $files);
+					$exclude .= !empty($exclude) ? ',' . $dontmove : $dontmove;
 				}
 			}
 
@@ -1377,8 +1377,9 @@
 		 *
 		 * @return array
 		 */
-		public function aoptFilterJsExclude( $exclude, $content ) {
-			return $this->filterExclusions( 'aopt', 'js', $exclude );
+		public function aoptFilterJsExclude($exclude, $content)
+		{
+			return $this->filterExclusions('aopt', 'js', $exclude);
 		}
 
 		/**
@@ -1389,8 +1390,9 @@
 		 *
 		 * @return array
 		 */
-		public function aoptFilterCssExclude( $exclude, $content ) {
-			return $this->filterExclusions( 'aopt', 'css', $exclude );
+		public function aoptFilterCssExclude($exclude, $content)
+		{
+			return $this->filterExclusions('aopt', 'css', $exclude);
 		}
 
 		/**
@@ -1401,8 +1403,9 @@
 		 *
 		 * @return array
 		 */
-		public function wmacFilterJsExclude( $exclude, $content ) {
-			return $this->filterExclusions( 'wmac', 'js', $exclude );
+		public function wmacFilterJsExclude($exclude, $content)
+		{
+			return $this->filterExclusions('wmac', 'js', $exclude);
 		}
 
 		/**
@@ -1413,8 +1416,9 @@
 		 *
 		 * @return array
 		 */
-		public function wmacFilterCssExclude( $exclude, $content ) {
-			return $this->filterExclusions( 'wmac', 'css', $exclude );
+		public function wmacFilterCssExclude($exclude, $content)
+		{
+			return $this->filterExclusions('wmac', 'css', $exclude);
 		}
 
 		/**
@@ -1427,12 +1431,13 @@
 		 *
 		 * @return bool
 		 */
-		private function filterJsMinifyExclusions( $index, $type, $result, $url ) {
-			$files = $this->getSidedPluginFiles( $index, $type );
+		private function filterJsMinifyExclusions($index, $type, $result, $url)
+		{
+			$files = $this->getSidedPluginFiles($index, $type);
 
-			if ( ! empty( $files ) ) {
-				foreach ( $files as $file ) {
-					if ( false !== strpos( $url, $file ) ) {
+			if( !empty($files) ) {
+				foreach($files as $file) {
+					if( false !== strpos($url, $file) ) {
 						return false;
 					}
 				}
@@ -1443,14 +1448,15 @@
 
 		/**
 		 * Action wmac_filter_js_minify_excluded
-		 * 
+		 *
 		 * @param $result
 		 * @param $url
 		 *
 		 * @return mixed
 		 */
-		public function wmacFilterJsMinifyExclude( $result, $url ) {
-			return $this->filterJsMinifyExclusions( 'wmac', 'js', $result, $url );
+		public function wmacFilterJsMinifyExclude($result, $url)
+		{
+			return $this->filterJsMinifyExclusions('wmac', 'js', $result, $url);
 		}
 
 		/**
@@ -1461,8 +1467,9 @@
 		 *
 		 * @return mixed
 		 */
-		public function wmacFilterCssMinifyExclude( $result, $url ) {
-			return $this->filterJsMinifyExclusions( 'wmac', 'css', $result, $url );
+		public function wmacFilterCssMinifyExclude($result, $url)
+		{
+			return $this->filterJsMinifyExclusions('wmac', 'css', $result, $url);
 		}
 
 		/**
@@ -1472,61 +1479,70 @@
 		 * @param $index
 		 * @param $type
 		 */
-		private function manageExcludeFiles( $sided_exclude_files, $index, $type ) {
+		private function manageExcludeFiles($sided_exclude_files, $index, $type)
+		{
 			$exclude_files = [];
 
-			switch ( $index ) {
+			switch( $index ) {
 				case 'aopt':
-					$exclude_files = get_option( 'autoptimize_' . $type . '_exclude', '' );
+					$exclude_files = get_option('autoptimize_' . $type . '_exclude', '');
 					break;
 				case 'wmac':
-					if ( class_exists( 'WMAC_Plugin' ) ) {
-						$exclude_files = WMAC_Plugin::app()->getOption( $type . '_exclude', '' );
+					if( class_exists('WMAC_Plugin') ) {
+						$exclude_files = WMAC_Plugin::app()->getOption($type . '_exclude', '');
+					}
+					break;
+				case 'wclmac':
+					if( class_exists('WCL_Plugin') ) {
+						$exclude_files = WCL_Plugin::app()->getOption($type . '_exclude', '');
 					}
 					break;
 				case 'wclp':
-					if ( class_exists( 'WCL_Plugin' ) ) {
-						$exclude_files = WCL_Plugin::app()->getOption( 'remove_version_exclude', '' );
+					if( class_exists('WCL_Plugin') ) {
+						$exclude_files = WCL_Plugin::app()->getOption('remove_version_exclude', '');
 					}
 					break;
 			}
 
 			// For clearfy need new line
 			$delimeter = $index == 'wclp' ? "\n" : ",";
-			$current_exclude_files = ! empty( $exclude_files )
-				? array_filter( array_map( 'trim', explode( $delimeter, $exclude_files ) ) )
-				: [];
+			$current_exclude_files = !empty($exclude_files) ? array_filter(array_map('trim', explode($delimeter, $exclude_files))) : [];
 
-			$delete_files = array_diff( $sided_exclude_files['before'][ $type ], $sided_exclude_files['after'][ $type ] );
-			$new_files    = array_diff( $sided_exclude_files['after'][ $type ], $current_exclude_files );
+			$delete_files = array_diff($sided_exclude_files['before'][$type], $sided_exclude_files['after'][$type]);
+			$new_files = array_diff($sided_exclude_files['after'][$type], $current_exclude_files);
 
-			if ( empty( $current_exclude_files ) && ! empty( $new_files ) ) {
+			if( empty($current_exclude_files) && !empty($new_files) ) {
 				$current_exclude_files = $new_files;
-			} else if ( ! empty( $current_exclude_files ) ) {
+			} else if( !empty($current_exclude_files) ) {
 				$new_exclude_files = [];
-				foreach ( $current_exclude_files as $file ) {
+				foreach($current_exclude_files as $file) {
 
-					if ( ! in_array( $file, $delete_files ) ) {
+					if( !in_array($file, $delete_files) ) {
 						$new_exclude_files[] = $file;
 					}
 				}
-				$current_exclude_files = array_merge( $new_exclude_files, $new_files );
+				$current_exclude_files = array_merge($new_exclude_files, $new_files);
 			}
 
-			$current_exclude_files = array_filter( array_unique( $current_exclude_files ) );
+			$current_exclude_files = array_filter(array_unique($current_exclude_files));
 
-			switch ( $index ) {
+			switch( $index ) {
 				case 'aopt':
-					update_option( 'autoptimize_' . $type . '_exclude', implode( ', ', $current_exclude_files ) );
+					update_option('autoptimize_' . $type . '_exclude', implode(', ', $current_exclude_files));
 					break;
 				case 'wmac':
-					if ( class_exists( 'WMAC_Plugin' ) ) {
-						WMAC_Plugin::app()->updateOption( $type . '_exclude', implode( ', ', $current_exclude_files ) );
+					if( class_exists('WMAC_Plugin') ) {
+						WMAC_Plugin::app()->updateOption($type . '_exclude', implode(', ', $current_exclude_files));
+					}
+					break;
+				case 'wclmac':
+					if( class_exists('WCL_Plugin') ) {
+						WCL_Plugin::app()->updateOption($type . '_exclude', implode(', ', $current_exclude_files));
 					}
 					break;
 				case 'wclp':
-					if ( class_exists( 'WCL_Plugin' ) ) {
-						WCL_Plugin::app()->updateOption( 'remove_version_exclude', implode( $delimeter, $current_exclude_files ) );
+					if( class_exists('WCL_Plugin') ) {
+						WCL_Plugin::app()->updateOption('remove_version_exclude', implode($delimeter, $current_exclude_files));
 					}
 					break;
 			}
@@ -1537,67 +1553,58 @@
 		 *
 		 * @param bool $empty_before
 		 */
-		public function actionFormSave( $empty_before = false ) {
-			if ( ! empty( $this->sided_plugins ) && ! $empty_before ) {
-				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-					$sided_exclude_files[ $index ]['before'] = [
-						'js'  => [],
+		public function actionFormSave($empty_before = false)
+		{
+			if( !empty($this->sided_plugins) && !$empty_before ) {
+				foreach($this->sided_plugins as $index => $sided_plugin) {
+					$sided_exclude_files[$index]['before'] = [
+						'js' => [],
 						'css' => []
 					];
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
 
-					$sided_exclude_files[ $index ]['before']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
-					$sided_exclude_files[ $index ]['before']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
+					$sided_exclude_files[$index]['before']['js'] += $this->getSidedPluginFiles($index, 'js', $full);
+					$sided_exclude_files[$index]['before']['css'] += $this->getSidedPluginFiles($index, 'css', $full);
 				}
 			}
 
-			if (
-				isset( $_POST['sided_plugins'] )
-				&& ! empty( $_POST['sided_plugins'] )
-			) {
+			if( isset($_POST['sided_plugins']) && !empty($_POST['sided_plugins']) ) {
 				$sided_plugins_options = [];
-				foreach ( $_POST['sided_plugins'] as $plugin => $types ) {
-					foreach ( $types as $type => $urls ) {
-						foreach ( $urls as $url => $active ) {
+				foreach($_POST['sided_plugins'] as $plugin => $types) {
+					foreach($types as $type => $urls) {
+						foreach($urls as $url => $active) {
 
-							if ( ! empty( $url ) && $active ) {
-								$sided_plugins_options[ $plugin ][ $type ][] = $url;
+							if( !empty($url) && $active ) {
+								$sided_plugins_options[$plugin][$type][] = $url;
 							}
 						}
 					}
 				}
-				$this->updateOption( 'assets_manager_sided_plugins', $sided_plugins_options );
+				$this->updateOption('assets_manager_sided_plugins', $sided_plugins_options);
 			}
 
-			if ( ! empty( $this->sided_plugins ) ) {
+			if( !empty($this->sided_plugins) ) {
 				$this->sided_plugin_files = [];
-				foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-					$sided_exclude_files[ $index ]['after'] = [
-						'js'  => [],
+				foreach($this->sided_plugins as $index => $sided_plugin) {
+					$sided_exclude_files[$index]['after'] = [
+						'js' => [],
 						'css' => []
 					];
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
 
-					$sided_exclude_files[ $index ]['after']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
-					$sided_exclude_files[ $index ]['after']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
+					$sided_exclude_files[$index]['after']['js'] += $this->getSidedPluginFiles($index, 'js', $full);
+					$sided_exclude_files[$index]['after']['css'] += $this->getSidedPluginFiles($index, 'css', $full);
 
-					if (
-						! empty( $sided_exclude_files[ $index ]['before']['js'] )
-						|| ! empty( $sided_exclude_files[ $index ]['after']['js'] )
-					) {
-						$this->manageExcludeFiles( $sided_exclude_files[ $index ], $index, 'js' );
+					if( !empty($sided_exclude_files[$index]['before']['js']) || !empty($sided_exclude_files[$index]['after']['js']) ) {
+						$this->manageExcludeFiles($sided_exclude_files[$index], $index, 'js');
 					}
 
-					if (
-						! empty( $sided_exclude_files[ $index ]['before']['css'] )
-						|| ! empty( $sided_exclude_files[ $index ]['after']['css'] )
-					) {
-						$this->manageExcludeFiles( $sided_exclude_files[ $index ], $index, 'css' );
+					if( !empty($sided_exclude_files[$index]['before']['css']) || !empty($sided_exclude_files[$index]['after']['css']) ) {
+						$this->manageExcludeFiles($sided_exclude_files[$index], $index, 'css');
 					}
 				}
 			}
 		}
-
 	}

@@ -72,7 +72,6 @@
 				if( is_admin() ) {
 					$this->adminScripts();
 				}
-				//add_action('plugins_loaded', array($this, 'pluginsLoaded'));
 			}
 			
 			/**
@@ -83,10 +82,18 @@
 				return self::$app;
 			}
 
+			// todo: перенести этот медот в фреймворк
 			protected function setTextDomain()
 			{
-				// Localization plugin
-				load_plugin_textdomain('gonzales', false, dirname(WGZ_PLUGIN_BASE) . '/languages/');
+				$domain = 'gonzales';
+				$locale = apply_filters('plugin_locale', is_admin()
+					? get_user_locale()
+					: get_locale(), $domain);
+				$mofile = $domain . '-' . $locale . '.mo';
+
+				if( !load_textdomain($domain, WGZ_PLUGIN_BASE . '/languages/' . $mofile) ) {
+					load_muplugin_textdomain($domain);
+				}
 			}
 			
 			protected function setModules()
@@ -122,9 +129,5 @@
 				require(WGZ_PLUGIN_DIR . '/includes/class.configurate-assets.php');
 				new WbcrGnz_ConfigAssetsManager(self::$app);
 			}
-			/*public function pluginsLoaded()
-			{
-
-			}*/
 		}
 	}

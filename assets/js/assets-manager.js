@@ -107,14 +107,14 @@
             $('ul.tabs li').eq(0).find('button').click();
         }
 
-        if ($('#wpadminbar').length > 0) {
+        /*if ($('#wpadminbar').length > 0) {
             var h = $('#wpadminbar').height();
             if (h > 0) {
-                $('#wbcr-gnz header.panel').css('top', h + 'px');
+                $('#wbcr-gnz header.wbcr-gnz-panel').css('top', h + 'px');
                 var top = $('#wbcr-gnz ul.tabs').css('top');
                 $('#wbcr-gnz ul.tabs').css('top', top.replace('px', '') * 1 + h + 'px');
             }
-        }
+        }*/
 
         $('.wbcr-close-button').on('click', function() {
             document.location.href = $(this).data('href');
