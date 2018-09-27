@@ -298,7 +298,7 @@
 							$plugin_state = $this->getState($is_disabled, $disabled, $current_url);
 
 							echo '<tr class="table__alternate">';
-							echo '<th>' . __('Loaded', 'gonzales') . '</th>';
+							echo '<th style="width:5%">' . __('Loaded', 'gonzales') . '</th>';
 							echo '<th colspan="2">' . __('Plugin', 'gonzales') . '</th>';
 
 							echo apply_filters('wbcr_gnz_get_additional_head_columns', '');
@@ -326,8 +326,8 @@
 					}
 
 					echo '<tr class="table__alternate">';
-					echo '<th>' . __('Loaded', 'gonzales') . '</th>';
-					echo '<th>' . __('Size', 'gonzales') . '</th>';
+					echo '<th style="width:5%">' . __('Loaded', 'gonzales') . '</th>';
+					echo '<th style="width:5%">' . __('Size', 'gonzales') . '</th>';
 					echo '<th class="wgz-th">' . __('Resource', 'gonzales') . '</th>';
 
 					echo apply_filters('wbcr_gnz_get_additional_head_columns', '');
@@ -372,12 +372,12 @@
 
 								// Size
 								echo '<td>';
-								echo '<div class="table__size-value">' . $row['size'] . ' KB</div>';
+								echo '<div class="table__size-value">' . $row['size'] . ' <b>KB</b></div>';
 								echo '</td>';
 
 								// Handle + Path + In use
 								echo '<td class="wgz-td">';
-								echo '<div class="table__script-name">' . $handle . '</div>';
+								echo '<div class="table__script-name"><b class="wbcr-wgz-resource-type-' . $type_name . '">' . $type_name . '</b>[' . $handle . ']</div>';
 								echo "<a id='" . $type_name . "-" . $handle . "' class='wbcr-anchor'></a>";
 								echo '<div class="table__script-path">';
 								echo "<a href='" . $row['url_full'] . "' target='_blank'>";
@@ -672,9 +672,10 @@
 			$control_html .= '>';
 			$control_html .= '<label class="table__label" for="disabled' . $id . '[custom][]" title="' . __('Example', 'gonzales') . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __('Enter URL (set * for mask)', 'gonzales') . ':</label>';
 			$control_html .= '<div class="table__field-item">';
-			$control_html .= '<input class="table__field-input" name="disabled' . $id . '[custom][]" type="text" value="" disabled="disabled">';
+			$control_html .= '<input class="table__field-input" name="disabled' . $id . '[custom][]" type="text" placeholder="http://yoursite.test/profile/*" value="" disabled="disabled">';
 			$control_html .= '<button class="table__field-add" type="button" aria-label="' . __('Add field', 'gonzales') . '" disabled></button>';
 			$control_html .= '</div>';
+			//$control_html .= '<em>Пример: http://yoursite.test/profile/*</em>';
 			$control_html .= '</div>';
 			// Regex
 			$control_html .= "<div class='table__field wbcr-assets-manager regex'";
@@ -683,7 +684,7 @@
 			}
 			$control_html .= ">";
 			$control_html .= '<label class="table__label" for="disabled' . $id . '[regex]">' . __('Enter regular expression', 'gonzales') . ':</label>';
-			$control_html .= '<textarea class="table__textarea" rows="3" name="disabled' . $id . '[regex]" disabled="disabled"></textarea>';
+			$control_html .= '<textarea class="table__textarea" rows="3" name="disabled' . $id . '[regex]" placeholder="^rockstar-[0-9]{2,5}" disabled="disabled"></textarea>';
 			$control_html .= "</div>";
 			$html .= apply_filters('wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled);
 
@@ -1231,18 +1232,21 @@
 		/**
 		 * Is component active
 		 *
-		 * @param $plugin_path
+		 * @param $index
 		 *
 		 * @return bool
 		 */
-		private function isComponentActive( $plugin_path ) {
-			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+		private function isComponentActive($index)
+		{
+			include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-			if ( defined( 'LOADING_GONZALES_AS_ADDON' ) ) {
-				return is_plugin_active( $plugin_path ) || WGZ_Plugin::app()->isComponenActive( $plugin_path );
-			} else {
-				return is_plugin_active( $plugin_path );
+			$plugin_path = isset($this->sided_plugins[$index]) ? $this->sided_plugins[$index] : null;
+
+			if( $index == 'wmac' && defined('LOADING_GONZALES_AS_ADDON') && class_exists('WCL_Plugin') ) {
+				return WCL_Plugin::app()->isActivateComponent('minify_and_combine');
 			}
+
+			return is_plugin_active($plugin_path);
 		}
 
 		/**
@@ -1253,7 +1257,8 @@
 		 *
 		 * @return string
 		 */
-		private function getComponentName( $plugin_path, $index ) {
+		private function getComponentName($plugin_path, $index)
+		{
 			if( $index == 'wclp' ) {
 				$name = 'Clearfy';
 			} else if( $index == 'wmac' ) {
@@ -1262,6 +1267,7 @@
 				$data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin_path);
 				$name = $data['Name'];
 			}
+
 			return $name;
 		}
 
@@ -1276,10 +1282,21 @@
 		{
 			if( !empty($this->sided_plugins) ) {
 				foreach($this->sided_plugins as $index => $plugin_path) {
-					if( $this->isComponentActive($plugin_path) ) {
-						$title = $this->getComponentName( $plugin_path, $index );
+					if( $this->isComponentActive($index) ) {
+						$title = $this->getComponentName($plugin_path, $index);
 						$text = $index == 'wclp' ? __('remove version?', 'gonzales') : __('optimize?', 'gonzales');
-						$html .= '<th class="table__column_switch"><span class="table__th-external-plugin">' . $title . ':</span><em>' . $text . '</em></th>';
+
+						$hint = '';
+						if( $index == 'wclp' ) {
+							//$title = 'Clearfy';
+							$hint = __('Вы включили опцию &#34;Удалить переменные запроса для статических ресурсов&#34; в плагине Clearfy, в этой колонке настроек вы можете исключить скрипты и стили, для которых вы хотите оставить переменые запроса. Просто выберите &#34;Нет&#34;, чтобы добавить файл в исключения.', 'gonzales');
+						} else if( $index == 'wmac' ) {
+							//$title = __('Minify and Combine', 'gonzales');
+							$hint = __('Вы включили опцию &#34;Оптимизировать js скрипты?&#34; и &#34;Оптимизировать css&#34; в плагине &#34;Сжатие и Объединения&#34;. С помощью этой колонки настроек, вы можете исключить скрипты и стили, которые вы не хотите оптимизировать. Чтобы добавить файл в исключения просто нажмите кнопку &#34;Нет&#34;', 'gonzales');
+						} //else {
+						//$title = $data['Name'];
+						//}
+						$html .= '<th class="table__column_switch"><span class="table__th-external-plugin">' . $title . ':<i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . $hint . '."><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></span><em>' . $text . '</em></th>';
 					}
 				}
 			}
@@ -1338,7 +1355,7 @@
 				$options = $this->getOption('assets_manager_sided_plugins', array());
 
 				foreach($this->sided_plugins as $index => $plugin_path) {
-					if( $this->isComponentActive($plugin_path) ) {
+					if( $this->isComponentActive($index) ) {
 						$plugin = $this->getSidedPluginName($index);
 
 						$active = $this->getActiveStatusForSidedPlugin($index, $options, $plugin, $type, $handle);
@@ -1502,21 +1519,15 @@
 		{
 			switch( $index ) {
 				case 'aopt':
-					if(
-						get_option( 'autoptimize_js', false )
-						|| get_option( 'autoptimize_css', false )
+					if( get_option('autoptimize_js', false) || get_option('autoptimize_css', false)
 					) {
-						$exclude_files = get_option( 'autoptimize_' . $type . '_exclude', '' );
+						$exclude_files = get_option('autoptimize_' . $type . '_exclude', '');
 					} else {
 						return;
 					}
 					break;
 				case 'wmac':
-					if(
-						class_exists('WMAC_Plugin')
-						&& ( WMAC_Plugin::app()->getOption( 'js_optimize', false )
-						     || WMAC_Plugin::app()->getOption( 'css_optimize', false )
-						)
+					if( class_exists('WMAC_Plugin') && (WMAC_Plugin::app()->getOption('js_optimize', false) || WMAC_Plugin::app()->getOption('css_optimize', false))
 					) {
 						$exclude_files = WMAC_Plugin::app()->getOption($type . '_exclude', '');
 					} else {
@@ -1524,11 +1535,7 @@
 					}
 					break;
 				case 'wclp':
-					if (
-						class_exists( 'WCL_Plugin' )
-						&& ( WCL_Plugin::app()->getOption( 'remove_js_version', false )
-						    || WCL_Plugin::app()->getOption( 'remove_css_version', false )
-						)
+					if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getOption('remove_js_version', false) || WCL_Plugin::app()->getOption('remove_css_version', false))
 					) {
 						$exclude_files = WCL_Plugin::app()->getOption('remove_version_exclude', '');
 					} else {
