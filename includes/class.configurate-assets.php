@@ -152,15 +152,31 @@
 			if ( defined( 'LOADING_GONZALES_AS_ADDON' ) ) {
 				$this->sided_plugins = array(
 					'aopt' => 'autoptimize/autoptimize.php',
-					'wmac' => 'minify-and-combine/minify-and-combine.php',
-					'wclp' => 'wp-plugin-clearfy/clearfy.php'
+					'wmac' => 'minify-and-combine/minify-and-combine.php'
 				);
+
+				if (
+					class_exists( 'WCL_Plugin' )
+					&& ( WCL_Plugin::app()->getOption( 'remove_js_version', false )
+					    || WCL_Plugin::app()->getOption( 'remove_css_version', false )
+					)
+				) {
+					$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
+				}
 			} else {
 				$this->sided_plugins = array(
 					'aopt' => 'autoptimize/autoptimize.php',
-					'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php',
-					'wclp' => 'clearfy/clearfy.php'
+					'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php'
 				);
+
+				if (
+					class_exists( 'WCL_Plugin' )
+					&& ( WCL_Plugin::app()->getOption( 'remove_js_version', false )
+					     || WCL_Plugin::app()->getOption( 'remove_css_version', false )
+					)
+				) {
+					$this->sided_plugins['wclp'] = 'clearfy/clearfy.php';
+				}
 			}
 
 			$this->sided_plugins = apply_filters('wbcr_gnz_sided_plugins', $this->sided_plugins);
@@ -203,7 +219,8 @@
 			echo '<li class="wbcr-gnz-panel__data-item __info-off-js">' . __('Disabled js', 'gonzales') . ': --</li>';
 			echo '<li class="wbcr-gnz-panel__data-item __info-off-css">' . __('Disabled css', 'gonzales') . ': --</li>';
 			echo '</ul>';
-			echo '<div class="wbcr-gnz-panel__premium"><div class="tooltip tooltip-bottom" data-tooltip="' . __('Это общая статистика, с помощью которой вы можете видеть свой результат оптимизации. Статистика доступна только в платной версии плагина.', 'gonzales') . '.">PRO</div></div>';
+			$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="tooltip tooltip-bottom" data-tooltip="' . __('Это общая статистика, с помощью которой вы можете видеть свой результат оптимизации. Статистика доступна только в платной версии плагина.', 'gonzales') . '.">PRO</div></div>';
+			echo apply_filters('wbcr_gnz_panel_premium', $panel_to_premium_info);
 			echo '</div>';
 			echo '<div class="wbcr-gnz-panel__right">';
 			echo '<button class="wbcr-gnz-panel__reset wbcr-reset-button" type="button">' . __('Reset', 'gonzales') . '</button>';
@@ -243,10 +260,11 @@
 			echo '<div class="info">';
 			echo '<p>' . __('Below you can disable/enable CSS and JS files on a per page/post basis, as well as by custom post types. We recommend testing this locally or on a staging site first, as you could break the appearance of your live site. If you aren\'t sure about a certain script, you can try clicking on it, as a lot of authors will mention their plugin or theme in the header of the source code.', 'gonzales') . '</p>';
 			echo '<p>' . __('If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales') . '</p>';
-			echo '<div class="info__go-to-premium">';
-			echo '<p>' . __('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales') . '</p>';
-			echo '<a class="button_pro" href="#">' . __('Upgrade to Premium', 'gonzales') . '</a>';
-			echo '</div>';
+			$upgrade_to_premium_info = '<div class="info__go-to-premium">';
+			$upgrade_to_premium_info .= '<p>' . __('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales') . '</p>';
+			$upgrade_to_premium_info .= '<a class="button_pro" href="#">' . __('Upgrade to Premium', 'gonzales') . '</a>';
+			$upgrade_to_premium_info .= '</div>';
+			echo apply_filters('wbcr_gnz_upgrade_to_premium_info', $upgrade_to_premium_info);
 			echo '</div>';
 
 			global $plugin_state;
@@ -530,7 +548,7 @@
 			$html = '<td>';
 			$html .= '<label class="switch">';
 			$html .= '<input class="switch__input visually-hidden wbcr-gnz-disable" type="checkbox"' . checked($state, true, false);
-			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "") . " data-default=''" . '/>';
+			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "") . '/>';
 			$html .= '<input type="hidden" name="disabled' . $id . '[state]" value="' . ($state ? 'disable' : '') . '"/>';
 			$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
 			$html .= '<span class="switch__slider"></span>';
@@ -1283,7 +1301,7 @@
 		private function getActiveStatusForSidedPlugin($index, $options, $plugin, $type, $handle)
 		{
 			$active = isset($options[$plugin][$type]) && is_array($options[$plugin][$type]) && in_array($handle, $options[$plugin][$type]);
-			if( !$active && !isset($options[$plugin]) ) {
+			/*if( !$active && !isset($options[$plugin]) ) {
 
 				switch( $index ) {
 					case 'wclp':
@@ -1296,11 +1314,10 @@
 							} else {
 								$active = WCL_Plugin::app()->getOption('remove_' . $type . '_version', false);
 							}
-							$active = ! $active;
 						}
 						break;
 				}
-			}
+			}*/
 
 			return $active;
 		}
@@ -1334,8 +1351,7 @@
 							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable';
 							$html .= ('plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '');
 							$html .= '" type="checkbox"' . checked($active, true, false);
-							$html .= ('plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '');
-							$html .= " data-default='" . ('wclp' == $index ? 0 : 1) . "'" . '/>';
+							$html .= ('plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '') . '/>';
 							$html .= '<input type="hidden" name="' . $name . '" value="' . ($active ? 1 : 0) . '"/>';
 							$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
 							$html .= '<span class="switch__slider"></span>';
