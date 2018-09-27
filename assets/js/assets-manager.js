@@ -50,25 +50,25 @@
 		});
 
         $('.wbcr-gnz-sided-disable').on('change', function(ev) {
-            $(this).closest('label').find('input[type="hidden"]').val($(this).prop('checked') ? 0 : 1);
+            $(this).closest('label').find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
 
             var handle = $(this).data('handle');
             if (handle != undefined) {
                 $('.wbcr-gnz-sided-' + handle)
                     .prop('checked', $(this).prop('checked'))
                     .closest('label')
-                    .find('input[type="hidden"]').val($(this).prop('checked') ? 0 : 1);
+                    .find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
             }
         });
 
 		$('.wbcr-reset-button').on('click', function() {
 		    $('.wbcr-gnz-disable').each(function() {
 		        $(this).prop('checked', false).trigger('change');
-		        $(this).closest('input').val('');
+		        $(this).closest('input').val($(this).data('default'));
             });
 		    $('.wbcr-gnz-sided-disable').each(function() {
-                $(this).prop('checked', false).trigger('change');
-                $(this).closest('input').val(0);
+                $(this).prop('checked', $(this).data('default') != 1).trigger('change');
+                $(this).closest('input').val($(this).data('default'));
             });
 		});
 

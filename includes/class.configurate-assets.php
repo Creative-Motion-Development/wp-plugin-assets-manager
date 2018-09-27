@@ -149,20 +149,19 @@
 		 */
 		public function pluginsLoaded()
 		{
-			$this->sided_plugins = array(
-				'aopt' => 'autoptimize/autoptimize.php',
-				'wmac' => 'minify-and-combine/minify-and-combine.php',
-				'wclp' => 'clearfy/clearfy.php',
-				'wclmac' => 'clearfy/clearfy.php',
-			);
-
-			#comp remove
-			// Пока плагины не скомпилированы, они имеют другие имена директорий.
-			// После компиляции плагина этот кусок кода будет удален.
-			$this->sided_plugins['wmac'] = 'wp-plugin-minify-and-combine/minify-and-combine.php';
-			$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
-			$this->sided_plugins['wclmac'] = 'wp-plugin-clearfy/clearfy.php';
-			#endcomp
+			if ( defined( 'LOADING_GONZALES_AS_ADDON' ) ) {
+				$this->sided_plugins = array(
+					'aopt' => 'autoptimize/autoptimize.php',
+					'wmac' => 'minify-and-combine/minify-and-combine.php',
+					'wclp' => 'wp-plugin-clearfy/clearfy.php'
+				);
+			} else {
+				$this->sided_plugins = array(
+					'aopt' => 'autoptimize/autoptimize.php',
+					'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php',
+					'wclp' => 'clearfy/clearfy.php'
+				);
+			}
 
 			$this->sided_plugins = apply_filters('wbcr_gnz_sided_plugins', $this->sided_plugins);
 		}
@@ -531,7 +530,7 @@
 			$html = '<td>';
 			$html .= '<label class="switch">';
 			$html .= '<input class="switch__input visually-hidden wbcr-gnz-disable" type="checkbox"' . checked($state, true, false);
-			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "") . '/>';
+			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "") . " data-default=''" . '/>';
 			$html .= '<input type="hidden" name="disabled' . $id . '[state]" value="' . ($state ? 'disable' : '') . '"/>';
 			$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
 			$html .= '<span class="switch__slider"></span>';
@@ -1123,7 +1122,7 @@
 		 */
 		private function getPluginData($name)
 		{
-			$data = [];
+			$data = array();
 
 			if( $name ) {
 				if( !function_exists('get_plugins') ) {
@@ -1179,9 +1178,10 @@
 				return $this->sided_plugin_files[$index][$type];
 			}
 
-			$this->sided_plugin_files[$index][$type] = [];
+			$this->sided_plugin_files[$index][$type] = array();
 
-			$options = $this->getOption('assets_manager_sided_plugins', []);
+			$options = $this->getOption('assets_manager_sided_plugins', array());
+
 			$plugin = $this->getSidedPluginName($index);
 
 			if( $plugin && $options ) {
@@ -1211,6 +1211,43 @@
 		}
 
 		/**
+		 * Is component active
+		 *
+		 * @param $plugin_path
+		 *
+		 * @return bool
+		 */
+		private function isComponentActive( $plugin_path ) {
+			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+			if ( defined( 'LOADING_GONZALES_AS_ADDON' ) ) {
+				return is_plugin_active( $plugin_path ) || WGZ_Plugin::app()->isComponenActive( $plugin_path );
+			} else {
+				return is_plugin_active( $plugin_path );
+			}
+		}
+
+		/**
+		 * Get component name
+		 *
+		 * @param $plugin_path
+		 * @param $index
+		 *
+		 * @return string
+		 */
+		private function getComponentName( $plugin_path, $index ) {
+			if( $index == 'wclp' ) {
+				$name = 'Clearfy';
+			} else if( $index == 'wmac' ) {
+				$name = __('Minify and Combine', 'gonzales');
+			} else {
+				$data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin_path);
+				$name = $data['Name'];
+			}
+			return $name;
+		}
+
+		/**
 		 * Get head columns
 		 *
 		 * @param string $html
@@ -1220,20 +1257,10 @@
 		public function getAdditionalHeadColumns($html)
 		{
 			if( !empty($this->sided_plugins) ) {
-				include_once(ABSPATH . 'wp-admin/includes/plugin.php');
-
 				foreach($this->sided_plugins as $index => $plugin_path) {
-					if( is_plugin_active($plugin_path) ) {
-						$data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin_path);
+					if( $this->isComponentActive($plugin_path) ) {
+						$title = $this->getComponentName( $plugin_path, $index );
 						$text = $index == 'wclp' ? __('remove version?', 'gonzales') : __('optimize?', 'gonzales');
-
-						if( $index == 'wclp' ) {
-							$title = 'Clearfy';
-						} else if( $index == 'wclmac' ) {
-							$title = __('Minify and Combine', 'gonzales');
-						} else {
-							$title = $data['Name'];
-						}
 						$html .= '<th class="table__column_switch"><span class="table__th-external-plugin">' . $title . ':</span><em>' . $text . '</em></th>';
 					}
 				}
@@ -1259,48 +1286,23 @@
 			if( !$active && !isset($options[$plugin]) ) {
 
 				switch( $index ) {
-					case 'aopt':
-						if( 'plugins' == $type ) {
-							$active = get_option('autoptimize_js', '');
-							if( 'on' != $active ) {
-								$active = get_option('autoptimize_css', '');
-							}
-						} else {
-							$active = get_option('autoptimize_' . $type, '');
-						}
-						$active = ($active == 'on' ? true : false);
-						break;
-					case 'wmac':
-
-						if( class_exists('WMAC_Plugin') ) {
-							if( 'plugins' == $type ) {
-								$active = WMAC_Plugin::app()->getOption('js_optimize', false);
-								if( !$active ) {
-									$active = WMAC_Plugin::app()->getOption('css_optimize', false);
-								}
-							} else {
-								$active = WMAC_Plugin::app()->getOption($type . '_optimize', false);
-							}
-						}
-						break;
-
-					case 'wclmac':
-
+					case 'wclp':
 						if( class_exists('WCL_Plugin') ) {
 							if( 'plugins' == $type ) {
-								$active = WCL_Plugin::app()->getOption('js_optimize', false);
+								$active = WCL_Plugin::app()->getOption('remove_js_version', false);
 								if( !$active ) {
-									$active = WCL_Plugin::app()->getOption('css_optimize', false);
+									$active = WCL_Plugin::app()->getOption('remove_css_version', false);
 								}
 							} else {
-								$active = WCL_Plugin::app()->getOption($type . '_optimize', false);
+								$active = WCL_Plugin::app()->getOption('remove_' . $type . '_version', false);
 							}
+							$active = ! $active;
 						}
 						break;
 				}
 			}
 
-			return boolval($active);
+			return $active;
 		}
 
 		/**
@@ -1316,13 +1318,10 @@
 		public function getAdditionalControlsColumns($html, $type, $handle, $plugin_handle)
 		{
 			if( !empty($this->sided_plugins) ) {
-
-				$options = $this->getOption('assets_manager_sided_plugins', []);
-
-				include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+				$options = $this->getOption('assets_manager_sided_plugins', array());
 
 				foreach($this->sided_plugins as $index => $plugin_path) {
-					if( is_plugin_active($plugin_path) ) {
+					if( $this->isComponentActive($plugin_path) ) {
 						$plugin = $this->getSidedPluginName($index);
 
 						$active = $this->getActiveStatusForSidedPlugin($index, $options, $plugin, $type, $handle);
@@ -1332,7 +1331,11 @@
 
 						if( !empty($handle) && ('plugins' != $type && false !== strpos($handle, '.' . $type) || 'plugins' == $type) ) {
 							$html .= '<label class="switch">';
-							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable' . ('plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '') . '" type="checkbox"' . checked($active, false, false) . ('plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '') . '/>';
+							$html .= '<input class="switch__input visually-hidden wbcr-gnz-sided-disable';
+							$html .= ('plugins' != $type ? ' wbcr-gnz-sided-' . $index . '-' . $plugin_handle : '');
+							$html .= '" type="checkbox"' . checked($active, true, false);
+							$html .= ('plugins' == $type ? ' data-handle="' . $index . '-' . $plugin_handle . '"' : '');
+							$html .= " data-default='" . ('wclp' == $index ? 0 : 1) . "'" . '/>';
 							$html .= '<input type="hidden" name="' . $name . '" value="' . ($active ? 1 : 0) . '"/>';
 							$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
 							$html .= '<span class="switch__slider"></span>';
@@ -1481,32 +1484,48 @@
 		 */
 		private function manageExcludeFiles($sided_exclude_files, $index, $type)
 		{
-			$exclude_files = [];
-
 			switch( $index ) {
 				case 'aopt':
-					$exclude_files = get_option('autoptimize_' . $type . '_exclude', '');
-					break;
-				case 'wmac':
-					if( class_exists('WMAC_Plugin') ) {
-						$exclude_files = WMAC_Plugin::app()->getOption($type . '_exclude', '');
+					if(
+						get_option( 'autoptimize_js', false )
+						|| get_option( 'autoptimize_css', false )
+					) {
+						$exclude_files = get_option( 'autoptimize_' . $type . '_exclude', '' );
+					} else {
+						return;
 					}
 					break;
-				case 'wclmac':
-					if( class_exists('WCL_Plugin') ) {
-						$exclude_files = WCL_Plugin::app()->getOption($type . '_exclude', '');
+				case 'wmac':
+					if(
+						class_exists('WMAC_Plugin')
+						&& ( WMAC_Plugin::app()->getOption( 'js_optimize', false )
+						     || WMAC_Plugin::app()->getOption( 'css_optimize', false )
+						)
+					) {
+						$exclude_files = WMAC_Plugin::app()->getOption($type . '_exclude', '');
+					} else {
+						return;
 					}
 					break;
 				case 'wclp':
-					if( class_exists('WCL_Plugin') ) {
+					if (
+						class_exists( 'WCL_Plugin' )
+						&& ( WCL_Plugin::app()->getOption( 'remove_js_version', false )
+						    || WCL_Plugin::app()->getOption( 'remove_css_version', false )
+						)
+					) {
 						$exclude_files = WCL_Plugin::app()->getOption('remove_version_exclude', '');
+					} else {
+						return;
 					}
 					break;
+				default:
+					return;
 			}
 
 			// For clearfy need new line
 			$delimeter = $index == 'wclp' ? "\n" : ",";
-			$current_exclude_files = !empty($exclude_files) ? array_filter(array_map('trim', explode($delimeter, $exclude_files))) : [];
+			$current_exclude_files = !empty($exclude_files) ? array_filter(array_map('trim', explode($delimeter, $exclude_files))) : array();
 
 			$delete_files = array_diff($sided_exclude_files['before'][$type], $sided_exclude_files['after'][$type]);
 			$new_files = array_diff($sided_exclude_files['after'][$type], $current_exclude_files);
@@ -1514,7 +1533,7 @@
 			if( empty($current_exclude_files) && !empty($new_files) ) {
 				$current_exclude_files = $new_files;
 			} else if( !empty($current_exclude_files) ) {
-				$new_exclude_files = [];
+				$new_exclude_files = array();
 				foreach($current_exclude_files as $file) {
 
 					if( !in_array($file, $delete_files) ) {
@@ -1535,11 +1554,6 @@
 						WMAC_Plugin::app()->updateOption($type . '_exclude', implode(', ', $current_exclude_files));
 					}
 					break;
-				case 'wclmac':
-					if( class_exists('WCL_Plugin') ) {
-						WCL_Plugin::app()->updateOption($type . '_exclude', implode(', ', $current_exclude_files));
-					}
-					break;
 				case 'wclp':
 					if( class_exists('WCL_Plugin') ) {
 						WCL_Plugin::app()->updateOption('remove_version_exclude', implode($delimeter, $current_exclude_files));
@@ -1557,10 +1571,10 @@
 		{
 			if( !empty($this->sided_plugins) && !$empty_before ) {
 				foreach($this->sided_plugins as $index => $sided_plugin) {
-					$sided_exclude_files[$index]['before'] = [
-						'js' => [],
-						'css' => []
-					];
+					$sided_exclude_files[$index]['before'] = array(
+						'js' => array(),
+						'css' => array()
+					);
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
 
@@ -1570,7 +1584,7 @@
 			}
 
 			if( isset($_POST['sided_plugins']) && !empty($_POST['sided_plugins']) ) {
-				$sided_plugins_options = [];
+				$sided_plugins_options = array();
 				foreach($_POST['sided_plugins'] as $plugin => $types) {
 					foreach($types as $type => $urls) {
 						foreach($urls as $url => $active) {
@@ -1585,12 +1599,12 @@
 			}
 
 			if( !empty($this->sided_plugins) ) {
-				$this->sided_plugin_files = [];
+				$this->sided_plugin_files = array();
 				foreach($this->sided_plugins as $index => $sided_plugin) {
-					$sided_exclude_files[$index]['after'] = [
-						'js' => [],
-						'css' => []
-					];
+					$sided_exclude_files[$index]['after'] = array(
+						'js' => array(),
+						'css' => array()
+					);
 					// For clearfy need full url
 					$full = ($index == 'wclp' ? true : false);
 
