@@ -239,7 +239,7 @@ textarea::placeholder {
   font-style: normal;
   text-align: left;
   color: #fff;
-  background: #c5baa0;
+  background: #b4b5b5;
   border-radius: 2px;
 }
 #wbcr-gnz .wbcr-gnz-help-hint img {
@@ -638,7 +638,6 @@ textarea::placeholder {
   position: absolute;
   top: 4px;
   right: 4px;
-  background: #a29e9e;
 }
 #wbcr-gnz .table__loaded-state {
   position: relative;
@@ -776,6 +775,9 @@ textarea::placeholder {
   font-size: 13px;
   font-weight: bold;
 }
+#wbcr-gnz .table__label .wbcr-gnz-help-hint {
+  vertical-align: bottom;
+}
 #wbcr-gnz .table__options {
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -899,7 +901,7 @@ textarea::placeholder {
   vertical-align: middle;
   border-radius: 15px;
 }
-#wbcr-gnz .switch__inner {
+#wbcr-gnz .switch .switch__inner {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -911,25 +913,25 @@ textarea::placeholder {
   font-size: 13px;
   line-height: 31px;
 }
-#wbcr-gnz .switch__inner::before,
-#wbcr-gnz .switch__inner::after {
+#wbcr-gnz .switch .switch__inner::before,
+#wbcr-gnz .switch .switch__inner::after {
   -webkit-flex-shrink: 0;
   -ms-flex-negative: 0;
   flex-shrink: 0;
   width: 100%;
 }
-#wbcr-gnz .switch__inner::before {
+#wbcr-gnz .switch .switch__inner::before {
   content: attr(data-off);
   padding: 0 0 0 12px;
   background: #C8CFD7;
 }
-#wbcr-gnz .switch__inner::after {
+#wbcr-gnz .switch .switch__inner::after {
   content: attr(data-on);
   padding: 0 12px 0 0;
   text-align: right;
   background: #414B56;
 }
-#wbcr-gnz .switch__slider {
+#wbcr-gnz .switch .switch__slider {
   position: absolute;
   top: 5px;
   left: 5px;
@@ -939,15 +941,42 @@ textarea::placeholder {
   border-radius: 50%;
   background: #FFCB1E;
 }
-#wbcr-gnz .switch__input:checked ~ .switch__inner,
-#wbcr-gnz .switch__input:checked:focus ~ .switch__inner {
+#wbcr-gnz .switch:not(.wbcr-gnz-switch-premium) .switch__input:checked ~ .switch__inner,
+#wbcr-gnz .switch:not(.wbcr-gnz-switch-premium) .switch__input:checked:focus ~ .switch__inner {
   -webkit-transform: translateX(0);
   transform: translateX(0);
 }
-#wbcr-gnz .switch__input:checked ~ .switch__slider,
-#wbcr-gnz .switch__input:checked:focus ~ .switch__slider {
+#wbcr-gnz .switch:not(.wbcr-gnz-switch-premium) .switch__input:checked ~ .switch__slider,
+#wbcr-gnz .switch:not(.wbcr-gnz-switch-premium) .switch__input:checked:focus ~ .switch__slider {
   left: 45px;
   background: #97A4B2;
+}
+#wbcr-gnz .switch.wbcr-gnz-switch-premium {
+  position: relative;
+}
+#wbcr-gnz .switch.wbcr-gnz-switch-premium .switch__slider {
+  background: #ababab;
+}
+#wbcr-gnz .switch.wbcr-gnz-switch-premium .switch__inner::after {
+  background: #d3d4d4;
+}
+#wbcr-gnz .switch.wbcr-gnz-switch-premium:after {
+  content: 'PRO';
+  display: block;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 2.77;
+  color: #fff;
+  background: #9a9a9a;
+  width: 20px;
+  height: 20px;
+  /* padding: 3px 0; */
+  text-align: center;
+  vertical-align: top;
+  border-radius: 20px;
 }
 #wbcr-gnz .tooltip {
   position: relative;

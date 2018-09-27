@@ -528,8 +528,8 @@
 		{
 			// Disable
 			$html = '<td>';
-			$html .= '<label class="switch">';
-			$html .= '<input class="switch__input visually-hidden wbcr-gnz-disable" type="checkbox"' . checked($state, true, false);
+			$html .= '<label class="switch' . ($type_name == 'plugins' ? ' wbcr-gnz-switch-premium' : '') . '">';
+			$html .= '<input class="switch__input visually-hidden' . ($type_name == 'plugins' ? '' : ' wbcr-gnz-disable') . '" type="checkbox"' . checked($state, true, false);
 			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "") . " data-default=''" . '/>';
 			$html .= '<input type="hidden" name="disabled' . $id . '[state]" value="' . ($state ? 'disable' : '') . '"/>';
 			$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
@@ -547,7 +547,11 @@
 			if( $state ) {
 				$html .= ' style="display: none;"';
 			}
-			$html .= '><p>' . __('Click the switch in the <b>Load resource?</b> column to display the conditions for loading the resource.', 'gonzales') . '</p>';
+			if( 'plugins' != $type_name ) {
+				$html .= '><p>' . __('Click the switch in the <b>Load resource?</b> column to display the conditions for loading the resource.', 'gonzales') . '</p>';
+			} else {
+				$html .= '><p>' . __('Устанавливая логику для плагина, она будет примена для всех его ресурсов. Данная возможность доступна только в платной версии плагина.', 'gonzales') . '</p>';
+			}
 			$html .= '</div>';
 			$html .= '<span class="' . $class_name . '"';
 			if( !$state ) {
@@ -568,7 +572,7 @@
 				$html .= " style='display: none;'";
 			}
 			$html .= ">";
-			$html .= '<div class="table__label">' . __('Exclude', 'gonzales') . ':</div>';
+			$html .= '<div class="table__label">' . __('Exclude', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('Вы можете отключить этот ресурс на всех страницах вашего сайта, кроме нижеперечесленных разделов и типов страниц. Отметьте разделы и типы страниц, в которых вы не хотите отключать ресурс.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
 			$html .= '<ul class="table__options">';
 
 			$html .= '<li class="table__options-item">';
