@@ -554,8 +554,8 @@
 		{
 			// Disable
 			$html = '<td>';
-			$html .= '<label class="switch' . ($type_name == 'plugins' ? ' wbcr-gnz-switch-premium' : '') . '">';
-			$html .= '<input class="switch__input visually-hidden' . ($type_name == 'plugins' ? '' : ' wbcr-gnz-disable') . '" type="checkbox"' . checked($state, true, false);
+			$html .= '<label class="switch' . ($type_name == 'plugins' ? apply_filters('wbcr_gnz_switch_premium', ' wbcr-gnz-switch-premium') : '') . '">';
+			$html .= '<input class="switch__input visually-hidden' . apply_filters('wbcr_gnz_switch_plugin_premium', '') . '" type="checkbox"' . checked($state, true, false);
 			$html .= ('plugins' == $type_name ? " data-handle='{$handle}'" : "") . '/>';
 			$html .= '<input type="hidden" name="disabled' . $id . '[state]" value="' . ($state ? 'disable' : '') . '"/>';
 			$html .= '<span class="switch__inner" data-off="' . __('No', 'gonzales') . '" data-on="' . __('Yes', 'gonzales') . '"></span>';
