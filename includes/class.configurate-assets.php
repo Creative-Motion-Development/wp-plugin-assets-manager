@@ -209,8 +209,8 @@
 			echo '<div class="wbcr-gnz-panel__logo"></div>';
 			echo '<ul class="wbcr-gnz-panel__data  panel__data-main">';
 			echo '<li class="wbcr-gnz-panel__data-item __info-query">' . __('Total requests', 'gonzales') . ': --</li>';
-			echo '<li class="wbcr-gnz-panel__data-item __info-all-weight">' . __('Total weight', 'gonzales') . ': <span class="wbcr-gnz-panel__color-1">--</span></li>';
-			echo '<li class="wbcr-gnz-panel__data-item __info-opt-weight">' . __('Optimized weight', 'gonzales') . ': <span class="wbcr-gnz-panel__color-2">--</span></li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-all-weight">' . __('Total size', 'gonzales') . ': <span class="wbcr-gnz-panel__color-1">--</span></li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-opt-weight">' . __('Optimized size', 'gonzales') . ': <span class="wbcr-gnz-panel__color-2">--</span></li>';
 			echo '</ul>';
 			echo '<div class="wbcr-gnz-panel__data-hidden  tooltip  tooltip-bottom" data-tooltip="' . __('Total requests', 'gonzales') . ': --; ' . __('Total weight', 'gonzales') . ': -- Kb; ' . __('Optimized weight', 'gonzales') . ': -- Kb">';
 			echo '<img src="' . WGZ_PLUGIN_URL . '/assets/img/info.svg" width="36" height="36" alt=""/>';
@@ -258,8 +258,8 @@
 
 			// Info
 			echo '<div class="info">';
-			echo '<p>' . __('Below you can disable/enable CSS and JS files on a per page/post basis, as well as by custom post types. We recommend testing this locally or on a staging site first, as you could break the appearance of your live site. If you aren\'t sure about a certain script, you can try clicking on it, as a lot of authors will mention their plugin or theme in the header of the source code.', 'gonzales') . '</p>';
-			echo '<p>' . __('If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales') . '</p>';
+			echo '<p><b>' . __('Important! Each page of your website has different sets of scripts and styles files.', 'gonzales') . '</b></p>';
+			echo '<p>' . __('Use this feature to disable unwanted scripts and styles by setting up the logic for different types of pages. We recommend working in "Safe mode" because disabling any necessary system script file can corrupt the website. All changes done in Safe mode are available for administrator only. This way only you, as the administrator, can see the result of optimization. To enable the changes for other users, uncheck Safe mode.', 'gonzales') . '</p>';
 			$upgrade_to_premium_info = '<div class="info__go-to-premium">';
 			$upgrade_to_premium_info .= '<p>' . __('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales') . '</p>';
 			$upgrade_to_premium_info .= '<a class="button_pro" href="#">' . __('Upgrade to Premium', 'gonzales') . '</a>';
@@ -576,7 +576,7 @@
 			if( 'plugins' != $type_name ) {
 				$html .= '><p>' . __('Click the switch in the <b>Load resource?</b> column to display the conditions for loading the resource.', 'gonzales') . '</p>';
 			} else {
-				$html .= '><p>' . __('Устанавливая логику для плагина, она будет примена для всех его ресурсов. Данная возможность доступна только в платной версии плагина.', 'gonzales') . '</p>';
+				$html .= '><p>' . __('Set the plugin logic to apply it to all plugin’s resources. This feature available at the paid version.', 'gonzales') . '</p>';
 			}
 			$html .= '</div>';
 			$html .= '<span class="' . $class_name . '"';
@@ -598,7 +598,7 @@
 				$html .= " style='display: none;'";
 			}
 			$html .= ">";
-			$html .= '<div class="table__label">' . __('Exclude', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('Вы можете отключить этот ресурс на всех страницах вашего сайта, кроме нижеперечесленных разделов и типов страниц. Отметьте разделы и типы страниц, в которых вы не хотите отключать ресурс.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
+			$html .= '<div class="table__label">' . __('Exclude', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('You can disable this resource for all pages, except sections and page types listed below. Specify sections and page types with the enabled resource.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
 			$html .= '<ul class="table__options">';
 
 			$html .= '<li class="table__options-item">';
@@ -887,16 +887,7 @@
 
 				$this->updateOption('assets_manager_options', $options);
 
-				// todo: test cache control
-				if( function_exists('w3tc_pgcache_flush') ) {
-					w3tc_pgcache_flush();
-				} elseif( function_exists('wp_cache_clear_cache') ) {
-					wp_cache_clear_cache();
-				} elseif( function_exists('rocket_clean_files') ) {
-					rocket_clean_files(esc_url($_SERVER['HTTP_REFERER']));
-				} else if( isset($GLOBALS['wp_fastest_cache']) && method_exists($GLOBALS['wp_fastest_cache'], 'deleteCache') ) {
-					$GLOBALS['wp_fastest_cache']->deleteCache();
-				}
+				WbcrFactoryClearfy000_Helpers::flushPageCache();
 			}
 		}
 
@@ -1301,10 +1292,10 @@
 						$hint = '';
 						if( $index == 'wclp' ) {
 							//$title = 'Clearfy';
-							$hint = __('Вы включили опцию &#34;Удалить переменные запроса для статических ресурсов&#34; в плагине Clearfy, в этой колонке настроек вы можете исключить скрипты и стили, для которых вы хотите оставить переменые запроса. Просто выберите &#34;Нет&#34;, чтобы добавить файл в исключения.', 'gonzales');
+							$hint = __('You’ve enabled &#34;Remove query strings&#34; from static resources in the &#34;Clearfy&#34; plugin. This list of settings helps you to exclude the necessary scripts and styles with remaining query strings. Press No to add a file to the excluded list.', 'gonzales');
 						} else if( $index == 'wmac' ) {
 							//$title = __('Minify and Combine', 'gonzales');
-							$hint = __('Вы включили опцию &#34;Оптимизировать js скрипты?&#34; и &#34;Оптимизировать css&#34; в плагине &#34;Сжатие и Объединения&#34;. С помощью этой колонки настроек, вы можете исключить скрипты и стили, которые вы не хотите оптимизировать. Чтобы добавить файл в исключения просто нажмите кнопку &#34;Нет&#34;', 'gonzales');
+							$hint = __('You’ve enabled the &#34;Optimize js scripts?&#34; and &#34;Optimize CSS options&#34; in the &#34;Minify & Combine plugin&#34;. These settings exclude scripts and styles that you don’t want to optimize. Press No to add a file to the excluded list.', 'gonzales');
 						} //else {
 						//$title = $data['Name'];
 						//}
