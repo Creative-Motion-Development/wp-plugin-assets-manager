@@ -64,11 +64,11 @@
 		$('.wbcr-reset-button').on('click', function() {
 		    $('.wbcr-gnz-disable').each(function() {
 		        $(this).prop('checked', false).trigger('change');
-		        $(this).closest('input').val($(this).data('default'));
+		        $(this).closest('input').val('');
             });
 		    $('.wbcr-gnz-sided-disable').each(function() {
-                $(this).prop('checked', $(this).data('default') != 1).trigger('change');
-                $(this).closest('input').val($(this).data('default'));
+                $(this).prop('checked', false).trigger('change');
+                $(this).closest('input').val(1);
             });
 		});
 
