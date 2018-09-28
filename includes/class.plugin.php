@@ -64,7 +64,8 @@
 					parent::__construct($plugin_path, $data);
 				}
 
-				$this->setTextDomain();
+				self::app()->setTextDomain('gonzales', WGZ_PLUGIN_DIR);
+
 				$this->setModules();
 				
 				$this->globalScripts();
@@ -82,20 +83,6 @@
 				return self::$app;
 			}
 
-			// todo: перенести этот медот в фреймворк
-			protected function setTextDomain()
-			{
-				$domain = 'gonzales';
-				$locale = apply_filters('plugin_locale', is_admin()
-					? get_user_locale()
-					: get_locale(), $domain);
-				$mofile = $domain . '-' . $locale . '.mo';
-
-				if( !load_textdomain($domain, WGZ_PLUGIN_BASE . '/languages/' . $mofile) ) {
-					load_muplugin_textdomain($domain);
-				}
-			}
-			
 			protected function setModules()
 			{
 				if( !$this->as_addon ) {

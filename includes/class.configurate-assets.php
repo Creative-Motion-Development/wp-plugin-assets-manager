@@ -241,8 +241,9 @@
 
 			// Info
 			echo '<div class="info">';
-			echo '<p>' . __('Below you can disable/enable CSS and JS files on a per page/post basis, as well as by custom post types. We recommend testing this locally or on a staging site first, as you could break the appearance of your live site. If you aren\'t sure about a certain script, you can try clicking on it, as a lot of authors will mention their plugin or theme in the header of the source code.', 'gonzales') . '</p>';
-			echo '<p>' . __('If for some reason you run into trouble, you can always enable everything again to reset the settings.', 'gonzales') . '</p>';
+			echo '<p><b>' . __('Важно! На каждой странице вашего сайта подключаются разные наборы файлов скриптов и стилей.', 'gonzales') . '</b></p>';
+			echo '<p>' . __('Используйте этот инструмент для отключения неиспользуемых скриптов и стилей, устанавливая логику для разных типов страниц. Мы рекомендуем вам работать в “Безопасном режиме”, так как вы можете нарушить работу сайта, если отключите системные файлы скриптов, без которых невозможна полноценная работа сайта. В безопасном режиме, все ваши изменения будут работать только для администратора, это необходимо для того, чтобы только вы могли увидеть результат оптимизации. Чтобы изменения вступили в силу для всех остальных пользователей, просто снимите галочку “Безопасный режим”.
+', 'gonzales') . '</p>';
 			echo '<div class="info__go-to-premium">';
 			echo '<p>' . __('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales') . '</p>';
 			echo '<a class="button_pro" href="#">' . __('Upgrade to Premium', 'gonzales') . '</a>';
@@ -861,16 +862,7 @@
 
 				$this->updateOption('assets_manager_options', $options);
 
-				// todo: test cache control
-				if( function_exists('w3tc_pgcache_flush') ) {
-					w3tc_pgcache_flush();
-				} elseif( function_exists('wp_cache_clear_cache') ) {
-					wp_cache_clear_cache();
-				} elseif( function_exists('rocket_clean_files') ) {
-					rocket_clean_files(esc_url($_SERVER['HTTP_REFERER']));
-				} else if( isset($GLOBALS['wp_fastest_cache']) && method_exists($GLOBALS['wp_fastest_cache'], 'deleteCache') ) {
-					$GLOBALS['wp_fastest_cache']->deleteCache();
-				}
+				WbcrFactoryClearfy000_Helpers::flushPageCache();
 			}
 		}
 
