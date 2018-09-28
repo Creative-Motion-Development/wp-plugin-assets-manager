@@ -576,7 +576,7 @@
 			if( 'plugins' != $type_name ) {
 				$html .= '><p>' . __('Click the switch in the <b>Load resource?</b> column to display the conditions for loading the resource.', 'gonzales') . '</p>';
 			} else {
-				$html .= '><p>' . __('Set the plugin logic to apply it to all plugin’s resources. This feature available at the paid version.', 'gonzales') . '</p>';
+				$html .= '><p>' . apply_filters('wbcr_gnz_conditions_note_premium', __('Set the plugin logic to apply it to all plugin’s resources. This feature available at the paid version.', 'gonzales')) . '</p>';
 			}
 			$html .= '</div>';
 			$html .= '<span class="' . $class_name . '"';
