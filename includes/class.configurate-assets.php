@@ -357,6 +357,14 @@
 								}
 
 								$comment = (!empty($deps) ? '<span class="wbcr-use-by-comment">' . __('In use by', 'gonzales') . ' ' . implode(', ', $deps) . '</span>' : '');
+								$requires = '';
+								if (!empty($row['deps'])) {
+									$rdeps = array();
+									foreach($row['deps'] as $dep_val) {
+										$rdeps[] = '<a href="#' . $type_name . '-' . $dep_val . '">' . $dep_val . '</a>';
+									}
+									$requires = ($comment ? '<br>' : '') . '<span class="wbcr-use-by-comment">' . __('Requires', 'gonzales') . ' ' . implode(', ', $rdeps) . '</span>';
+								}
 
 								echo '<tr>';
 
@@ -386,7 +394,7 @@
 								echo '<div class="table__script-version">';
 								echo __('Version', 'gonzales') . ': ' . (!empty($row['ver']) ? $row['ver'] : __('--', 'gonzales'));
 								echo '</div>';
-								echo '<div>' . $comment . '</div>';
+								echo '<div>' . $comment . $requires . '</div>';
 								echo '</td>';
 
 								// Controls for other plugins
