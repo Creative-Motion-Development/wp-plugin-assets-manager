@@ -149,35 +149,24 @@
 		 */
 		public function pluginsLoaded()
 		{
-			if ( defined( 'LOADING_GONZALES_AS_ADDON' ) ) {
-				$this->sided_plugins = array(
-					'aopt' => 'autoptimize/autoptimize.php',
-					'wmac' => 'minify-and-combine/minify-and-combine.php'
-				);
+			$this->sided_plugins = array(
+				'aopt' => 'autoptimize/autoptimize.php',
+				'wmac' => 'minify-and-combine/minify-and-combine.php'
+			);
 
-				if (
-					class_exists( 'WCL_Plugin' )
-					&& ( WCL_Plugin::app()->getOption( 'remove_js_version', false )
-					    || WCL_Plugin::app()->getOption( 'remove_css_version', false )
-					)
-				) {
-					$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
-				}
-			} else {
-				$this->sided_plugins = array(
-					'aopt' => 'autoptimize/autoptimize.php',
-					'wmac' => 'wp-plugin-minify-and-combine/minify-and-combine.php'
-				);
-
-				if (
-					class_exists( 'WCL_Plugin' )
-					&& ( WCL_Plugin::app()->getOption( 'remove_js_version', false )
-					     || WCL_Plugin::app()->getOption( 'remove_css_version', false )
-					)
-				) {
-					$this->sided_plugins['wclp'] = 'clearfy/clearfy.php';
-				}
+			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getOption('remove_js_version', false) || WCL_Plugin::app()->getOption('remove_css_version', false)) ) {
+				$this->sided_plugins['wclp'] = 'clearfy/clearfy.php';
 			}
+
+			#comp remove
+			// Пока плагины не скомпилированы, они имеют другие имена директорий.
+			// После компиляции плагина этот кусок кода будет удален.
+			$this->sided_plugins['wmac'] = 'wp-plugin-minify-and-combine/minify-and-combine.php';
+
+			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getOption('remove_js_version', false) || WCL_Plugin::app()->getOption('remove_css_version', false)) ) {
+				$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
+			}
+			#endcomp
 
 			$this->sided_plugins = apply_filters('wbcr_gnz_sided_plugins', $this->sided_plugins);
 		}
@@ -358,7 +347,7 @@
 
 								$comment = (!empty($deps) ? '<span class="wbcr-use-by-comment">' . __('In use by', 'gonzales') . ' ' . implode(', ', $deps) . '</span>' : '');
 								$requires = '';
-								if (!empty($row['deps'])) {
+								if( !empty($row['deps']) ) {
 									$rdeps = array();
 									foreach($row['deps'] as $dep_val) {
 										$rdeps[] = '<a href="#' . $type_name . '-' . $dep_val . '">' . $dep_val . '</a>';
@@ -412,8 +401,7 @@
 						}
 					}
 
-					if( 'plugins' == $resource_type && !empty($resource_name)
-					) {
+					if( 'plugins' == $resource_type && !empty($resource_name) ) {
 						echo '</tbody>';
 					}
 				}
@@ -1321,6 +1309,7 @@
 		private function getActiveStatusForSidedPlugin($index, $options, $plugin, $type, $handle)
 		{
 			$active = isset($options[$plugin][$type]) && is_array($options[$plugin][$type]) && in_array($handle, $options[$plugin][$type]);
+
 			/*if( !$active && !isset($options[$plugin]) ) {
 
 				switch( $index ) {
