@@ -47,9 +47,7 @@
 				$this->as_addon = isset($data['as_addon']);
 				
 				if( $this->as_addon ) {
-					$plugin_parent = isset($data['plugin_parent'])
-						? $data['plugin_parent']
-						: null;
+					$plugin_parent = isset($data['plugin_parent']) ? $data['plugin_parent'] : null;
 					
 					if( !($plugin_parent instanceof Wbcr_Factory000_Plugin) ) {
 						throw new Exception('An invalid instance of the class was passed.');
@@ -64,8 +62,6 @@
 					parent::__construct($plugin_path, $data);
 				}
 
-				self::app()->setTextDomain('gonzales', WGZ_PLUGIN_DIR);
-
 				$this->setModules();
 				
 				$this->globalScripts();
@@ -73,6 +69,8 @@
 				if( is_admin() ) {
 					$this->adminScripts();
 				}
+
+				add_action('plugins_loaded', array($this, 'pluginsLoaded'));
 			}
 			
 			/**
@@ -81,6 +79,11 @@
 			public static function app()
 			{
 				return self::$app;
+			}
+
+			public function pluginsLoaded()
+			{
+				self::app()->setTextDomain('gonzales', WGZ_PLUGIN_DIR);
 			}
 
 			protected function setModules()
@@ -94,7 +97,7 @@
 					));
 				}
 			}
-			
+
 			private function registerPages()
 			{
 				$admin_path = WGZ_PLUGIN_DIR . '/admin/pages';

@@ -35,6 +35,12 @@
 		public $page_menu_position = 95;
 
 		/**
+		 * Доступена для мультисайтов
+		 * @var bool
+		 */
+		public $available_for_multisite = true;
+
+		/**
 		 * @param Wbcr_Factory000_Plugin $plugin
 		 */
 		public function __construct(Wbcr_Factory000_Plugin $plugin)
@@ -45,7 +51,6 @@
 				$this->internal = false;
 				$this->menu_target = 'options-general.php';
 				$this->add_link_to_plugin_actions = true;
-				$this->available_for_multisite = true;
 			} else {
 				$this->page_parent_page = 'performance';
 			}
