@@ -49,13 +49,13 @@
 		 */
 		function registerActionsAndFilters()
 		{
-			if( $this->getOption('disable_assets_manager', false) ) {
+			if( $this->getPopulateOption('disable_assets_manager', false) ) {
 				return;
 			}
 			
-			$on_frontend = $this->getOption('disable_assets_manager_on_front');
-			$on_backend = $this->getOption('disable_assets_manager_on_backend', true);
-			$is_panel = $this->getOption('disable_assets_manager_panel');
+			$on_frontend = $this->getPopulateOption('disable_assets_manager_on_front');
+			$on_backend = $this->getPopulateOption('disable_assets_manager_on_backend', true);
+			$is_panel = $this->getPopulateOption('disable_assets_manager_panel');
 
 			if( (!is_admin() && !$on_frontend) || (is_admin() && !$on_backend) ) {
 				add_filter('script_loader_src', array($this, 'unloadAssets'), 10, 2);
@@ -84,7 +84,7 @@
 
 			if( !$is_panel && ((is_admin() && !$on_backend) || (!is_admin() && !$on_frontend)) ) {
 				if( defined('LOADING_GONZALES_AS_ADDON') ) {
-					add_action('wbcr_clearfy_admin_bar_menu_items', array($this, 'clearfyAdminBarMenu'));
+					add_action('wbcr/clearfy/adminbar_menu_items', array($this, 'clearfyAdminBarMenu'));
 				} else {
 					add_action('admin_bar_menu', array($this, 'assetsManagerAdminBar'), 1000);
 				}
@@ -154,7 +154,7 @@
 				'wmac' => 'minify-and-combine/minify-and-combine.php'
 			);
 
-			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getOption('remove_js_version', false) || WCL_Plugin::app()->getOption('remove_css_version', false)) ) {
+			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getPopulateOption('remove_js_version', false) || WCL_Plugin::app()->getPopulateOption('remove_css_version', false)) ) {
 				$this->sided_plugins['wclp'] = 'clearfy/clearfy.php';
 			}
 
@@ -163,7 +163,7 @@
 			// После компиляции плагина этот кусок кода будет удален.
 			$this->sided_plugins['wmac'] = 'wp-plugin-minify-and-combine/minify-and-combine.php';
 
-			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getOption('remove_js_version', false) || WCL_Plugin::app()->getOption('remove_css_version', false)) ) {
+			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getPopulateOption('remove_js_version', false) || WCL_Plugin::app()->getPopulateOption('remove_css_version', false)) ) {
 				$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
 			}
 			#endcomp
@@ -178,7 +178,7 @@
 			}
 
 			$current_url = esc_url($this->getCurrentUrl());
-			$options = $this->getOption('assets_manager_options', array());
+			$options = $this->getPopulateOption('assets_manager_options', array());
 
 			echo '<div id="wbcr-gnz-wrapper" ';
 			if( isset($_GET['wbcr_assets_manager']) ) {
@@ -208,7 +208,7 @@
 			echo '<li class="wbcr-gnz-panel__data-item __info-off-js">' . __('Disabled js', 'gonzales') . ': --</li>';
 			echo '<li class="wbcr-gnz-panel__data-item __info-off-css">' . __('Disabled css', 'gonzales') . ': --</li>';
 			echo '</ul>';
-			$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="tooltip tooltip-bottom" data-tooltip="' . __('Это общая статистика, с помощью которой вы можете видеть свой результат оптимизации. Статистика доступна только в платной версии плагина.', 'gonzales') . '.">PRO</div></div>';
+			$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="tooltip tooltip-bottom" data-tooltip="' . __('This is the general statistics to see the optimization result. Available in the paid version only.', 'gonzales') . '.">PRO</div></div>';
 			echo apply_filters('wbcr_gnz_panel_premium', $panel_to_premium_info);
 			echo '</div>';
 			echo '<div class="wbcr-gnz-panel__right">';
@@ -246,12 +246,19 @@
 			echo '</ul>';
 
 			// Info
-			echo '<div class="info">';
+			echo '<div class="info"><div class="info__warning">';
 			echo '<p><b>' . __('Important! Each page of your website has different sets of scripts and styles files.', 'gonzales') . '</b></p>';
 			echo '<p>' . __('Use this feature to disable unwanted scripts and styles by setting up the logic for different types of pages. We recommend working in "Safe mode" because disabling any necessary system script file can corrupt the website. All changes done in Safe mode are available for administrator only. This way only you, as the administrator, can see the result of optimization. To enable the changes for other users, uncheck Safe mode.', 'gonzales') . '</p>';
-			$upgrade_to_premium_info = '<div class="info__go-to-premium">';
-			$upgrade_to_premium_info .= '<p>' . __('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'gonzales') . '</p>';
-			$upgrade_to_premium_info .= '<a class="button_pro" href="#">' . __('Upgrade to Premium', 'gonzales') . '</a>';
+			echo '<p>' . sprintf(__('For more details and user guides, check the plugin’s <a href="%s" target="_blank" rel="noreferrer noopener">documentation</a>.', 'gonzales'), WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl(WGZ_Plugin::app()->getPluginName(), 'docs')) . '</p>';
+			echo '</div>';
+			$upgrade_to_premium_info = '<div class="info__go-to-premium"><ul>';
+			$upgrade_to_premium_info .= '<li>' . __('Disable plugins (groups of scripts)', 'gonzales') . '</li>';
+			$upgrade_to_premium_info .= '<li>' . __('Conditions by the link template', 'gonzales') . '</li>';
+			$upgrade_to_premium_info .= '<li>' . __('Conditions by the regular expression', 'gonzales') . '</li>';
+			$upgrade_to_premium_info .= '<li>' . __('Safe mode', 'gonzales') . '</li>';
+			$upgrade_to_premium_info .= '<li>' . __('Statistics and optimization results', 'gonzales') . '</li>';
+			$upgrade_to_premium_info .= '</ul>';
+			$upgrade_to_premium_info .= '<a class="button_pro" href="' . WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl(WGZ_Plugin::app()->getPluginName(), 'assets-manager') . '" target="_blank" rel="noreferrer noopener">' . __('Upgrade to Premium', 'gonzales') . '</a>';
 			$upgrade_to_premium_info .= '</div>';
 			echo apply_filters('wbcr_gnz_upgrade_to_premium_info', $upgrade_to_premium_info);
 			echo '</div>';
@@ -670,7 +677,7 @@
 				$control_html .= ' style="display: none;"';
 			}
 			$control_html .= '>';
-			$control_html .= '<label class="table__label" for="disabled' . $id . '[custom][]" title="' . __('Example', 'gonzales') . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __('Enter URL (set * for mask)', 'gonzales') . ':</label>';
+			$control_html .= '<label class="table__label" for="disabled' . $id . '[custom][]" title="' . __('Example', 'gonzales') . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __('Enter URL (set * for mask)', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('You can disable the resource only for the pages with the matched to the template address. For example, if you set the template for the link as http://yoursite.test/profile/*, then the resource is disabled for the following pages: http://yoursite.test/profile/12, http://yoursite.test/profile/43, http://yoursite.test/profile/999. If you don’t use the asterisk symbol in the template then the plugin will disable the resource only for the pages with 100% match in the specified link type. This feature is available at the paid version.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
 			$control_html .= '<div class="table__field-item">';
 			$control_html .= '<input class="table__field-input" name="disabled' . $id . '[custom][]" type="text" placeholder="http://yoursite.test/profile/*" value="" disabled="disabled">';
 			$control_html .= '<button class="table__field-add" type="button" aria-label="' . __('Add field', 'gonzales') . '" disabled></button>';
@@ -683,7 +690,7 @@
 				$control_html .= " style='display: none;'";
 			}
 			$control_html .= ">";
-			$control_html .= '<label class="table__label" for="disabled' . $id . '[regex]">' . __('Enter regular expression', 'gonzales') . ':</label>';
+			$control_html .= '<label class="table__label" for="disabled' . $id . '[regex]">' . __('Enter regular expression', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
 			$control_html .= '<textarea class="table__textarea" rows="3" name="disabled' . $id . '[regex]" placeholder="^rockstar-[0-9]{2,5}" disabled="disabled"></textarea>';
 			$control_html .= "</div>";
 			$html .= apply_filters('wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled);
@@ -721,7 +728,7 @@
 					return;
 				}
 
-				$options = $this->getOption('assets_manager_options', array());
+				$options = $this->getPopulateOption('assets_manager_options', array());
 				$current_url = esc_url($this->getCurrentUrl());
 
 				if( isset($_POST['disabled']) && !empty($_POST['disabled']) ) {
@@ -873,7 +880,7 @@
 
 				do_action('wbcr_gnz_form_save');
 
-				$this->updateOption('assets_manager_options', $options);
+				$this->updatePopulateOption('assets_manager_options', $options);
 
 				WbcrFactoryClearfy000_Helpers::flushPageCache();
 			}
@@ -889,7 +896,7 @@
 		 */
 		private function getDisabledFromOptions($type, $handle)
 		{
-			$options = $this->getOption('assets_manager_options', array());
+			$options = $this->getPopulateOption('assets_manager_options', array());
 
 			$results = apply_filters('wbcr_gnz_get_disabled_from_options', false, $options, $type, $handle);
 			if( false !== $results ) {
@@ -913,7 +920,7 @@
 		 */
 		private function getEnabledFromOptions($type, $handle)
 		{
-			$options = $this->getOption('assets_manager_options', array());
+			$options = $this->getPopulateOption('assets_manager_options', array());
 
 			$results = apply_filters('wbcr_gnz_get_enabled_from_options', false, $options, $type, $handle);
 			if( false !== $results ) {
@@ -1190,7 +1197,7 @@
 
 			$this->sided_plugin_files[$index][$type] = array();
 
-			$options = $this->getOption('assets_manager_sided_plugins', array());
+			$options = $this->getPopulateOption('assets_manager_sided_plugins', array());
 
 			$plugin = $this->getSidedPluginName($index);
 
@@ -1279,14 +1286,12 @@
 
 						$hint = '';
 						if( $index == 'wclp' ) {
-							//$title = 'Clearfy';
 							$hint = __('You’ve enabled &#34;Remove query strings&#34; from static resources in the &#34;Clearfy&#34; plugin. This list of settings helps you to exclude the necessary scripts and styles with remaining query strings. Press No to add a file to the excluded list.', 'gonzales');
 						} else if( $index == 'wmac' ) {
-							//$title = __('Minify and Combine', 'gonzales');
 							$hint = __('You’ve enabled the &#34;Optimize js scripts?&#34; and &#34;Optimize CSS options&#34; in the &#34;Minify & Combine plugin&#34;. These settings exclude scripts and styles that you don’t want to optimize. Press No to add a file to the excluded list.', 'gonzales');
-						} //else {
-						//$title = $data['Name'];
-						//}
+						} else if( $index == 'aopt' ) {
+							$hint = __('You’ve enabled the &#34;Optimize js scripts?&#34; and &#34;Optimize CSS options&#34; in the &#34;Autoptimize&#34;. These settings exclude scripts and styles that you don’t want to optimize. Press No to add a file to the excluded list.', 'gonzales');
+						}
 						$html .= '<th class="table__column_switch"><span class="table__th-external-plugin">' . $title . ':<i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . $hint . '."><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></span><em>' . $text . '</em></th>';
 					}
 				}
@@ -1316,12 +1321,12 @@
 					case 'wclp':
 						if( class_exists('WCL_Plugin') ) {
 							if( 'plugins' == $type ) {
-								$active = WCL_Plugin::app()->getOption('remove_js_version', false);
+								$active = WCL_Plugin::app()->getPopulateOption('remove_js_version', false);
 								if( !$active ) {
-									$active = WCL_Plugin::app()->getOption('remove_css_version', false);
+									$active = WCL_Plugin::app()->getPopulateOption('remove_css_version', false);
 								}
 							} else {
-								$active = WCL_Plugin::app()->getOption('remove_' . $type . '_version', false);
+								$active = WCL_Plugin::app()->getPopulateOption('remove_' . $type . '_version', false);
 							}
 						}
 						break;
@@ -1344,7 +1349,7 @@
 		public function getAdditionalControlsColumns($html, $type, $handle, $plugin_handle)
 		{
 			if( !empty($this->sided_plugins) ) {
-				$options = $this->getOption('assets_manager_sided_plugins', array());
+				$options = $this->getPopulateOption('assets_manager_sided_plugins', array());
 
 				foreach($this->sided_plugins as $index => $plugin_path) {
 					if( $this->isComponentActive($index) ) {
@@ -1519,17 +1524,17 @@
 					}
 					break;
 				case 'wmac':
-					if( class_exists('WMAC_Plugin') && (WMAC_Plugin::app()->getOption('js_optimize', false) || WMAC_Plugin::app()->getOption('css_optimize', false))
+					if( class_exists('WMAC_Plugin') && (WMAC_Plugin::app()->getPopulateOption('js_optimize', false) || WMAC_Plugin::app()->getPopulateOption('css_optimize', false))
 					) {
-						$exclude_files = WMAC_Plugin::app()->getOption($type . '_exclude', '');
+						$exclude_files = WMAC_Plugin::app()->getPopulateOption($type . '_exclude', '');
 					} else {
 						return;
 					}
 					break;
 				case 'wclp':
-					if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getOption('remove_js_version', false) || WCL_Plugin::app()->getOption('remove_css_version', false))
+					if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getPopulateOption('remove_js_version', false) || WCL_Plugin::app()->getPopulateOption('remove_css_version', false))
 					) {
-						$exclude_files = WCL_Plugin::app()->getOption('remove_version_exclude', '');
+						$exclude_files = WCL_Plugin::app()->getPopulateOption('remove_version_exclude', '');
 					} else {
 						return;
 					}
@@ -1566,12 +1571,12 @@
 					break;
 				case 'wmac':
 					if( class_exists('WMAC_Plugin') ) {
-						WMAC_Plugin::app()->updateOption($type . '_exclude', implode(', ', $current_exclude_files));
+						WMAC_Plugin::app()->updatePopulateOption($type . '_exclude', implode(', ', $current_exclude_files));
 					}
 					break;
 				case 'wclp':
 					if( class_exists('WCL_Plugin') ) {
-						WCL_Plugin::app()->updateOption('remove_version_exclude', implode($delimeter, $current_exclude_files));
+						WCL_Plugin::app()->updatePopulateOption('remove_version_exclude', implode($delimeter, $current_exclude_files));
 					}
 					break;
 			}
@@ -1610,7 +1615,7 @@
 						}
 					}
 				}
-				$this->updateOption('assets_manager_sided_plugins', $sided_plugins_options);
+				$this->updatePopulateOption('assets_manager_sided_plugins', $sided_plugins_options);
 			}
 
 			if( !empty($this->sided_plugins) ) {

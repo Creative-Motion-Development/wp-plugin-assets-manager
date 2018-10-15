@@ -92,13 +92,13 @@
 	{
 		global $wpdb;
 
-		if( WGZ_Plugin::app()->getOption('migrate_options_1_0_3') ) {
+		if( WGZ_Plugin::app()->getPopulateOption('migrate_options_1_0_3') ) {
 			return;
 		}
 		$assets = get_option('wbcr_gonzales_manager_options');
 
 		if( !empty($assets) ) {
-			WGZ_Plugin::app()->updateOption('assets_manager_options', $assets);
+			WGZ_Plugin::app()->updatePopulateOption('assets_manager_options', $assets);
 		}
 
 		delete_option('wbcr_gonzales_manager_options');
@@ -116,7 +116,7 @@
 			}
 		}
 
-		WGZ_Plugin::app()->updateOption('migrate_options_1_0_3', 1);
+		WGZ_Plugin::app()->updatePopulateOption('migrate_options_1_0_3', 1);
 		WGZ_Plugin::app()->flushOptionsCache();
 	}
 

@@ -213,6 +213,7 @@ input[type="text"]::placeholder, textarea::placeholder {
   right: 0;
   background: #FFF;
   overflow-y: auto;
+
 }
 
 #wbcr-gnz {
@@ -626,24 +627,40 @@ input[type="text"]::placeholder, textarea::placeholder {
   }
 
   .info {
+    display: table;
     padding: 0 30px 30px;
     color: #5C5C5C;
     font-size: 16px;
     line-height: 21px;
-  }
 
-  .info p {
-    margin: 0;
-  }
+    p {
+      margin: 0;
+      &:not(:last-child) {
+        margin-bottom: 25px;
+      }
+    }
 
-  .info p:not(:last-child) {
-    margin-bottom: 25px;
-  }
+    .info__warning, .info__go-to-premium {
+      display: table-cell;
+      width: 49%;
+      text-align: left;
+      vertical-align: top;
+      padding: 20px;
+      background: #f9f9f9;
+    }
 
-  .info__go-to-premium {
-    background: #fffde8;
-    border: 1px dashed #e0cb14;
-    padding: 20px
+    .info__go-to-premium {
+      display: table-cell;
+      background: #fffde8;
+      border: 1px dashed #e0cb14;
+      margin-left: 10px;
+      ul {
+        margin-left: 20px;
+        li {
+          margin-bottom: 5px;
+        }
+      }
+    }
   }
 
   .table {
