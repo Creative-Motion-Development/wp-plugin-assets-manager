@@ -10,17 +10,17 @@
 
 	$(function() {
 		$('.wbcr-gnz-disable').on('change', function(ev) {
-            var class_name = 'table__loaded-super-no';
+            var class_name = 'wbcr-gnz-table__loaded-super-no';
             var handle = $(this).data('handle');
             if (handle != undefined) {
-                class_name = 'table__loaded-no';
+                class_name = 'wbcr-gnz-table__loaded-no';
             }
 
 			if( $(this).prop('checked') == true ) {
                 $(this).closest('label').find('input[type="hidden"]').val('disable');
 				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').hide();
 				$(this).closest('tr').find('.wbcr-assets-manager-enable').show();
-                $(this).closest('tr').find('.wbcr-state').removeClass('table__loaded-yes');
+                $(this).closest('tr').find('.wbcr-state').removeClass('wbcr-gnz-table__loaded-yes');
                 $(this).closest('tr').find('.wbcr-state').addClass(class_name).trigger('cssClassChanged');
 
                 if (typeof wbcrChangeHandleState == 'function') {
@@ -32,7 +32,7 @@
 				$(this).closest('tr').find('.wbcr-assets-manager-enable').hide();
 				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').show();
                 $(this).closest('tr').find('.wbcr-state').removeClass(class_name);
-                $(this).closest('tr').find('.wbcr-state').addClass('table__loaded-yes').trigger('cssClassChanged');
+                $(this).closest('tr').find('.wbcr-state').addClass('wbcr-gnz-table__loaded-yes').trigger('cssClassChanged');
 
                 if (typeof wbcrChangeHandleState == 'function') {
                     wbcrChangeHandleState(this, 0);
@@ -74,7 +74,7 @@
 
 		$('.wbcr-state').bind('cssClassChanged', function() {
 		    var el = $(this).parent('td').parent('tr').find('.wbcr-info-data');
-		    if ($(this).hasClass('table__loaded-no') || $(this).hasClass('table__loaded-super-no')) {
+		    if ($(this).hasClass('wbcr-gnz-table__loaded-no') || $(this).hasClass('wbcr-gnz-table__loaded-super-no')) {
                 if (el.length > 0) {
                     el.data('off', 1);
                 }
@@ -93,26 +93,26 @@
             wbcrCalculateInformation();
         }
 
-        $('ul.tabs').on('click', 'button:not(.active)', function() {
+        $('ul.wbcr-gnz-tabs').on('click', 'button:not(.active)', function() {
             window.location.hash = '#' + $(this).data('hash');
             $(this)
                 .addClass('active').parent().siblings().find('button').removeClass('active')
-                .closest('.content').find('div.tabs-content').removeClass('active').eq($(this).parent().index()).addClass('active');
+                .closest('.content').find('div.wbcr-gnz-tabs-content').removeClass('active').eq($(this).parent().index()).addClass('active');
         });
 
         var tabHash = window.location.hash.replace('#', '');
         if (tabHash) {
-            $('ul.tabs button[data-hash="' + tabHash + '"]').click();
+            $('ul.wbcr-gnz-tabs button[data-hash="' + tabHash + '"]').click();
         } else {
-            $('ul.tabs li').eq(0).find('button').click();
+            $('ul.wbcr-gnz-tabs li').eq(0).find('button').click();
         }
 
         /*if ($('#wpadminbar').length > 0) {
             var h = $('#wpadminbar').height();
             if (h > 0) {
                 $('#wbcr-gnz header.wbcr-gnz-panel').css('top', h + 'px');
-                var top = $('#wbcr-gnz ul.tabs').css('top');
-                $('#wbcr-gnz ul.tabs').css('top', top.replace('px', '') * 1 + h + 'px');
+                var top = $('#wbcr-gnz ul.wbcr-gnz-tabs').css('top');
+                $('#wbcr-gnz ul.wbcr-gnz-tabs').css('top', top.replace('px', '') * 1 + h + 'px');
             }
         }*/
 
