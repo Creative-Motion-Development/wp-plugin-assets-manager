@@ -299,6 +299,7 @@
 							$enabled = $this->getEnabled($is_enabled, $options, $resource_type, $resource_name);
 
 							$plugin_state = $this->getState($is_disabled, $disabled, $current_url);
+							$plugin_state = apply_filters('wbcr_gnz_get_plugin_state', false, $plugin_state);
 
 							echo '<tr class="wbcr-gnz-table__alternate">';
 							echo '<th style="width:5%">' . __('Loaded', 'gonzales') . '</th>';
