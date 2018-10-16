@@ -907,6 +907,9 @@ body {
 }
 #WBCR .wbcr-gnz-table__script-path {
   color: #BBBBBA;
+}
+#WBCR .wbcr-gnz-table__script-path,
+#WBCR .wbcr-gnz-table__script-path a {
   font-size: 12px;
 }
 #WBCR .wbcr-gnz-table__script-version {
