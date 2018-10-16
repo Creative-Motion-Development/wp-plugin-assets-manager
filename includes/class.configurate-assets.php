@@ -83,7 +83,7 @@
 			}
 
 			if( !$is_panel && ((is_admin() && !$on_backend) || (!is_admin() && !$on_frontend)) ) {
-				if( defined('LOADING_GONZALES_AS_ADDON') ) {
+				if( defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 					add_action('wbcr/clearfy/adminbar_menu_items', array($this, 'clearfyAdminBarMenu'));
 				} else {
 					add_action('admin_bar_menu', array($this, 'assetsManagerAdminBar'), 1000);
@@ -178,7 +178,13 @@
 			}
 
 			$current_url = esc_url($this->getCurrentUrl());
-			$options = $this->getPopulateOption('assets_manager_options', array());
+
+			// todo: вынести в метод
+			if( is_multisite() && is_network_admin() ) {
+				$options = $this->getNetworkOption('assets_manager_options', array());
+			} else {
+				$options = $this->getOption('assets_manager_options', array());
+			}
 
 			echo '<div id="WBCR" class="wbcr-gnz-wrapper"';
 			if( isset($_GET['wbcr_assets_manager']) ) {
@@ -199,20 +205,20 @@
 			echo '<li class="wbcr-gnz-panel__data-item __info-all-weight">' . __('Total size', 'gonzales') . ': <span class="wbcr-gnz-panel__color-1">--</span></li>';
 			echo '<li class="wbcr-gnz-panel__data-item __info-opt-weight">' . __('Optimized size', 'gonzales') . ': <span class="wbcr-gnz-panel__color-2">--</span></li>';
 			echo '</ul>';
-			echo '<div class="wbcr-gnz-panel__data-hidden  tooltip  tooltip-bottom" data-tooltip="' . __('Total requests', 'gonzales') . ': --; ' . __('Total weight', 'gonzales') . ': -- Kb; ' . __('Optimized weight', 'gonzales') . ': -- Kb">';
+			echo '<div class="wbcr-gnz-panel__data-hidden  wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __('Total requests', 'gonzales') . ': --; ' . __('Total weight', 'gonzales') . ': -- Kb; ' . __('Optimized weight', 'gonzales') . ': -- Kb">';
 			echo '<img src="' . WGZ_PLUGIN_URL . '/assets/img/info.svg" width="36" height="36" alt=""/>';
 			echo '</div>';
 			echo '<ul class="wbcr-gnz-panel__data">';
 			echo '<li class="wbcr-gnz-panel__data-item __info-off-js">' . __('Disabled js', 'gonzales') . ': --</li>';
 			echo '<li class="wbcr-gnz-panel__data-item __info-off-css">' . __('Disabled css', 'gonzales') . ': --</li>';
 			echo '</ul>';
-			$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="tooltip tooltip-bottom" data-tooltip="' . __('This is the general statistics to see the optimization result. Available in the paid version only.', 'gonzales') . '.">PRO</div></div>';
+			$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="wbcr-gnz-tooltip wbcr-gnz-tooltip-bottom" data-tooltip="' . __('This is the general statistics to see the optimization result. Available in the paid version only.', 'gonzales') . '.">PRO</div></div>';
 			echo apply_filters('wbcr_gnz_panel_premium', $panel_to_premium_info);
 			echo '</div>';
 			echo '<div class="wbcr-gnz-panel__right">';
 			echo '<button class="wbcr-gnz-panel__reset wbcr-reset-button" type="button">' . __('Reset', 'gonzales') . '</button>';
 			echo '<input class="wbcr-gnz-panel__save" type="submit" value="' . __('Save', 'gonzales') . '">';
-			echo '<label class="wbcr-gnz-panel__checkbox  tooltip  tooltip-bottom" data-tooltip="' . __('In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales') . '.">';
+			echo '<label class="wbcr-gnz-panel__checkbox  wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __('In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales') . '.">';
 			echo apply_filters('wbcr_gnz_test_mode_checkbox', '<input class="wbcr-gnz-panel__checkbox-input visually-hidden" type="checkbox" disabled="disabled" checked/><span class="wbcr-gnz-panel__checkbox-text-premium">' . __('Safe mode <b>PRO</b>', 'gonzales') . '</span>');
 			echo '</label>';
 			echo '<button class="wbcr-gnz-panel__close wbcr-close-button" type="button" aria-label="' . __('Close', 'gonzales') . '" data-href="' . remove_query_arg('wbcr_assets_manager') . '"></button>';
@@ -238,7 +244,7 @@
 			echo '<ul class="wbcr-gnz-tabs">';
 			foreach($this->collection as $resource_type => $resources) {
 				echo '<li class="wbcr-gnz-tabs__item">';
-				echo '<button class="wbcr-gnz-tabs__button  wbcr-gnz-tabs__button--' . $resource_type . '" type="button" data-hash="' . $resource_type . '" aria-label="' . $resource_type . '"></button>';
+				echo '<div class="wbcr-gnz-tabs__button  wbcr-gnz-tabs__button--' . $resource_type . '" data-hash="' . $resource_type . '" aria-label="' . $resource_type . '"></div>';
 				echo '</li>';
 			}
 			echo '</ul>';
@@ -592,7 +598,7 @@
 				$html .= " style='display: none;'";
 			}
 			$html .= ">";
-			$html .= '<div class="wbcr-gnz-table__label">' . __('Exclude', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('You can disable this resource for all pages, except sections and page types listed below. Specify sections and page types with the enabled resource.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
+			$html .= '<div class="wbcr-gnz-table__label">' . __('Exclude', 'gonzales') . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __('You can disable this resource for all pages, except sections and page types listed below. Specify sections and page types with the enabled resource.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
 			$html .= '<ul class="wbcr-gnz-table__options">';
 
 			$html .= '<li class="wbcr-gnz-table__options-item">';
@@ -676,7 +682,7 @@
 				$control_html .= ' style="display: none;"';
 			}
 			$control_html .= '>';
-			$control_html .= '<label class="wbcr-gnz-table__label" for="disabled' . $id . '[custom][]" title="' . __('Example', 'gonzales') . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __('Enter URL (set * for mask)', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('You can disable the resource only for the pages with the matched to the template address. For example, if you set the template for the link as http://yoursite.test/profile/*, then the resource is disabled for the following pages: http://yoursite.test/profile/12, http://yoursite.test/profile/43, http://yoursite.test/profile/999. If you don’t use the asterisk symbol in the template then the plugin will disable the resource only for the pages with 100% match in the specified link type. This feature is available at the paid version.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
+			$control_html .= '<label class="wbcr-gnz-table__label" for="disabled' . $id . '[custom][]" title="' . __('Example', 'gonzales') . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __('Enter URL (set * for mask)', 'gonzales') . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __('You can disable the resource only for the pages with the matched to the template address. For example, if you set the template for the link as http://yoursite.test/profile/*, then the resource is disabled for the following pages: http://yoursite.test/profile/12, http://yoursite.test/profile/43, http://yoursite.test/profile/999. If you don’t use the asterisk symbol in the template then the plugin will disable the resource only for the pages with 100% match in the specified link type. This feature is available at the paid version.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
 			$control_html .= '<div class="wbcr-gnz-table__field-item">';
 			$control_html .= '<input class="wbcr-gnz-table__field-input" name="disabled' . $id . '[custom][]" type="text" placeholder="http://yoursite.test/profile/*" value="" disabled="disabled">';
 			$control_html .= '<button class="wbcr-gnz-table__field-add" type="button" aria-label="' . __('Add field', 'gonzales') . '" disabled></button>';
@@ -689,7 +695,7 @@
 				$control_html .= " style='display: none;'";
 			}
 			$control_html .= ">";
-			$control_html .= '<label class="wbcr-gnz-table__label" for="disabled' . $id . '[regex]">' . __('Enter regular expression', 'gonzales') . ': <i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . __('Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
+			$control_html .= '<label class="wbcr-gnz-table__label" for="disabled' . $id . '[regex]">' . __('Enter regular expression', 'gonzales') . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __('Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales') . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
 			$control_html .= '<textarea class="wbcr-gnz-table__textarea" rows="3" name="disabled' . $id . '[regex]" placeholder="^rockstar-[0-9]{2,5}" disabled="disabled"></textarea>';
 			$control_html .= "</div>";
 			$html .= apply_filters('wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled);
@@ -727,7 +733,13 @@
 					return;
 				}
 
-				$options = $this->getPopulateOption('assets_manager_options', array());
+				// todo: вынести в метод
+				if( is_multisite() && is_network_admin() ) {
+					$options = $this->getNetworkOption('assets_manager_options', array());
+				} else {
+					$options = $this->getOption('assets_manager_options', array());
+				}
+
 				$current_url = esc_url($this->getCurrentUrl());
 
 				if( isset($_POST['disabled']) && !empty($_POST['disabled']) ) {
@@ -879,7 +891,11 @@
 
 				do_action('wbcr_gnz_form_save');
 
-				$this->updatePopulateOption('assets_manager_options', $options);
+				if( is_multisite() && is_network_admin() ) {
+					$this->updateNetworkOption('assets_manager_options', $options);
+				} else {
+					$this->updateOption('assets_manager_options', $options);
+				}
 
 				WbcrFactoryClearfy000_Helpers::flushPageCache();
 			}
@@ -895,7 +911,12 @@
 		 */
 		private function getDisabledFromOptions($type, $handle)
 		{
-			$options = $this->getPopulateOption('assets_manager_options', array());
+			// todo: вынести в метод
+			if( is_multisite() && is_network_admin() ) {
+				$options = $this->getNetworkOption('assets_manager_options', array());
+			} else {
+				$options = $this->getOption('assets_manager_options', array());
+			}
 
 			$results = apply_filters('wbcr_gnz_get_disabled_from_options', false, $options, $type, $handle);
 			if( false !== $results ) {
@@ -919,7 +940,12 @@
 		 */
 		private function getEnabledFromOptions($type, $handle)
 		{
-			$options = $this->getPopulateOption('assets_manager_options', array());
+			// todo: вынести в метод
+			if( is_multisite() && is_network_admin() ) {
+				$options = $this->getNetworkOption('assets_manager_options', array());
+			} else {
+				$options = $this->getOption('assets_manager_options', array());
+			}
 
 			$results = apply_filters('wbcr_gnz_get_enabled_from_options', false, $options, $type, $handle);
 			if( false !== $results ) {
@@ -1196,7 +1222,12 @@
 
 			$this->sided_plugin_files[$index][$type] = array();
 
-			$options = $this->getPopulateOption('assets_manager_sided_plugins', array());
+			// todo: вынести в метод
+			if( is_multisite() && is_network_admin() ) {
+				$options = $this->getNetworkOption('assets_manager_sided_plugins', array());
+			} else {
+				$options = $this->getOption('assets_manager_sided_plugins', array());
+			}
 
 			$plugin = $this->getSidedPluginName($index);
 
@@ -1239,7 +1270,7 @@
 
 			$plugin_path = isset($this->sided_plugins[$index]) ? $this->sided_plugins[$index] : null;
 
-			if( $index == 'wmac' && defined('LOADING_GONZALES_AS_ADDON') && class_exists('WCL_Plugin') ) {
+			if( $index == 'wmac' && defined('LOADING_ASSETS_MANAGER_AS_ADDON') && class_exists('WCL_Plugin') ) {
 				return WCL_Plugin::app()->isActivateComponent('minify_and_combine');
 			}
 
@@ -1291,7 +1322,7 @@
 						} else if( $index == 'aopt' ) {
 							$hint = __('You’ve enabled the &#34;Optimize js scripts?&#34; and &#34;Optimize CSS options&#34; in the &#34;Autoptimize&#34;. These settings exclude scripts and styles that you don’t want to optimize. Press No to add a file to the excluded list.', 'gonzales');
 						}
-						$html .= '<th class="wbcr-gnz-table__column_switch"><span class="wbcr-gnz-table__th-external-plugin">' . $title . ':<i class="wbcr-gnz-help-hint tooltip  tooltip-bottom" data-tooltip="' . $hint . '."><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></span><em>' . $text . '</em></th>';
+						$html .= '<th class="wbcr-gnz-table__column_switch"><span class="wbcr-gnz-table__th-external-plugin">' . $title . ':<i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . $hint . '."><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></span><em>' . $text . '</em></th>';
 					}
 				}
 			}
@@ -1348,7 +1379,13 @@
 		public function getAdditionalControlsColumns($html, $type, $handle, $plugin_handle)
 		{
 			if( !empty($this->sided_plugins) ) {
-				$options = $this->getPopulateOption('assets_manager_sided_plugins', array());
+
+				// todo: вынести в метод
+				if( is_multisite() && is_network_admin() ) {
+					$options = $this->getNetworkOption('assets_manager_sided_plugins', array());
+				} else {
+					$options = $this->getOption('assets_manager_sided_plugins', array());
+				}
 
 				foreach($this->sided_plugins as $index => $plugin_path) {
 					if( $this->isComponentActive($index) ) {
@@ -1614,7 +1651,12 @@
 						}
 					}
 				}
-				$this->updatePopulateOption('assets_manager_sided_plugins', $sided_plugins_options);
+
+				if( is_multisite() && is_network_admin() ) {
+					$this->updateNetworkOption('assets_manager_sided_plugins', $sided_plugins_options);
+				} else {
+					$this->updateOption('assets_manager_sided_plugins', $sided_plugins_options);
+				}
 			}
 
 			if( !empty($this->sided_plugins) ) {

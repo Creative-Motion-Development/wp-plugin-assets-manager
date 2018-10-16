@@ -47,7 +47,7 @@
 		{
 			$this->menu_title = __('Assets manager', 'gonzales');
 
-			if( !defined('LOADING_GONZALES_AS_ADDON') ) {
+			if( !defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 				$this->internal = false;
 				$this->menu_target = 'options-general.php';
 				$this->add_link_to_plugin_actions = true;
@@ -63,7 +63,7 @@
 		 */
 		public function getMenuTitle()
 		{
-			return defined('LOADING_GONZALES_AS_ADDON')
+			return defined('LOADING_ASSETS_MANAGER_AS_ADDON')
 				? __('Assets manager', 'gonzales')
 				: __('General', 'gonzales');
 		}

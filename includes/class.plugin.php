@@ -14,7 +14,7 @@
 	if( !class_exists('WGZ_Plugin') ) {
 		
 		if( !class_exists('WGZ_PluginFactory') ) {
-			if( defined('LOADING_GONZALES_AS_ADDON') ) {
+			if( defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 				class WGZ_PluginFactory {
 					
 				}

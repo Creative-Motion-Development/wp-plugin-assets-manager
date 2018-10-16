@@ -45,14 +45,14 @@
 	// the compiler library provides a set of functions like onp_build and onp_license
 	// to check how the plugin work for diffrent builds on developer machines
 
-	if( !defined('LOADING_GONZALES_AS_ADDON') ) {
+	if( !defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 		require('libs/onepress/compiler/boot.php');
 		// creating a plugin via the factory
 	}
 	// #fix compiller bug new Factory000_Plugin
 	#endcomp
 
-	if( !defined('LOADING_GONZALES_AS_ADDON') ) {
+	if( !defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 		require_once(WGZ_PLUGIN_DIR . '/libs/factory/core/includes/check-compatibility.php');
 		require_once(WGZ_PLUGIN_DIR . '/libs/factory/clearfy/includes/check-clearfy-compatibility.php');
 	}
@@ -71,7 +71,7 @@
 	 */
 	$compatibility = new Wbcr_FactoryClearfy000_Compatibility(array_merge($plugin_info, array(
 		'plugin_already_activate' => defined('WGZ_PLUGIN_ACTIVE'),
-		'plugin_as_component' => defined('LOADING_GONZALES_AS_ADDON'),
+		'plugin_as_component' => defined('LOADING_ASSETS_MANAGER_AS_ADDON'),
 		'plugin_dir' => WGZ_PLUGIN_DIR,
 		'plugin_base' => WGZ_PLUGIN_BASE,
 		'plugin_url' => WGZ_PLUGIN_URL,
@@ -90,13 +90,13 @@
 
 	define('WGZ_PLUGIN_ACTIVE', true);
 
-	if( !defined('LOADING_GONZALES_AS_ADDON') ) {
+	if( !defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 		require_once(WGZ_PLUGIN_DIR . '/libs/factory/core/boot.php');
 	}
 
 	require_once(WGZ_PLUGIN_DIR . '/includes/class.plugin.php');
 
-	if( !defined('LOADING_GONZALES_AS_ADDON') ) {
+	if( !defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 		new WGZ_Plugin(__FILE__, $plugin_info);
 	}
 

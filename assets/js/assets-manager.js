@@ -93,18 +93,18 @@
             wbcrCalculateInformation();
         }
 
-        $('ul.wbcr-gnz-tabs').on('click', 'button:not(.active)', function() {
+        $('ul.wbcr-gnz-tabs').on('click', '.wbcr-gnz-tabs__button:not(.active)', function() {
             window.location.hash = '#' + $(this).data('hash');
             $(this)
-                .addClass('active').parent().siblings().find('button').removeClass('active')
+                .addClass('active').parent().siblings().find('.wbcr-gnz-tabs__button').removeClass('active')
                 .closest('.content').find('div.wbcr-gnz-tabs-content').removeClass('active').eq($(this).parent().index()).addClass('active');
         });
 
         var tabHash = window.location.hash.replace('#', '');
         if (tabHash) {
-            $('ul.wbcr-gnz-tabs button[data-hash="' + tabHash + '"]').click();
+            $('ul.wbcr-gnz-tabs .wbcr-gnz-tabs__button[data-hash="' + tabHash + '"]').click();
         } else {
-            $('ul.wbcr-gnz-tabs li').eq(0).find('button').click();
+            $('ul.wbcr-gnz-tabs li').eq(0).find('.wbcr-gnz-tabs__button').click();
         }
 
         /*if ($('#wpadminbar').length > 0) {

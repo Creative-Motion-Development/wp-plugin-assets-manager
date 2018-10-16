@@ -3,6 +3,13 @@
  * @author Webcraftic <wordpress.webraftic@gmail.com> 
  * @copyright Webcraftic 15.10.2018 
  */
+*,
+*:before,
+*:after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
 h1 {
   font-size: 2em;
   margin: 0.67em 0;
@@ -61,6 +68,28 @@ textarea {
   font-size: 100%;
   line-height: 1.15;
   margin: 0;
+  height: auto;
+  width: auto;
+}
+button,
+input,
+optgroup,
+select,
+textarea,
+button:hover,
+input:hover,
+optgroup:hover,
+select:hover,
+textarea:hover,
+button:focus,
+input:focus,
+optgroup:focus,
+select:focus,
+textarea:focus {
+  -moz-box-shadow: none;
+  -ms-box-shadow: none;
+  -webkit-box-shadow: none;
+  -o-box-shadow: none;
 }
 button,
 input {
@@ -70,24 +99,58 @@ button,
 select {
   text-transform: none;
 }
-[type=button],
-[type=reset],
-[type=submit],
-button {
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
   -webkit-appearance: button;
 }
-[type=button]::-moz-focus-inner,
-[type=reset]::-moz-focus-inner,
-[type=submit]::-moz-focus-inner,
-button::-moz-focus-inner {
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
   border-style: none;
   padding: 0;
 }
-[type=button]:-moz-focusring,
-[type=reset]:-moz-focusring,
-[type=submit]:-moz-focusring,
-button:-moz-focusring {
+button:-moz-focusring,
+[type="button"]:-moz-focusring,
+[type="reset"]:-moz-focusring,
+[type="submit"]:-moz-focusring {
   outline: 1px dotted ButtonText;
+}
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+legend {
+  box-sizing: border-box;
+  color: inherit;
+  display: table;
+  max-width: 100%;
+  padding: 0;
+  white-space: normal;
+}
+textarea {
+  overflow: auto;
+}
+[type="checkbox"],
+[type="radio"] {
+  box-sizing: border-box;
+  padding: 0;
+}
+[type="number"]::-webkit-inner-spin-button,
+[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+[type="search"] {
+  -webkit-appearance: textfield;
+  outline-offset: -2px;
+}
+[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
 }
 fieldset {
   padding: 0.35em 0.75em 0.625em;
@@ -152,6 +215,7 @@ td {
   font-size: 100%;
   font: inherit;
   vertical-align: middle;
+  line-height: 1.2;
 }
 table {
   table-layout: auto;
