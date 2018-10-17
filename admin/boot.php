@@ -11,6 +11,7 @@
 		exit;
 	}
 	if( defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
+
 		/**
 		 * This action is executed when the component of the Clearfy plugin is activate and if this component is name ga_cache
 		 * @param string $component_name
