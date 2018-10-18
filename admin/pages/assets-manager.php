@@ -11,7 +11,7 @@
 		exit;
 	}
 
-	class WbcrGnz_AssetsManagerPage extends Wbcr_FactoryPages000_ImpressiveThemplate {
+	class WbcrGnz_AssetsManagerPage extends Wbcr_FactoryClearfy000_PageBase {
 
 		/**
 		 * The id of the page in the admin menu.
