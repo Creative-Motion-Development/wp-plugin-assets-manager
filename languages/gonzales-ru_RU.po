@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: clearfy\n"
 "POT-Creation-Date: 2018-10-16 15:56+0300\n"
-"PO-Revision-Date: 2018-10-16 15:59+0300\n"
+"PO-Revision-Date: 2018-10-19 22:37+0300\n"
 "Last-Translator: alex.kovalevv@gmail.com <alex.kovalevv@gmail.com>\n"
 "Language-Team: Alex Kovalev <alex.kovalevv@gmail.com>\n"
 "Language: ru_RU\n"
@@ -443,7 +443,7 @@ msgstr "Также отключен для страниц"
 
 #: assets-manager/includes/class.configurate-assets.php:1293
 msgid "Minify and Combine"
-msgstr "Сжатие и объединение"
+msgstr "Минификация"
 
 #: assets-manager/includes/class.configurate-assets.php:1315
 msgid "remove version?"

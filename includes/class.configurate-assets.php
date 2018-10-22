@@ -19,7 +19,7 @@
 		 *
 		 * @var array
 		 */
-		private $collection = array();
+		public $collection = array();
 
 		/**
 		 * Plugins for additional columns
@@ -201,16 +201,11 @@
 			echo '<div class="wbcr-gnz-panel__left">';
 			echo '<div class="wbcr-gnz-panel__logo"></div>';
 			echo '<ul class="wbcr-gnz-panel__data  panel__data-main">';
-			echo '<li class="wbcr-gnz-panel__data-item __info-query">' . __('Total requests', 'gonzales') . ': --</li>';
-			echo '<li class="wbcr-gnz-panel__data-item __info-all-weight">' . __('Total size', 'gonzales') . ': <span class="wbcr-gnz-panel__color-1">--</span></li>';
-			echo '<li class="wbcr-gnz-panel__data-item __info-opt-weight">' . __('Optimized size', 'gonzales') . ': <span class="wbcr-gnz-panel__color-2">--</span></li>';
-			echo '</ul>';
-			echo '<div class="wbcr-gnz-panel__data-hidden  wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __('Total requests', 'gonzales') . ': --; ' . __('Total weight', 'gonzales') . ': -- Kb; ' . __('Optimized weight', 'gonzales') . ': -- Kb">';
-			echo '<img src="' . WGZ_PLUGIN_URL . '/assets/img/info.svg" width="36" height="36" alt=""/>';
-			echo '</div>';
-			echo '<ul class="wbcr-gnz-panel__data">';
-			echo '<li class="wbcr-gnz-panel__data-item __info-off-js">' . __('Disabled js', 'gonzales') . ': --</li>';
-			echo '<li class="wbcr-gnz-panel__data-item __info-off-css">' . __('Disabled css', 'gonzales') . ': --</li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-query">' . __('Total requests', 'gonzales') . ': <b class="wbcr-gnz-panel__item_value">--</b></li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-all-weight">' . __('Total size', 'gonzales') . ': <b class="wbcr-gnz-panel__item_value"><span class="wbcr-gnz-panel__color-1">--</span></b></li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-opt-weight">' . __('Optimized size', 'gonzales') . ': <b class="wbcr-gnz-panel__item_value"><span class="wbcr-gnz-panel__color-2">--</span></b></li>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-off-js">' . __('Disabled js', 'gonzales') . ': <b class="wbcr-gnz-panel__item_value">--</li></b>';
+			echo '<li class="wbcr-gnz-panel__data-item __info-off-css">' . __('Disabled css', 'gonzales') . ': <b class="wbcr-gnz-panel__item_value">--</li></b>';
 			echo '</ul>';
 			$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="wbcr-gnz-tooltip wbcr-gnz-tooltip-bottom" data-tooltip="' . __('This is the general statistics to see the optimization result. Available in the paid version only.', 'gonzales') . '.">PRO</div></div>';
 			echo apply_filters('wbcr_gnz_panel_premium', $panel_to_premium_info);
@@ -226,7 +221,7 @@
 			echo '</header>';
 
 			// Main content
-			echo '<main class="content">';
+			echo '<main class="wbcr-gnz-content">';
 
 			uksort($this->collection, function ($a, $b) {
 				if( 'plugins' == $a ) {
@@ -1012,9 +1007,13 @@
 		 */
 		public function collectAssets()
 		{
+			if( !isset($_GET['wbcr_assets_manager']) || (defined('DOING_AJAX') && DOING_AJAX) ) {
+				return false;
+			}
+
 			$denied = array(
-				'js' => array('wbcr-assets-manager', 'wbcr-comments-plus-url-span', 'admin-bar'),
-				'css' => array('wbcr-assets-manager', 'wbcr-comments-plus-url-span', 'admin-bar', 'dashicons'),
+				'js' => array('wbcr-assets-manager', 'admin-bar'),
+				'css' => array('wbcr-assets-manager', 'admin-bar', 'dashicons'),
 			);
 			$denied = apply_filters('wbcr_gnz_denied_assets', $denied);
 
@@ -1027,37 +1026,44 @@
 				'css' => wp_styles(),
 			);
 
+
+
 			foreach($data_assets as $type => $data) {
-				foreach($data->done as $el) {
-					if( !in_array($el, $denied[$type]) ) {
-						if( isset($data->registered[$el]->src) ) {
-							$url = $this->prepareCorrectUrl($data->registered[$el]->src);
-							$url_short = str_replace(get_home_url(), '', $url);
+				//$resource = array();
+				foreach($data->groups as $el => $val) {
+					if(isset($data->registered[$el])) {
+						//foreach($resource as $el) {
+						if( !in_array($el, $denied[$type]) ) {
+							if( isset($data->registered[$el]->src) ) {
+								$url = $this->prepareCorrectUrl($data->registered[$el]->src);
+								$url_short = str_replace(get_home_url(), '', $url);
 
-							if( false !== strpos($url, get_theme_root_uri()) ) {
-								$resource_type = 'theme';
-							} elseif( false !== strpos($url, plugins_url()) ) {
-								$resource_type = 'plugins';
-							} else {
-								$resource_type = 'misc';
+								if( false !== strpos($url, get_theme_root_uri()) ) {
+									$resource_type = 'theme';
+								} elseif( false !== strpos($url, plugins_url()) ) {
+									$resource_type = 'plugins';
+								} else {
+									$resource_type = 'misc';
+								}
+
+								$resource_name = '';
+								if( 'plugins' == $resource_type ) {
+									$clean_url = str_replace(WP_PLUGIN_URL . '/', '', $url);
+									$url_parts = explode('/', $clean_url);
+									$resource_name = isset($url_parts[0]) ? $url_parts[0] : '';
+								}
+
+								$this->collection[$resource_type][$resource_name][$type][$el] = array(
+									'url_full' => $url,
+									'url_short' => $url_short,
+									//'state' => $this->get_visibility($type, $el),
+									'size' => $this->getAssetSize($url),
+									'ver' => $data->registered[$el]->ver,
+									'deps' => (isset($data->registered[$el]->deps) ? $data->registered[$el]->deps : array()),
+								);
 							}
-
-							$resource_name = '';
-							if( 'plugins' == $resource_type ) {
-								$clean_url = str_replace(WP_PLUGIN_URL . '/', '', $url);
-								$url_parts = explode('/', $clean_url);
-								$resource_name = isset($url_parts[0]) ? $url_parts[0] : '';
-							}
-
-							$this->collection[$resource_type][$resource_name][$type][$el] = array(
-								'url_full' => $url,
-								'url_short' => $url_short,
-								//'state' => $this->get_visibility($type, $el),
-								'size' => $this->getAssetSize($url),
-								'ver' => $data->registered[$el]->ver,
-								'deps' => (isset($data->registered[$el]->deps) ? $data->registered[$el]->deps : array()),
-							);
 						}
+						//}
 					}
 				}
 			}
@@ -1072,7 +1078,7 @@
 		{
 			if( current_user_can('manage_options') && isset($_GET['wbcr_assets_manager']) ) {
 				wp_enqueue_style('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', array(), $this->plugin->getPluginVersion());
-				wp_enqueue_script('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', array(), $this->plugin->getPluginVersion(), true);
+				wp_enqueue_script('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', array('jquery'), $this->plugin->getPluginVersion(), true);
 			}
 		}
 
