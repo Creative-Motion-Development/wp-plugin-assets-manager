@@ -36,6 +36,11 @@
 		private $sided_plugin_files = array();
 
 		/**
+		 * @var bool
+		 */
+		private $is_user_can;
+
+		/**
 		 * @param Wbcr_Factory000_Plugin $plugin
 		 */
 		public function __construct(Wbcr_Factory000_Plugin $plugin)
@@ -43,11 +48,16 @@
 			parent::__construct($plugin);
 			$this->plugin = $plugin;
 		}
+		
+		protected function isUserCan()
+		{
+			return current_user_can('manage_options') || current_user_can('manage_network');
+		}
 
 		/**
 		 * Initilize entire machine
 		 */
-		function registerActionsAndFilters()
+		protected function registerActionsAndFilters()
 		{
 			if( $this->getPopulateOption('disable_assets_manager', false) ) {
 				return;
@@ -130,7 +140,7 @@
 		 */
 		function assetsManagerAdminBar($wp_admin_bar)
 		{
-			if( !current_user_can('manage_options') ) {
+			if( !$this->isUserCan() ) {
 				return;
 			}
 
@@ -173,7 +183,7 @@
 
 		function assetsManager()
 		{
-			if( !current_user_can('manage_options') || !isset($_GET['wbcr_assets_manager']) ) {
+			if( !$this->isUserCan() || !isset($_GET['wbcr_assets_manager']) ) {
 				return;
 			}
 
@@ -725,7 +735,9 @@
 		{
 			if( isset($_GET['wbcr_assets_manager']) && isset($_POST['wbcr_assets_manager_save']) ) {
 
-				if( !current_user_can('manage_options') || !wp_verify_nonce(filter_input(INPUT_POST, 'wbcr_assets_manager_save'), 'wbcr_assets_manager_nonce') ) {
+				if( !$this->isUserCan() || !wp_verify_nonce(filter_input(INPUT_POST, 'wbcr_assets_manager_save'), 'wbcr_assets_manager_nonce') ) {
+					wp_die(__('You don\'t have enough capability to edit this information.', 'gonzales'), 403);
+
 					return;
 				}
 
@@ -1026,12 +1038,10 @@
 				'css' => wp_styles(),
 			);
 
-
-
 			foreach($data_assets as $type => $data) {
 				//$resource = array();
 				foreach($data->groups as $el => $val) {
-					if(isset($data->registered[$el])) {
+					if( isset($data->registered[$el]) ) {
 						//foreach($resource as $el) {
 						if( !in_array($el, $denied[$type]) ) {
 							if( isset($data->registered[$el]->src) ) {
@@ -1076,7 +1086,7 @@
 		 */
 		public function appendAsset()
 		{
-			if( current_user_can('manage_options') && isset($_GET['wbcr_assets_manager']) ) {
+			if( $this->isUserCan() && isset($_GET['wbcr_assets_manager']) ) {
 				wp_enqueue_style('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', array(), $this->plugin->getPluginVersion());
 				wp_enqueue_script('wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', array('jquery'), $this->plugin->getPluginVersion(), true);
 			}
