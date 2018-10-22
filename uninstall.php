@@ -21,7 +21,7 @@
 		$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wbcr_gnz_%';");
 	}
 
-	if( is_multisite() && is_plugin_active_for_network(plugin_basename(dirname(__FILE__) . '/gonzales.php'))) {
+	if( is_multisite() ) {
 		global $wpdb, $wp_version;
 
 		$wpdb->query("DELETE FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'wbcr_gonzales_%';");

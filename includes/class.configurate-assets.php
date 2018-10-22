@@ -982,7 +982,7 @@
 					return $src;
 				}
 
-				if( isset($enabled['post_types']) && in_array(get_post_type(), $enabled['post_types']) ) {
+				if( isset($enabled['post_types']) && is_singular() && in_array(get_post_type(), $enabled['post_types']) ) {
 					return $src;
 				}
 

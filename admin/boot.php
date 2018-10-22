@@ -31,12 +31,12 @@
 		 * This action is executed when the component of the Clearfy plugin is activate and if this component is name ga_cache
 		 * @param string $component_name
 		 */
-		add_action('wbcr/clearfy/activated_component', function ($component_name) {
+		add_action('wbcr_clearfy_deactivated_component', function ($component_name) {
 			if( $component_name == 'assets_manager' ) {
 				if( class_exists('WCL_Plugin') ) {
 					$license = WCL_Plugin::app()->getLicense();
 					if( ($license->isLicenseValid() || (defined('WCL_PLUGIN_DEBUG') && WCL_PLUGIN_DEBUG)) && WCL_Plugin::app()->isActivateComponent('assets-manager-premium') ) {
-						WCL_Plugin::app()->activateComponent('assets-manager-premium');
+						WCL_Plugin::app()->deactivateComponent('assets-manager-premium');
 					}
 				}
 			}
