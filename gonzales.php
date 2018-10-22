@@ -69,7 +69,7 @@
 	/**
 	 * Проверяет совместимость с Wordpress, php и другими плагинами.
 	 */
-	$compatibility = new Wbcr_FactoryClearfy000_Compatibility(array_merge($plugin_info, array(
+	$compatibility = new Wbcr_FactoryClearfy_Compatibility(array_merge($plugin_info, array(
 		'plugin_already_activate' => defined('WGZ_PLUGIN_ACTIVE'),
 		'plugin_as_component' => defined('LOADING_ASSETS_MANAGER_AS_ADDON'),
 		'plugin_dir' => WGZ_PLUGIN_DIR,
