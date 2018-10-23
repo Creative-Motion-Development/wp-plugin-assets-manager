@@ -159,10 +159,12 @@
 		 */
 		public function pluginsLoaded()
 		{
-			$this->sided_plugins = array(
-				'aopt' => 'autoptimize/autoptimize.php',
-				'wmac' => 'minify-and-combine/minify-and-combine.php'
-			);
+			if ( ! is_admin() ) {
+				$this->sided_plugins = array(
+					'aopt' => 'autoptimize/autoptimize.php',
+					'wmac' => 'minify-and-combine/minify-and-combine.php'
+				);
+			}
 
 			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getPopulateOption('remove_js_version', false) || WCL_Plugin::app()->getPopulateOption('remove_css_version', false)) ) {
 				$this->sided_plugins['wclp'] = 'clearfy/clearfy.php';
@@ -171,7 +173,9 @@
 			#comp remove
 			// Пока плагины не скомпилированы, они имеют другие имена директорий.
 			// После компиляции плагина этот кусок кода будет удален.
-			$this->sided_plugins['wmac'] = 'wp-plugin-minify-and-combine/minify-and-combine.php';
+			if ( ! is_admin() ) {
+				$this->sided_plugins['wmac'] = 'wp-plugin-minify-and-combine/minify-and-combine.php';
+			}
 
 			if( class_exists('WCL_Plugin') && (WCL_Plugin::app()->getPopulateOption('remove_js_version', false) || WCL_Plugin::app()->getPopulateOption('remove_css_version', false)) ) {
 				$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
