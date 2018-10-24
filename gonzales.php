@@ -8,6 +8,7 @@
 	 * Text Domain: gonzales
 	 * Domain Path: /languages/
 	 * Author URI: https://clearfy.pro
+	 * Framework Version: FACTORY_000_VERSION
 	 */
 
 	// Exit if accessed directly
