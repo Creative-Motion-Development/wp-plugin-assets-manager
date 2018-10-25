@@ -67,7 +67,7 @@
 				$this->globalScripts();
 				
 				if( is_admin() ) {
-					$this->adminScripts();
+					require(WGZ_PLUGIN_DIR . '/admin/boot.php');
 				}
 
 				add_action('plugins_loaded', array($this, 'pluginsLoaded'));
@@ -84,6 +84,10 @@
 			public function pluginsLoaded()
 			{
 				self::app()->setTextDomain('gonzales', WGZ_PLUGIN_DIR);
+
+				if( is_admin() ) {
+					$this->registerPages();
+				}
 			}
 
 			protected function setModules()
@@ -107,13 +111,7 @@
 					self::app()->registerPage('WbcrGnz_MoreFeaturesPage', $admin_path . '/more-features.php');
 				}
 			}
-			
-			private function adminScripts()
-			{
-				require(WGZ_PLUGIN_DIR . '/admin/boot.php');
-				$this->registerPages();
-			}
-			
+
 			private function globalScripts()
 			{
 				require(WGZ_PLUGIN_DIR . '/includes/class.configurate-assets.php');

@@ -3,7 +3,7 @@ Tags: dequeue script, dequeue style, pagespeed, speed, unload style, gonzales, a
 Contributors: webcraftic
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VDX7JNTQPNPFW
 Requires at least: 4.2
-Tested up to: 4.9
+Tested up to: 5.0
 Requires PHP: 5.2
 Stable tag: trunk
 License: GPLv2
@@ -59,6 +59,22 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 1.0.7 =
+* Fixed: Added compatibility with ithemes sync
+* Fixed: Minor style fixes
+
+= 1.0.6 =
+* Fixed: Fixed a bug when the interface did not open on the frontend.
+
+= 1.0.5 =
+Great update:
+* We completely changed the interface design. Now it is more convenient for visual inspection of resource files.
+* Fixed: All errors that users have reported about
+* Added: Multisite support
+* Added: New logic disabled scripts and styles
+* Added: You can exclude assets from optimizing for Autoptimize and Clearfy plugins.
+* Added: You can exclude resource files for which you do not need to remove the query string.
+* Added: You can see which plugin the style file belongs to and the js file.
 = 1.0.4 =
 * Fixed: Update core
 * Fixed: Compatibility with others plugin

@@ -10,6 +10,48 @@
 	if( !defined('ABSPATH') ) {
 		exit;
 	}
+
+	/**
+	 * Заменяем премиум возможности в бизнес виджете
+	 * @param array $features
+	 * @param string $page_id
+	 * @param string $plugin
+	 */
+	add_filter('wbcr/clearfy/page_bussines_suggetion_features', function ($features, $plugin_name, $page_id) {
+
+		if( !empty($plugin_name) && ($plugin_name == WGZ_Plugin::app()->getPluginName()) ) {
+			$upgrade_feature = array();
+			$upgrade_feature[] = __('Disable plugins (groups of scripts)', 'gonzales');
+			$upgrade_feature[] = __('Conditions by the link template', 'gonzales');
+			$upgrade_feature[] = __('Conditions by the regular expression', 'gonzales');
+			$upgrade_feature[] = __('Safe mode', 'gonzales');
+			$upgrade_feature[] = __('Statistics and optimization results', 'gonzales');
+
+			return $upgrade_feature;
+		}
+
+		return $features;
+	}, 20, 3);
+
+	/**
+	 * Удаляем лишние виджеты в левом сайдбаре
+	 *
+	 * @param array $widgets
+	 * @param string $position
+	 * @param Wbcr_Factory000_Plugin $plugin
+	 */
+	add_filter('wbcr/factory/pages/impressive/widgets', function ($widgets, $position, $plugin) {
+		if( $plugin->getPluginName() == WGZ_Plugin::app()->getPluginName() ) {
+			if( $position == 'right' ) {
+				unset($widgets['donate_widget']);
+				unset($widgets['rating_widget']);
+				unset($widgets['info_widget']);
+			}
+		}
+
+		return $widgets;
+	}, 20, 3);
+
 	if( defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 
 		/**
@@ -83,8 +125,8 @@
 		function wbcr_gnz_set_plugin_meta($links, $file)
 		{
 			if( $file == WGZ_PLUGIN_BASE ) {
-				$url = WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl('/', 'plugin_row');
-				$links[] = '<a href="' . $url . '" style="color: #FF5722;font-weight: bold;" target="_blank">' . __('Get ultimate plugin free', 'gonzales') . '</a>';
+				$url = WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl(WGZ_Plugin::app()->getPluginName(), 'assets-manager', 'plugin_row');
+				$links[] = '<a href="' . $url . '" style="color: #FF5722;font-weight: bold;" target="_blank">' . __('Get premium', 'gonzales') . '</a>';
 			}
 
 			return $links;

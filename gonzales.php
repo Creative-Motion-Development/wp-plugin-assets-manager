@@ -4,7 +4,7 @@
 	 * Plugin URI: https://wordpress.org/plugins/gonzales/
 	 * Description: Increase the speed of the pages by disabling unused scripts (.JS) and styles (.CSS). Make your website REACTIVE!
 	 * Author: Webcraftic <wordpress.webraftic@gmail.com>
-	 * Version: 1.0.4
+	 * Version: 1.0.7
 	 * Text Domain: gonzales
 	 * Domain Path: /languages/
 	 * Author URI: https://clearfy.pro
@@ -16,7 +16,20 @@
 		exit;
 	}
 
-	define('WGZ_PLUGIN_VERSION', '1.0.4');
+	define('WGZ_PLUGIN_VERSION', '1.0.7');
+
+	// Fix for ithemes sync. When the ithemes sync plugin accepts the request, set the WP_ADMIN constant,
+	// after which the plugin Clearfy begins to create errors, and how the logic of its work is broken.
+	// Solution to simply terminate the plugin if there is a request from ithemes sync
+	// --------------------------------------
+	if( defined('DOING_AJAX') && DOING_AJAX && isset($_REQUEST['action']) && $_REQUEST['action'] == 'ithemes_sync_request' ) {
+		return;
+	}
+
+	if( isset($_GET['ithemes-sync-request']) && !empty($_GET['ithemes-sync-request']) ) {
+		return;
+	}
+	// ----------------------------------------
 
 	define('WGZ_PLUGIN_DIR', dirname(__FILE__));
 	define('WGZ_PLUGIN_BASE', plugin_basename(__FILE__));

@@ -59,13 +59,20 @@
 		}
 
 		/**
+		 * Метод позволяет менять заголовок меню, в зависимости от сборки плагина.
 		 * @return string|void
 		 */
 		public function getMenuTitle()
 		{
-			return defined('LOADING_ASSETS_MANAGER_AS_ADDON')
-				? __('Assets manager', 'gonzales')
-				: __('General', 'gonzales');
+			return defined('LOADING_ASSETS_MANAGER_AS_ADDON') ? __('General', 'hide-login-page') : __('Assets manager', 'gonzales');
+		}
+
+		/**
+		 * @return string|void         *
+		 */
+		public function getPageTitle()
+		{
+			return defined('LOADING_ASSETS_MANAGER_AS_ADDON') ? __('Assets manager', 'gonzales') : __('General', 'hide-login-page');
 		}
 
 		/**
@@ -134,6 +141,11 @@
 						'default' => true
 					)
 				)
+			);
+
+			$options[] = array(
+				'type' => 'separator',
+				'cssClass' => 'factory-separator-dashed'
 			);
 
 			$formOptions = array();

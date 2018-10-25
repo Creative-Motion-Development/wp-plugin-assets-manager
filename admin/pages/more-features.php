@@ -13,4 +13,8 @@
 
 	class WbcrGnz_MoreFeaturesPage extends Wbcr_FactoryClearfy000_MoreFeaturesPage {
 
+		/**
+		 * @var bool
+		 */
+		public $available_for_multisite = true;
 	}
