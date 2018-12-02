@@ -12,29 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Заменяем премиум возможности в бизнес виджете
- *
- * @param array $features
- * @param string $page_id
- * @param string $plugin
- */
-add_filter( 'wbcr/clearfy/page_bussines_suggetion_features', function ( $features, $plugin_name, $page_id ) {
-	
-	if ( ! empty( $plugin_name ) && ( $plugin_name == WGZ_Plugin::app()->getPluginName() ) ) {
-		$upgrade_feature   = array();
-		$upgrade_feature[] = __( 'Disable plugins (groups of scripts)', 'gonzales' );
-		$upgrade_feature[] = __( 'Conditions by the link template', 'gonzales' );
-		$upgrade_feature[] = __( 'Conditions by the regular expression', 'gonzales' );
-		$upgrade_feature[] = __( 'Safe mode', 'gonzales' );
-		$upgrade_feature[] = __( 'Statistics and optimization results', 'gonzales' );
-		
-		return $upgrade_feature;
-	}
-	
-	return $features;
-}, 20, 3 );
-
-/**
  * Удаляем лишние виджеты в левом сайдбаре
  *
  * @param array $widgets
@@ -213,6 +190,30 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	
 	add_filter( "wbcr_clearfy_group_options", 'wbcr_gnz_group_options' );
 } else {
+	
+	/**
+	 * Заменяем премиум возможности в бизнес виджете
+	 *
+	 * @param array $features
+	 * @param string $page_id
+	 * @param string $plugin
+	 */
+	add_filter( 'wbcr/clearfy/page_bussines_suggetion_features', function ( $features, $plugin_name, $page_id ) {
+		
+		if ( ! empty( $plugin_name ) && ( $plugin_name == WGZ_Plugin::app()->getPluginName() ) ) {
+			$upgrade_feature   = array();
+			$upgrade_feature[] = __( 'Disable plugins (groups of scripts)', 'gonzales' );
+			$upgrade_feature[] = __( 'Conditions by the link template', 'gonzales' );
+			$upgrade_feature[] = __( 'Conditions by the regular expression', 'gonzales' );
+			$upgrade_feature[] = __( 'Safe mode', 'gonzales' );
+			$upgrade_feature[] = __( 'Statistics and optimization results', 'gonzales' );
+			
+			return $upgrade_feature;
+		}
+		
+		return $features;
+	}, 20, 3 );
+	
 	function wbcr_gnz_set_plugin_meta( $links, $file ) {
 		if ( $file == WGZ_PLUGIN_BASE ) {
 			$url     = WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'assets-manager', 'plugin_row' );
