@@ -11,25 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Удаляем лишние виджеты в левом сайдбаре
- *
- * @param array $widgets
- * @param string $position
- * @param Wbcr_Factory000_Plugin $plugin
- */
-add_filter( 'wbcr/factory/pages/impressive/widgets', function ( $widgets, $position, $plugin ) {
-	if ( $plugin->getPluginName() == WGZ_Plugin::app()->getPluginName() ) {
-		if ( $position == 'right' ) {
-			unset( $widgets['donate_widget'] );
-			unset( $widgets['rating_widget'] );
-			unset( $widgets['info_widget'] );
-		}
-	}
-	
-	return $widgets;
-}, 20, 3 );
-
 if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	
 	/**
@@ -190,6 +171,25 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	
 	add_filter( "wbcr_clearfy_group_options", 'wbcr_gnz_group_options' );
 } else {
+	
+	/**
+	 * Удаляем лишние виджеты в левом сайдбаре
+	 *
+	 * @param array $widgets
+	 * @param string $position
+	 * @param Wbcr_Factory000_Plugin $plugin
+	 */
+	add_filter( 'wbcr/factory/pages/impressive/widgets', function ( $widgets, $position, $plugin ) {
+		if ( $plugin->getPluginName() == WGZ_Plugin::app()->getPluginName() ) {
+			if ( $position == 'right' ) {
+				unset( $widgets['donate_widget'] );
+				unset( $widgets['rating_widget'] );
+				unset( $widgets['info_widget'] );
+			}
+		}
+		
+		return $widgets;
+	}, 20, 3 );
 	
 	/**
 	 * Заменяем премиум возможности в бизнес виджете
