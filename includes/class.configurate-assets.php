@@ -745,8 +745,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						foreach ( $assets as $handle => $where ) {
 							$handle = sanitize_text_field( $handle );
 							$where  = sanitize_text_field( $where['state'] );
-							
+
 							if ( ! isset( $options['disabled'][ $type ][ $handle ] ) ) {
+								$options = is_array( $options ) ? $options : array();
 								$options['disabled'][ $type ][ $handle ] = array();
 							}
 							$disabled = &$options['disabled'][ $type ][ $handle ];
@@ -807,6 +808,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						foreach ( $assets as $handle => $where ) {
 							
 							if ( ! isset( $options['enabled'][ $type ][ $handle ] ) ) {
+								$options = is_array( $options ) ? $options : array();
 								$options['enabled'][ $type ][ $handle ] = array();
 							}
 							$enabled = &$options['enabled'][ $type ][ $handle ];
