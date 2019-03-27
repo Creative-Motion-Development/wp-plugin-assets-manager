@@ -375,7 +375,7 @@ body p {
 #WBCR .wbcr-gnz-panel {
   position: fixed;
   z-index: 50;
-  top: 0;
+  top: 30px;
   right: 0;
   left: 0;
   width: 100%;
@@ -391,6 +391,7 @@ body p {
   color: #FFF;
   background: #23282d;
   font-size: 16px;
+  border-top: 2px solid #ffcb1e;
 }
 #WBCR .wbcr-gnz-panel .wbcr-gnz-panel__premium {
   position: relative;
@@ -997,6 +998,10 @@ body p {
 #WBCR .wbcr-gnz-table__note p:not(:last-child) {
   margin-bottom: 12px;
 }
+#WBCR .wbcr-gnz-table__select-wrapper::before,
+#WBCR .wbcr-gnz-table__select-wrapper::after {
+  display: none !important;
+}
 #WBCR .wbcr-gnz-table__select {
   padding: 8px 28px 8px 10px;
   color: #4B4E51;
@@ -1024,7 +1029,7 @@ body p {
 }
 #WBCR .wbcr-gnz-table__label {
   display: block;
-  margin: 0 0 15px 10px;
+  margin: 15px 0 15px 10px;
   padding-bottom: 5px;
   color: #414B56;
   font-size: 13px;
@@ -1140,13 +1145,23 @@ body p {
 #WBCR .wbcr-gnz-table__also {
   font-size: 12px;
   font-weight: bold;
+  margin-top: 15px;
 }
 #WBCR .wbcr-gnz-table__also .wbcr-gnz-table__label {
-  margin-bottom: 5px;
   font-size: 12px;
+  padding: 5px 5px 5px 0;
+  margin: 0;
 }
 #WBCR .wbcr-gnz-table__also-url {
   color: #A9AAAA;
+}
+#WBCR .wbcr-gnz-table__also-url span {
+  display: block;
+}
+#WBCR .wbcr-gnz-table__also-url span a {
+  text-decoration: underline;
+  color: #adaeae;
+  font-size: 12px;
 }
 #WBCR .wbcr-gnz-switch {
   position: relative;
@@ -1394,3 +1409,4 @@ body p {
     display: block;
   }
 }
+/*# sourceMappingURL=assets-manager.css.map */

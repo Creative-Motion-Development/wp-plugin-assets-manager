@@ -26,8 +26,7 @@
 				if( typeof wbcrChangeHandleState == 'function' ) {
 					wbcrChangeHandleState(this, 1);
 				}
-			}
-			else {
+			} else {
 				$(this).closest('label').find('input[type="hidden"]').val('');
 				$(this).closest('tr').find('.wbcr-assets-manager-enable').hide();
 				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').show();
@@ -42,10 +41,10 @@
 
 		$('.wbcr-gnz-action-select').on('change', function(ev) {
 			var selectElement = $(this).children(':selected');
-			$(this).closest('span').find('.wbcr-assets-manager').hide();
+			$(this).closest('.wbcr-assets-manager-enable').find('.wbcr-assets-manager').hide();
 
 			if( selectElement.val() != 'current' ) {
-				$(this).closest('span').find('.wbcr-assets-manager.' + selectElement.val()).show();
+				$(this).closest('.wbcr-assets-manager-enable').find('.wbcr-assets-manager.' + selectElement.val()).show();
 			}
 		});
 
