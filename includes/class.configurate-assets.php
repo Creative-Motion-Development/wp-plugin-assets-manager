@@ -2,9 +2,10 @@
 
 /**
  * Assets manager base class
- * @author Webcraftic <wordpress.webraftic@gmail.com>
+ *
+ * @author        Webcraftic <wordpress.webraftic@gmail.com>
  * @copyright (c) 05.11.2017, Webcraftic
- * @version 1.0
+ * @version       1.0
  */
 
 // Exit if accessed directly
@@ -13,33 +14,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
-	
+
 	/**
 	 * Stores list of all available assets (used in rendering panel)
 	 *
 	 * @var array
 	 */
-	public $collection = array();
-	
+	public $collection = [];
+
 	/**
 	 * Plugins for additional columns
 	 *
 	 * @var array
 	 */
-	private $sided_plugins = array();
-	
+	private $sided_plugins = [];
+
 	/**
 	 * Css and js files excluded in sided plugins
 	 *
 	 * @var array
 	 */
-	private $sided_plugin_files = array();
-	
+	private $sided_plugin_files = [];
+
 	/**
 	 * @var bool
 	 */
 	private $is_user_can;
-	
+
 	/**
 	 * @param Wbcr_Factory000_Plugin $plugin
 	 */
@@ -47,11 +48,11 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		parent::__construct( $plugin );
 		$this->plugin = $plugin;
 	}
-	
+
 	protected function isUserCan() {
 		return current_user_can( 'manage_options' ) || current_user_can( 'manage_network' );
 	}
-	
+
 	/**
 	 * Initilize entire machine
 	 */
@@ -59,78 +60,78 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		if ( $this->getPopulateOption( 'disable_assets_manager', false ) ) {
 			return;
 		}
-		
+
 		$on_frontend = $this->getPopulateOption( 'disable_assets_manager_on_front' );
 		$on_backend  = $this->getPopulateOption( 'disable_assets_manager_on_backend', true );
 		$is_panel    = $this->getPopulateOption( 'disable_assets_manager_panel' );
-		
+
 		if ( ( ! is_admin() && ! $on_frontend ) || ( is_admin() && ! $on_backend ) ) {
-			add_filter( 'script_loader_src', array( $this, 'unloadAssets' ), 10, 2 );
-			add_filter( 'style_loader_src', array( $this, 'unloadAssets' ), 10, 2 );
+			add_filter( 'script_loader_src', [ $this, 'unloadAssets' ], 10, 2 );
+			add_filter( 'style_loader_src', [ $this, 'unloadAssets' ], 10, 2 );
 		}
-		
+
 		if ( ! $is_panel && ( ( is_admin() && ! $on_backend ) || ( ! is_admin() && ! $on_frontend ) ) ) {
 			if ( ! is_admin() ) {
-				add_action( 'wp_enqueue_scripts', array( $this, 'appendAsset' ), - 100001 );
-				add_action( 'wp_footer', array( $this, 'assetsManager' ), 100001 );
+				add_action( 'wp_enqueue_scripts', [ $this, 'appendAsset' ], - 100001 );
+				add_action( 'wp_footer', [ $this, 'assetsManager' ], 100001 );
 			} else {
-				add_action( 'admin_enqueue_scripts', array( $this, 'appendAsset' ), - 100001 );
-				add_action( 'admin_footer', array( $this, 'assetsManager' ), 100001 );
+				add_action( 'admin_enqueue_scripts', [ $this, 'appendAsset' ], - 100001 );
+				add_action( 'admin_footer', [ $this, 'assetsManager' ], 100001 );
 			}
 		}
-		
+
 		if ( ! is_admin() && ! $on_frontend ) {
-			add_action( 'wp_head', array( $this, 'collectAssets' ), 10000 );
-			add_action( 'wp_footer', array( $this, 'collectAssets' ), 10000 );
+			add_action( 'wp_head', [ $this, 'collectAssets' ], 10000 );
+			add_action( 'wp_footer', [ $this, 'collectAssets' ], 10000 );
 		}
-		
+
 		if ( is_admin() && ! $on_backend ) {
-			add_action( 'admin_head', array( $this, 'collectAssets' ), 10000 );
-			add_action( 'admin_footer', array( $this, 'collectAssets' ), 10000 );
+			add_action( 'admin_head', [ $this, 'collectAssets' ], 10000 );
+			add_action( 'admin_footer', [ $this, 'collectAssets' ], 10000 );
 		}
-		
+
 		if ( ! $is_panel && ( ( is_admin() && ! $on_backend ) || ( ! is_admin() && ! $on_frontend ) ) ) {
 			if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
-				add_action( 'wbcr/clearfy/adminbar_menu_items', array( $this, 'clearfyAdminBarMenu' ) );
+				add_action( 'wbcr/clearfy/adminbar_menu_items', [ $this, 'clearfyAdminBarMenu' ] );
 			} else {
-				add_action( 'admin_bar_menu', array( $this, 'assetsManagerAdminBar' ), 1000 );
+				add_action( 'admin_bar_menu', [ $this, 'assetsManagerAdminBar' ], 1000 );
 			}
 		}
-		
+
 		if ( ! is_admin() && ! $on_frontend ) {
-			add_action( 'init', array( $this, 'formSave' ) );
+			add_action( 'init', [ $this, 'formSave' ] );
 		}
-		
+
 		if ( is_admin() && ! $on_backend ) {
-			add_action( 'admin_init', array( $this, 'formSave' ) );
+			add_action( 'admin_init', [ $this, 'formSave' ] );
 		}
-		
-		add_action( 'plugins_loaded', array( $this, 'pluginsLoaded' ) );
-		add_action( 'wbcr_gnz_form_save', array( $this, 'actionFormSave' ) );
-		
-		add_filter( 'wbcr_gnz_unset_disabled', array( $this, 'unsetDisabled' ), 10, 2 );
-		add_filter( 'wbcr_gnz_get_additional_head_columns', array( $this, 'getAdditionalHeadColumns' ) );
-		add_filter( 'wbcr_gnz_get_additional_controls_columns', array( $this, 'getAdditionalControlsColumns' ), 10, 4 );
-		
-		add_filter( 'autoptimize_filter_js_exclude', array( $this, 'aoptFilterJsExclude' ), 10, 2 );
-		add_filter( 'autoptimize_filter_css_exclude', array( $this, 'aoptFilterCssExclude' ), 10, 2 );
-		add_filter( 'wmac_filter_js_exclude', array( $this, 'wmacFilterJsExclude' ), 10, 2 );
-		add_filter( 'wmac_filter_css_exclude', array( $this, 'wmacFilterCssExclude' ), 10, 2 );
-		add_filter( 'wmac_filter_js_minify_excluded', array( $this, 'wmacFilterJsMinifyExclude' ), 10, 2 );
-		add_filter( 'wmac_filter_css_minify_excluded', array( $this, 'wmacFilterCssMinifyExclude' ), 10, 2 );
+
+		add_action( 'plugins_loaded', [ $this, 'pluginsLoaded' ] );
+		add_action( 'wbcr_gnz_form_save', [ $this, 'actionFormSave' ] );
+
+		add_filter( 'wbcr_gnz_unset_disabled', [ $this, 'unsetDisabled' ], 10, 2 );
+		add_filter( 'wbcr_gnz_get_additional_head_columns', [ $this, 'getAdditionalHeadColumns' ] );
+		add_filter( 'wbcr_gnz_get_additional_controls_columns', [ $this, 'getAdditionalControlsColumns' ], 10, 4 );
+
+		add_filter( 'autoptimize_filter_js_exclude', [ $this, 'aoptFilterJsExclude' ], 10, 2 );
+		add_filter( 'autoptimize_filter_css_exclude', [ $this, 'aoptFilterCssExclude' ], 10, 2 );
+		add_filter( 'wmac_filter_js_exclude', [ $this, 'wmacFilterJsExclude' ], 10, 2 );
+		add_filter( 'wmac_filter_css_exclude', [ $this, 'wmacFilterCssExclude' ], 10, 2 );
+		add_filter( 'wmac_filter_js_minify_excluded', [ $this, 'wmacFilterJsMinifyExclude' ], 10, 2 );
+		add_filter( 'wmac_filter_css_minify_excluded', [ $this, 'wmacFilterCssMinifyExclude' ], 10, 2 );
 	}
-	
+
 	function clearfyAdminBarMenu( $menu_items ) {
-		$current_url = add_query_arg( array( 'wbcr_assets_manager' => 1 ) );
-		
-		$menu_items['assetsManager'] = array(
+		$current_url = add_query_arg( [ 'wbcr_assets_manager' => 1 ] );
+
+		$menu_items['assetsManager'] = [
 			'title' => '<span class="dashicons dashicons-list-view"></span> ' . __( 'Assets Manager', 'gonzales' ),
 			'href'  => $current_url
-		);
-		
+		];
+
 		return $menu_items;
 	}
-	
+
 	/**
 	 * @param WP_Admin_Bar $wp_admin_bar
 	 */
@@ -138,71 +139,71 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		if ( ! $this->isUserCan() ) {
 			return;
 		}
-		
-		$current_url = add_query_arg( array( 'wbcr_assets_manager' => 1 ) );
-		
-		$args = array(
+
+		$current_url = add_query_arg( [ 'wbcr_assets_manager' => 1 ] );
+
+		$args = [
 			'id'    => 'assetsManager',
 			'title' => __( 'Assets Manager', 'gonzales' ),
 			'href'  => $current_url
-		);
+		];
 		$wp_admin_bar->add_node( $args );
 	}
-	
+
 	/**
 	 * Action plugins loaded
 	 */
 	public function pluginsLoaded() {
 		if ( ! is_admin() ) {
-			$this->sided_plugins = array(
+			$this->sided_plugins = [
 				'aopt' => 'autoptimize/autoptimize.php',
 				'wmac' => 'minify-and-combine/minify-and-combine.php'
-			);
+			];
 		}
-		
+
 		if ( class_exists( 'WCL_Plugin' ) && ( WCL_Plugin::app()->getPopulateOption( 'remove_js_version', false ) || WCL_Plugin::app()->getPopulateOption( 'remove_css_version', false ) ) ) {
 			$this->sided_plugins['wclp'] = 'clearfy/clearfy.php';
 		}
-		
+
 		#comp remove
 		// Пока плагины не скомпилированы, они имеют другие имена директорий.
 		// После компиляции плагина этот кусок кода будет удален.
 		if ( ! is_admin() ) {
 			$this->sided_plugins['wmac'] = 'wp-plugin-minify-and-combine/minify-and-combine.php';
 		}
-		
+
 		if ( class_exists( 'WCL_Plugin' ) && ( WCL_Plugin::app()->getPopulateOption( 'remove_js_version', false ) || WCL_Plugin::app()->getPopulateOption( 'remove_css_version', false ) ) ) {
 			$this->sided_plugins['wclp'] = 'wp-plugin-clearfy/clearfy.php';
 		}
 		#endcomp
-		
+
 		$this->sided_plugins = apply_filters( 'wbcr_gnz_sided_plugins', $this->sided_plugins );
 	}
-	
+
 	function assetsManager() {
 		if ( ! $this->isUserCan() || ! isset( $_GET['wbcr_assets_manager'] ) ) {
 			return;
 		}
-		
+
 		$current_url = esc_url( $this->getCurrentUrl() );
-		
+
 		// todo: вынести в метод
 		if ( is_multisite() && is_network_admin() ) {
-			$options = $this->getNetworkOption( 'assets_manager_options', array() );
+			$options = $this->getNetworkOption( 'assets_manager_options', [] );
 		} else {
-			$options = $this->getOption( 'assets_manager_options', array() );
+			$options = $this->getOption( 'assets_manager_options', [] );
 		}
-		
+
 		echo '<div id="WBCR" class="wbcr-gnz-wrapper"';
 		if ( isset( $_GET['wbcr_assets_manager'] ) ) {
 			echo 'style="display: block;"';
 		}
 		echo '>';
-		
+
 		//Form
 		echo '<form method="POST">';
 		wp_nonce_field( 'wbcr_assets_manager_nonce', 'wbcr_assets_manager_save' );
-		
+
 		//Header
 		echo '<header class="wbcr-gnz-panel">';
 		echo '<div class="wbcr-gnz-panel__left">';
@@ -226,22 +227,22 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		echo '<button class="wbcr-gnz-panel__close wbcr-close-button" type="button" aria-label="' . __( 'Close', 'gonzales' ) . '" data-href="' . remove_query_arg( 'wbcr_assets_manager' ) . '"></button>';
 		echo '</div>';
 		echo '</header>';
-		
+
 		// Main content
 		echo '<main class="wbcr-gnz-content">';
-		
+
 		uksort( $this->collection, function ( $a, $b ) {
 			if ( 'plugins' == $a ) {
 				return - 1;
 			}
-			
+
 			if ( 'plugins' == $b ) {
 				return 1;
 			}
-			
+
 			return strcasecmp( $a, $b );
 		} );
-		
+
 		// Tabs
 		echo '<ul class="wbcr-gnz-tabs">';
 		foreach ( $this->collection as $resource_type => $resources ) {
@@ -250,16 +251,16 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			echo '</li>';
 		}
 		echo '</ul>';
-		
+
 		// Info
 		echo '<div class="wbcr-gnz-info"><div class="wbcr-gnz-info__warning">';
 		echo '<p><b>' . __( 'Important! Each page of your website has different sets of scripts and styles files.', 'gonzales' ) . '</b></p>';
 		echo '<p>' . __( 'Use this feature to disable unwanted scripts and styles by setting up the logic for different types of pages. We recommend working in "Safe mode" because disabling any necessary system script file can corrupt the website. All changes done in Safe mode are available for administrator only. This way only you, as the administrator, can see the result of optimization. To enable the changes for other users, uncheck Safe mode.', 'gonzales' ) . '</p>';
 		echo '<p>' . sprintf( __( 'For more details and user guides, check the plugin’s <a href="%s" target="_blank" rel="noreferrer noopener">documentation</a>.', 'gonzales' ), WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'docs' ) ) . '</p>';
 		echo '</div>';
-		
+
 		$premium_button = '<a class="wbcr-gnz-button__pro" href="' . WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'assets-manager' ) . '" target="_blank" rel="noreferrer noopener">' . __( 'Upgrade to Premium', 'gonzales' ) . '</a>';
-		
+
 		$upgrade_to_premium_info = '<div class="wbcr-gnz-info__go-to-premium"><ul>';
 		$upgrade_to_premium_info .= '<h3><span>' . __( 'MORE IN CLEARFY BUSINESS', 'gonzales' ) . '</span>' . $premium_button . '</h3><ul>';
 		$upgrade_to_premium_info .= '<li>' . __( 'Disable plugins (groups of scripts)', 'gonzales' ) . '</li>';
@@ -271,9 +272,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$upgrade_to_premium_info .= '</div>';
 		echo apply_filters( 'wbcr_gnz_upgrade_to_premium_info', $upgrade_to_premium_info );
 		echo '</div>';
-		
+
 		global $plugin_state;
-		
+
 		foreach ( $this->collection as $resource_type => $resources ) {
 			// Tabs content
 			echo '<div class="wbcr-gnz-tabs-content">';
@@ -284,31 +285,31 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			echo '<col class="wbcr-gnz-table__script"/>';
 			echo '<col class="wbcr-gnz-table__state"/>';
 			echo '<col class="wbcr-gnz-table__turn-on"/>';
-			
+
 			foreach ( $resources as $resource_name => $types ) {
 				$plugin_state = false;
-				
+
 				if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
 					$plugin_data = $this->getPluginData( $resource_name );
-					
+
 					echo '<tbody>';
-					
+
 					if ( ! empty( $plugin_data ) ) {
 						$is_disabled = $this->getIsDisabled( $options, $resource_type, $resource_name );
 						$disabled    = $this->getDisabled( $is_disabled, $options, $resource_type, $resource_name );
-						
+
 						$is_enabled = $this->getIsEnabled( $options, $resource_type, $resource_name );
 						$enabled    = $this->getEnabled( $is_enabled, $options, $resource_type, $resource_name );
-						
+
 						$plugin_state = $this->getState( $is_disabled, $disabled, $current_url );
 						$plugin_state = apply_filters( 'wbcr_gnz_get_plugin_state', false, $plugin_state );
-						
+
 						echo '<tr class="wbcr-gnz-table__alternate">';
 						echo '<th style="width:5%">' . __( 'Loaded', 'gonzales' ) . '</th>';
 						echo '<th colspan="2">' . __( 'Plugin', 'gonzales' ) . '</th>';
-						
+
 						echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
-						
+
 						echo '<th class="wbcr-gnz-table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
 						echo '<th class="wbcr-gnz-table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
 						echo '</tr>';
@@ -321,59 +322,59 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						echo '<div class="wbcr-gnz-table__item-author"><strong>' . __( 'Author', 'gonzales' ) . ':</strong> ' . $plugin_data['Author'] . '</div>';
 						echo '<div class="wbcr-gnz-table__item-version"><strong>' . __( 'Version', 'gonzales' ) . ':</strong> ' . $plugin_data['Version'] . '</div>';
 						echo '</td>';
-						
+
 						echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $resource_type, $resource_name, $resource_name );
-						
+
 						// State Controls
 						$id = '[' . $resource_type . '][' . $resource_name . ']';
 						echo $this->getStateControrlHTML( $id, $plugin_state, $is_disabled, $is_enabled, $resource_type, $resource_name, $disabled, $enabled, $current_url );
 						echo '</tr>';
 					}
 				}
-				
+
 				echo '<tr class="wbcr-gnz-table__alternate">';
 				echo '<th style="width:5%">' . __( 'Loaded', 'gonzales' ) . '</th>';
 				echo '<th style="width:5%">' . __( 'Size', 'gonzales' ) . '</th>';
 				echo '<th class="wgz-th">' . __( 'Resource', 'gonzales' ) . '</th>';
-				
+
 				echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
-				
+
 				echo '<th class="wbcr-gnz-table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
 				echo '<th class="wbcr-gnz-table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
 				echo '</tr>';
-				
+
 				foreach ( $types as $type_name => $rows ) {
-					
+
 					if ( ! empty( $rows ) ) {
 						foreach ( $rows as $handle => $row ) {
 							$is_disabled = $this->getIsDisabled( $options, $type_name, $handle );
 							$disabled    = $this->getDisabled( $is_disabled, $options, $type_name, $handle );
-							
+
 							$is_enabled = $this->getIsEnabled( $options, $type_name, $handle );
 							$enabled    = $this->getEnabled( $is_enabled, $options, $type_name, $handle );
-							
+
 							/**
 							 * Find dependency
 							 */
-							$deps = array();
+							$deps = [];
 							foreach ( $rows as $dep_key => $dep_val ) {
 								if ( in_array( $handle, $dep_val['deps'] ) /*&& $is_disabled*/ ) {
 									$deps[] = '<a href="#' . $type_name . '-' . $dep_key . '">' . $dep_key . '</a>';
 								}
 							}
-							
+
 							$comment  = ( ! empty( $deps ) ? '<span class="wbcr-use-by-comment">' . __( 'In use by', 'gonzales' ) . ' ' . implode( ', ', $deps ) . '</span>' : '' );
 							$requires = '';
 							if ( ! empty( $row['deps'] ) ) {
-								$rdeps = array();
+								$rdeps = [];
 								foreach ( $row['deps'] as $dep_val ) {
 									$rdeps[] = '<a href="#' . $type_name . '-' . $dep_val . '">' . $dep_val . '</a>';
 								}
 								$requires = ( $comment ? '<br>' : '' ) . '<span class="wbcr-use-by-comment">' . __( 'Requires', 'gonzales' ) . ' ' . implode( ', ', $rdeps ) . '</span>';
 							}
-							
+
 							echo '<tr>';
-							
+
 							// Loaded
 							$state         = $this->getState( $is_disabled, $disabled, $current_url );
 							$display_state = $plugin_state === 1 ? 1 : $state;
@@ -383,12 +384,12 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							echo ( 'plugins' == $resource_type ? ' wbcr-state-' . $resource_name : '' ) . '">';
 							echo '</div>';
 							echo '</td>';
-							
+
 							// Size
 							echo '<td>';
 							echo '<div class="wbcr-gnz-table__size-value">' . $row['size'] . ' <b>KB</b></div>';
 							echo '</td>';
-							
+
 							// Handle + Path + In use
 							echo '<td class="wgz-td">';
 							echo '<div class="wbcr-gnz-table__script-name"><b class="wbcr-wgz-resource-type-' . $type_name . '">' . $type_name . '</b>[' . $handle . ']</div>';
@@ -402,27 +403,27 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							echo '</div>';
 							echo '<div>' . $comment . $requires . '</div>';
 							echo '</td>';
-							
+
 							// Controls for other plugins
 							echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $type_name, $row['url_full'], $resource_name );
-							
+
 							// State Controls
 							$id = '[' . $type_name . '][' . $handle . ']';
 							echo $this->getStateControrlHTML( $id, $state, $is_disabled, $is_enabled, $type_name, $handle, $disabled, $enabled, $current_url );
-							
+
 							echo "<input type='hidden' class='wbcr-info-data' data-type='{$type_name}' data-off='{$display_state}' value='{$row['size']}'>";
 							echo '</tr>';
-							
+
 							echo apply_filters( 'wbcr_gnz_after_scripts_table_row', '', $resource_type, $resource_name, $type_name, $handle );
 						}
 					}
 				}
-				
+
 				if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
 					echo '</tbody>';
 				}
 			}
-			
+
 			echo '</table>';
 			echo '</div>';
 			echo '</div>';
@@ -431,7 +432,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		echo '</form> <!-- /endform -->';
 		echo '</div> <!-- /div2 -->';
 	}
-	
+
 	/**
 	 * Get is disabled
 	 *
@@ -444,7 +445,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function getIsDisabled( $options, $type_name, $handle ) {
 		return isset( $options['disabled'] ) && isset( $options['disabled'][ $type_name ] ) && isset( $options['disabled'][ $type_name ][ $handle ] );
 	}
-	
+
 	/**
 	 * Get disabled
 	 *
@@ -456,23 +457,23 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 * @return array
 	 */
 	public function getDisabled( $is_disabled, $options, $type_name, $handle ) {
-		$disabled = array();
-		
+		$disabled = [];
+
 		if ( $is_disabled ) {
 			$disabled = &$options['disabled'][ $type_name ][ $handle ];
 			if ( ! isset( $disabled['current'] ) ) {
-				$disabled['current'] = array();
+				$disabled['current'] = [];
 			}
 			if ( ! isset( $disabled['everywhere'] ) ) {
-				$disabled['everywhere'] = array();
+				$disabled['everywhere'] = [];
 			}
-			
+
 			$disabled = apply_filters( 'wbcr_gnz_get_disabled', $disabled );
 		}
-		
+
 		return $disabled;
 	}
-	
+
 	/**
 	 * Get is enabled
 	 *
@@ -485,7 +486,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function getIsEnabled( $options, $type_name, $handle ) {
 		return isset( $options['enabled'] ) && isset( $options['enabled'][ $type_name ] ) && isset( $options['enabled'][ $type_name ][ $handle ] );
 	}
-	
+
 	/**
 	 * Get enabled
 	 *
@@ -497,24 +498,24 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 * @return array
 	 */
 	public function getEnabled( $is_enabled, $options, $type_name, $handle ) {
-		$enabled = array();
-		
+		$enabled = [];
+
 		if ( $is_enabled ) {
 			$enabled = &$options['enabled'][ $type_name ][ $handle ];
-			
+
 			if ( ! isset( $enabled['current'] ) ) {
-				$enabled['current'] = array();
+				$enabled['current'] = [];
 			}
 			if ( ! isset( $enabled['everywhere'] ) ) {
-				$enabled['everywhere'] = array();
+				$enabled['everywhere'] = [];
 			}
-			
+
 			$enabled = apply_filters( 'wbcr_gnz_get_enabled', $enabled );
 		}
-		
+
 		return $enabled;
 	}
-	
+
 	/**
 	 * Get State
 	 *
@@ -529,10 +530,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		if ( $is_disabled && ( $disabled['everywhere'] == 1 || in_array( $current_url, $disabled['current'] ) || apply_filters( 'wbcr_gnz_check_state_disabled', false, $disabled ) ) ) {
 			$state = 1;
 		}
-		
+
 		return $state;
 	}
-	
+
 	/**
 	 * Get state controrl HTML
 	 *
@@ -559,7 +560,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= '<span class="wbcr-gnz-switch__slider"></span>';
 		$html .= '</label>';
 		$html .= '</td>';
-		
+
 		// Enable
 		$class_name = 'wbcr-assets-manager-enable';
 		if ( 'plugins' == $type_name ) {
@@ -588,7 +589,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$options .= '<option value="regex"' . selected( $is_disabled && ! empty( $disabled['regex'] ), true, false ) . ' class="wbcr-gnz-table__select-pro">' . __( 'Regular expression (PRO)', 'gonzales' ) . '</option>';
 		$html    .= apply_filters( 'wbcr_gnz_select_options', $options, $is_disabled, $disabled );
 		$html    .= '</select>';
-		
+
 		// Everywhere
 		$html .= "<span class='wbcr-assets-manager everywhere'";
 		if ( ! $is_disabled || empty( $disabled['everywhere'] ) ) {
@@ -597,7 +598,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= ">";
 		$html .= '<div class="wbcr-gnz-table__label">' . __( 'Exclude', 'gonzales' ) . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __( 'You can disable this resource for all pages, except sections and page types listed below. Specify sections and page types with the enabled resource.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
 		$html .= '<ul class="wbcr-gnz-table__options">';
-		
+
 		$html .= '<li class="wbcr-gnz-table__options-item">';
 		$html .= "<input type='hidden' name='enabled{$id}[current]' value='' />";
 		$html .= '<label class="wbcr-gnz-table__checkbox">';
@@ -609,8 +610,8 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= '<span class="wbcr-gnz-table__checkbox-text">' . __( 'Current URL', 'gonzales' ) . '</span>';
 		$html .= '</label>';
 		$html .= '</li>';
-		
-		$post_types = get_post_types( array( 'public' => true ), 'objects', 'and' );
+
+		$post_types = get_post_types( [ 'public' => true ], 'objects', 'and' );
 		if ( ! empty( $post_types ) ) {
 			$html .= "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
 			foreach ( $post_types as $key => $value ) {
@@ -628,9 +629,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				$html .= '</li>';
 			}
 		}
-		
-		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects', 'and' );
-		
+
+		$taxonomies = get_taxonomies( [ 'public' => true ], 'objects', 'and' );
+
 		if ( ! empty( $taxonomies ) ) {
 			unset( $taxonomies['category'] );
 			$html .= "<input type='hidden' name='enabled{$id}[taxonomies]' value='' />";
@@ -649,9 +650,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				$html .= '</li>';
 			}
 		}
-		
+
 		$categories = get_categories();
-		
+
 		if ( ! empty( $categories ) ) {
 			$html .= "<input type='hidden' name='enabled{$id}[categories]' value='' />";
 			foreach ( $categories as $key => $cat ) {
@@ -669,10 +670,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				$html .= '</li>';
 			}
 		}
-		
+
 		$html .= '</ul>';
 		$html .= '</span>';
-		
+
 		// Custom URL
 		$control_html = '<div class="wbcr-gnz-table__field wbcr-assets-manager custom"';
 		if ( ! $is_disabled || empty( $disabled['custom'] ) ) {
@@ -696,19 +697,19 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$control_html .= '<textarea class="wbcr-gnz-table__textarea" rows="3" name="disabled' . $id . '[regex]" placeholder="^rockstar-[0-9]{2,5}" disabled="disabled"></textarea>';
 		$control_html .= "</div>";
 		$html         .= apply_filters( 'wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled );
-		
+
 		$html .= '</span>';
-		
+
 		if ( isset( $disabled['current'] ) && ! empty( $disabled['current'] ) ) {
 			$custom_urls = "";
-			
+
 			foreach ( $disabled['current'] as $item_url ) {
 				if ( $current_url != $item_url ) {
 					$full_url    = site_url() . $item_url;
 					$custom_urls .= "<span><a href='" . $full_url . "'>" . $full_url . "</a></span>";
 				}
 			}
-			
+
 			if ( ! empty( $custom_urls ) ) {
 				$html .= '<div class="wbcr-gnz-table__also">';
 				$html .= '<div class="wbcr-gnz-table__label">' . __( 'Also disabled for pages', 'gonzales' ) . ':</div>';
@@ -717,28 +718,28 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			}
 		}
 		$html .= '</td>';
-		
+
 		return $html;
 	}
-	
+
 	public function formSave() {
 		if ( isset( $_GET['wbcr_assets_manager'] ) && isset( $_POST['wbcr_assets_manager_save'] ) ) {
-			
+
 			if ( ! $this->isUserCan() || ! wp_verify_nonce( filter_input( INPUT_POST, 'wbcr_assets_manager_save' ), 'wbcr_assets_manager_nonce' ) ) {
 				wp_die( __( 'You don\'t have enough capability to edit this information.', 'gonzales' ), 403 );
-				
+
 				return;
 			}
-			
+
 			// todo: вынести в метод
 			if ( is_multisite() && is_network_admin() ) {
-				$options = $this->getNetworkOption( 'assets_manager_options', array() );
+				$options = $this->getNetworkOption( 'assets_manager_options', [] );
 			} else {
-				$options = $this->getOption( 'assets_manager_options', array() );
+				$options = $this->getOption( 'assets_manager_options', [] );
 			}
-			
+
 			$current_url = esc_url( $this->getCurrentUrl() );
-			
+
 			if ( isset( $_POST['disabled'] ) && ! empty( $_POST['disabled'] ) ) {
 				foreach ( $_POST['disabled'] as $type => $assets ) {
 					if ( ! empty( $assets ) ) {
@@ -747,25 +748,25 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							$where  = sanitize_text_field( $where['state'] );
 
 							if ( ! isset( $options['disabled'][ $type ][ $handle ] ) ) {
-								$options = is_array( $options ) ? $options : array();
-								$options['disabled'][ $type ][ $handle ] = array();
+								$options                                 = is_array( $options ) ? $options : [];
+								$options['disabled'][ $type ][ $handle ] = [];
 							}
 							$disabled = &$options['disabled'][ $type ][ $handle ];
-							
+
 							if ( ! empty( $where ) && 'disable' == $where ) {
 								$action = isset( $_POST['wgz_action'][ $type ][ $handle ] ) ? $_POST['wgz_action'][ $type ][ $handle ] : '';
-								
+
 								if ( "everywhere" == $action ) {
 									$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, $action );
-									
+
 									$disabled['everywhere'] = 1;
 								} else if ( "current" == $action ) {
 									$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, $action );
-									
+
 									if ( ! isset( $disabled['current'] ) || ! is_array( $disabled['current'] ) ) {
-										$disabled['current'] = array();
+										$disabled['current'] = [];
 									}
-									
+
 									if ( ! in_array( $current_url, $disabled['current'] ) ) {
 										array_push( $disabled['current'], $current_url );
 									}
@@ -775,10 +776,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 								}
 							} else {
 								$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, 'current' );
-								
+
 								if ( isset( $disabled['current'] ) ) {
 									$current_key = array_search( $current_url, $disabled['current'] );
-									
+
 									if ( ! empty( $current_key ) || $current_key === 0 ) {
 										unset( $disabled['current'][ $current_key ] );
 										if ( empty( $disabled['current'] ) ) {
@@ -787,7 +788,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 									}
 								}
 							}
-							
+
 							if ( empty( $disabled ) ) {
 								unset( $options['disabled'][ $type ][ $handle ] );
 								if ( empty( $options['disabled'][ $type ] ) ) {
@@ -801,23 +802,23 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 					}
 				}
 			}
-			
+
 			if ( isset( $_POST['enabled'] ) && ! empty( $_POST['enabled'] ) ) {
 				foreach ( $_POST['enabled'] as $type => $assets ) {
 					if ( ! empty( $assets ) ) {
 						foreach ( $assets as $handle => $where ) {
-							
+
 							if ( ! isset( $options['enabled'][ $type ][ $handle ] ) ) {
-								$options = is_array( $options ) ? $options : array();
-								$options['enabled'][ $type ][ $handle ] = array();
+								$options                                = is_array( $options ) ? $options : [];
+								$options['enabled'][ $type ][ $handle ] = [];
 							}
 							$enabled = &$options['enabled'][ $type ][ $handle ];
-							
+
 							$action = isset( $_POST['wgz_action'][ $type ][ $handle ] ) ? $_POST['wgz_action'][ $type ][ $handle ] : '';
-							
+
 							if ( "everywhere" == $action && ( ! empty( $where['current'] ) || $where['current'] === "0" ) ) {
 								if ( ! isset( $enabled['current'] ) || ! is_array( $enabled['current'] ) ) {
-									$enabled['current'] = array();
+									$enabled['current'] = [];
 								}
 								if ( ! in_array( $where['current'], $enabled['current'] ) ) {
 									array_push( $enabled['current'], $where['current'] );
@@ -833,9 +834,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 									}
 								}
 							}
-							
+
 							if ( "everywhere" == $action && ! empty( $where['post_types'] ) ) {
-								$enabled['post_types'] = array();
+								$enabled['post_types'] = [];
 								foreach ( $where['post_types'] as $key => $post_type ) {
 									if ( isset( $enabled['post_types'] ) ) {
 										if ( ! in_array( $post_type, $enabled['post_types'] ) ) {
@@ -846,9 +847,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							} else {
 								unset( $enabled['post_types'] );
 							}
-							
+
 							if ( "everywhere" == $action && ! empty( $where['taxonomies'] ) ) {
-								$enabled['taxonomies'] = array();
+								$enabled['taxonomies'] = [];
 								foreach ( $where['taxonomies'] as $key => $taxonomy ) {
 									if ( isset( $enabled['taxonomies'] ) ) {
 										if ( ! in_array( $taxonomy, $enabled['taxonomies'] ) ) {
@@ -859,9 +860,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							} else {
 								unset( $enabled['taxonomies'] );
 							}
-							
+
 							if ( "everywhere" == $action && ! empty( $where['categories'] ) ) {
-								$enabled['categories'] = array();
+								$enabled['categories'] = [];
 								foreach ( $where['categories'] as $key => $category ) {
 									if ( isset( $enabled['categories'] ) ) {
 										if ( ! in_array( $category, $enabled['categories'] ) ) {
@@ -872,7 +873,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							} else {
 								unset( $enabled['categories'] );
 							}
-							
+
 							if ( empty( $enabled ) ) {
 								unset( $options['enabled'][ $type ][ $handle ] );
 								if ( empty( $options['enabled'][ $type ] ) ) {
@@ -886,19 +887,19 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 					}
 				}
 			}
-			
+
 			do_action( 'wbcr_gnz_form_save' );
-			
+
 			if ( is_multisite() && is_network_admin() ) {
 				$this->updateNetworkOption( 'assets_manager_options', $options );
 			} else {
 				$this->updateOption( 'assets_manager_options', $options );
 			}
-			
+
 			WbcrFactoryClearfy000_Helpers::flushPageCache();
 		}
 	}
-	
+
 	/**
 	 * Get disabled from options
 	 *
@@ -910,23 +911,23 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	private function getDisabledFromOptions( $type, $handle ) {
 		// todo: вынести в метод
 		if ( is_multisite() && is_network_admin() ) {
-			$options = $this->getNetworkOption( 'assets_manager_options', array() );
+			$options = $this->getNetworkOption( 'assets_manager_options', [] );
 		} else {
-			$options = $this->getOption( 'assets_manager_options', array() );
+			$options = $this->getOption( 'assets_manager_options', [] );
 		}
-		
+
 		$results = apply_filters( 'wbcr_gnz_get_disabled_from_options', false, $options, $type, $handle );
 		if ( false !== $results ) {
 			return $results;
 		}
-		
+
 		if ( isset( $options['disabled'] ) && isset( $options['disabled'][ $type ] ) && isset( $options['disabled'][ $type ][ $handle ] ) ) {
 			return $options['disabled'][ $type ][ $handle ];
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Get enabled from options
 	 *
@@ -938,67 +939,71 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	private function getEnabledFromOptions( $type, $handle ) {
 		// todo: вынести в метод
 		if ( is_multisite() && is_network_admin() ) {
-			$options = $this->getNetworkOption( 'assets_manager_options', array() );
+			$options = $this->getNetworkOption( 'assets_manager_options', [] );
 		} else {
-			$options = $this->getOption( 'assets_manager_options', array() );
+			$options = $this->getOption( 'assets_manager_options', [] );
 		}
-		
+
 		$results = apply_filters( 'wbcr_gnz_get_enabled_from_options', false, $options, $type, $handle );
 		if ( false !== $results ) {
 			return $results;
 		}
-		
+
 		if ( isset( $options['enabled'] ) && isset( $options['enabled'][ $type ] ) && isset( $options['enabled'][ $type ][ $handle ] ) ) {
 			return $options['enabled'][ $type ][ $handle ];
 		}
-		
+
 		return null;
 	}
-	
+
 	function unloadAssets( $src, $handle ) {
 		if ( isset( $_GET['wbcr_assets_manager'] ) ) {
 			return $src;
 		}
-		
+
 		if ( apply_filters( 'wbcr_gnz_check_unload_assets', false ) ) {
 			return $src;
 		}
-		
+
 		$type = ( current_filter() == 'script_loader_src' ) ? 'js' : 'css';
-		
+
 		$current_url = esc_url( $this->getCurrentUrl() );
-		
+
 		$disabled = $this->getDisabledFromOptions( $type, $handle );
 		$enabled  = $this->getEnabledFromOptions( $type, $handle );
-		
+
 		if ( ( isset( $disabled['everywhere'] ) && $disabled['everywhere'] == 1 ) || ( isset( $disabled['current'] ) && is_array( $disabled['current'] ) && in_array( $current_url, $disabled['current'] ) ) || apply_filters( 'wbcr_gnz_check_disabled_is_set', false, $disabled, $current_url ) ) {
-			
+
 			if ( isset( $enabled['current'] ) && is_array( $enabled['current'] ) && in_array( $current_url, $enabled['current'] ) ) {
 				return $src;
 			}
-			
+
 			if ( apply_filters( 'wbcr_gnz_check_unload_disabled', false, $disabled, $current_url ) ) {
 				return $src;
 			}
-			
+
 			if ( isset( $enabled['post_types'] ) && is_singular() && in_array( get_post_type(), $enabled['post_types'] ) ) {
 				return $src;
 			}
-			
-			if ( isset( $enabled['taxonomies'] ) && in_array( get_queried_object()->taxonomy, $enabled['taxonomies'] ) ) {
-				return $src;
+
+			if ( isset( $enabled['taxonomies'] ) ) {
+				$query = get_queried_object();
+
+				if ( ! empty( $query ) && isset( $query->taxonomy ) && in_array( $query->taxonomy, $enabled['taxonomies'] ) ) {
+					return $src;
+				}
 			}
-			
+
 			if ( isset( $enabled['categories'] ) && in_array( get_query_var( 'cat' ), $enabled['categories'] ) ) {
 				return $src;
 			}
-			
+
 			return false;
 		}
-		
+
 		return $src;
 	}
-	
+
 	/**
 	 * Get information regarding used assets
 	 *
@@ -1008,22 +1013,22 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		if ( ! isset( $_GET['wbcr_assets_manager'] ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 			return false;
 		}
-		
-		$denied = array(
-			'js'  => array( 'wbcr-assets-manager', 'admin-bar' ),
-			'css' => array( 'wbcr-assets-manager', 'admin-bar', 'dashicons' ),
-		);
+
+		$denied = [
+			'js'  => [ 'wbcr-assets-manager', 'admin-bar' ],
+			'css' => [ 'wbcr-assets-manager', 'admin-bar', 'dashicons' ],
+		];
 		$denied = apply_filters( 'wbcr_gnz_denied_assets', $denied );
-		
+
 		/**
 		 * Imitate full untouched list without dequeued assets
 		 * Appends part of original table. Safe approach.
 		 */
-		$data_assets = array(
+		$data_assets = [
 			'js'  => wp_scripts(),
 			'css' => wp_styles(),
-		);
-		
+		];
+
 		foreach ( $data_assets as $type => $data ) {
 			//$resource = array();
 			foreach ( $data->groups as $el => $val ) {
@@ -1033,7 +1038,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						if ( isset( $data->registered[ $el ]->src ) ) {
 							$url       = $this->prepareCorrectUrl( $data->registered[ $el ]->src );
 							$url_short = str_replace( get_home_url(), '', $url );
-							
+
 							if ( false !== strpos( $url, get_theme_root_uri() ) ) {
 								$resource_type = 'theme';
 							} else if ( false !== strpos( $url, plugins_url() ) ) {
@@ -1041,47 +1046,47 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							} else {
 								$resource_type = 'misc';
 							}
-							
+
 							$resource_name = '';
 							if ( 'plugins' == $resource_type ) {
 								$clean_url     = str_replace( WP_PLUGIN_URL . '/', '', $url );
 								$url_parts     = explode( '/', $clean_url );
 								$resource_name = isset( $url_parts[0] ) ? $url_parts[0] : '';
 							}
-							
-							$this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] = array(
+
+							$this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] = [
 								'url_full'  => $url,
 								'url_short' => $url_short,
 								//'state' => $this->get_visibility($type, $el),
 								'size'      => $this->getAssetSize( $url ),
 								'ver'       => $data->registered[ $el ]->ver,
-								'deps'      => ( isset( $data->registered[ $el ]->deps ) ? $data->registered[ $el ]->deps : array() ),
-							);
+								'deps'      => ( isset( $data->registered[ $el ]->deps ) ? $data->registered[ $el ]->deps : [] ),
+							];
 						}
 					}
 					//}
 				}
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Loads functionality that allows to enable/disable js/css without site reload
 	 */
 	public function appendAsset() {
 		if ( $this->isUserCan() && isset( $_GET['wbcr_assets_manager'] ) ) {
-			wp_enqueue_style( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', array(), $this->plugin->getPluginVersion() );
-			wp_enqueue_script( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', array( 'jquery' ), $this->plugin->getPluginVersion(), true );
+			wp_enqueue_style( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', [], $this->plugin->getPluginVersion() );
+			wp_enqueue_script( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [ 'jquery' ], $this->plugin->getPluginVersion(), true );
 		}
 	}
-	
+
 	/**
 	 * Exception for address starting from "//example.com" instead of
 	 * "http://example.com". WooCommerce likes such a format
 	 *
-	 * @param  string $url Incorrect URL.
+	 * @param string $url   Incorrect URL.
 	 *
 	 * @return string      Correct URL.
 	 */
@@ -1091,10 +1096,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		} else {
 			$out = $url;
 		}
-		
+
 		return $out;
 	}
-	
+
 	/**
 	 * Get current URL
 	 *
@@ -1107,36 +1112,36 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		} else {
 			$out = $url[0];
 		}
-		
+
 		return $out;
 	}
-	
+
 	/**
 	 * Checks how heavy is file
 	 *
-	 * @param  string $src URL.
+	 * @param string $src   URL.
 	 *
 	 * @return int    Size in KB.
 	 */
 	private function getAssetSize( $src ) {
 		$weight = 0;
-		
+
 		$home = get_theme_root() . '/../..';
 		$src  = explode( '?', $src );
-		
+
 		if ( ! filter_var( $src[0], FILTER_VALIDATE_URL ) === false && strpos( $src[0], get_home_url() ) === false ) {
 			return 0;
 		}
-		
+
 		$src_relative = $home . str_replace( get_home_url(), '', $this->prepareCorrectUrl( $src[0] ) );
-		
+
 		if ( file_exists( $src_relative ) ) {
 			$weight = round( filesize( $src_relative ) / 1024, 1 );
 		}
-		
+
 		return $weight;
 	}
-	
+
 	/**
 	 * Unset disabled
 	 *
@@ -1151,10 +1156,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		} else if ( "current" == $action ) {
 			unset( $disabled['everywhere'] );
 		}
-		
+
 		return $disabled;
 	}
-	
+
 	/**
 	 * Get plugin data from folder name
 	 *
@@ -1163,8 +1168,8 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 * @return array
 	 */
 	private function getPluginData( $name ) {
-		$data = array();
-		
+		$data = [];
+
 		if ( $name ) {
 			if ( ! function_exists( 'get_plugins' ) ) {
 				// подключим файл с функцией get_plugins()
@@ -1181,10 +1186,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				}
 			}
 		}
-		
+
 		return $data;
 	}
-	
+
 	/**
 	 * Get sided plugin name
 	 *
@@ -1202,13 +1207,13 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			
 			return "";*/
 	}
-	
+
 	/**
 	 * Get exclude sided plugin files
 	 *
 	 * @param string $index
 	 * @param string $type
-	 * @param bool $full
+	 * @param bool   $full
 	 *
 	 * @return array
 	 */
@@ -1216,25 +1221,25 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		if ( isset( $this->sided_plugin_files[ $index ][ $type ] ) && ! empty( $this->sided_plugin_files[ $index ][ $type ] ) ) {
 			return $this->sided_plugin_files[ $index ][ $type ];
 		}
-		
-		$this->sided_plugin_files[ $index ][ $type ] = array();
-		
+
+		$this->sided_plugin_files[ $index ][ $type ] = [];
+
 		// todo: вынести в метод
 		if ( is_multisite() && is_network_admin() ) {
-			$options = $this->getNetworkOption( 'assets_manager_sided_plugins', array() );
+			$options = $this->getNetworkOption( 'assets_manager_sided_plugins', [] );
 		} else {
-			$options = $this->getOption( 'assets_manager_sided_plugins', array() );
+			$options = $this->getOption( 'assets_manager_sided_plugins', [] );
 		}
-		
+
 		$plugin = $this->getSidedPluginName( $index );
-		
+
 		if ( $plugin && $options ) {
 			if ( isset( $options[ $plugin ][ $type ] ) ) {
 				$urls = $options[ $plugin ][ $type ];
-				
+
 				if ( is_array( $urls ) ) {
 					foreach ( $urls as $url ) {
-						
+
 						if ( $full ) {
 							$file = ( false !== strpos( $url, site_url() ) ? $url : site_url() . '/' . trim( $url, '/\\' ) );
 						} else {
@@ -1244,16 +1249,16 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 								$file = $url;
 							}
 						}
-						
+
 						$this->sided_plugin_files[ $index ][ $type ][] = $file;
 					}
 				}
 			}
 		}
-		
+
 		return $this->sided_plugin_files[ $index ][ $type ];
 	}
-	
+
 	/**
 	 * Is component active
 	 *
@@ -1263,16 +1268,16 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 */
 	private function isComponentActive( $index ) {
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-		
+
 		$plugin_path = isset( $this->sided_plugins[ $index ] ) ? $this->sided_plugins[ $index ] : null;
-		
+
 		if ( $index == 'wmac' && defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) && class_exists( 'WCL_Plugin' ) ) {
 			return WCL_Plugin::app()->isActivateComponent( 'minify_and_combine' );
 		}
-		
+
 		return is_plugin_active( $plugin_path );
 	}
-	
+
 	/**
 	 * Get component name
 	 *
@@ -1290,10 +1295,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin_path );
 			$name = $data['Name'];
 		}
-		
+
 		return $name;
 	}
-	
+
 	/**
 	 * Get head columns
 	 *
@@ -1307,7 +1312,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				if ( $this->isComponentActive( $index ) ) {
 					$title = $this->getComponentName( $plugin_path, $index );
 					$text  = $index == 'wclp' ? __( 'remove version?', 'gonzales' ) : __( 'optimize?', 'gonzales' );
-					
+
 					$hint = '';
 					if ( $index == 'wclp' ) {
 						$hint = __( 'You’ve enabled &#34;Remove query strings&#34; from static resources in the &#34;Clearfy&#34; plugin. This list of settings helps you to exclude the necessary scripts and styles with remaining query strings. Press No to add a file to the excluded list.', 'gonzales' );
@@ -1320,10 +1325,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				}
 			}
 		}
-		
+
 		return $html;
 	}
-	
+
 	/**
 	 * Get active status for sided plugin
 	 *
@@ -1337,7 +1342,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 */
 	private function getActiveStatusForSidedPlugin( $index, $options, $plugin, $type, $handle ) {
 		$active = isset( $options[ $plugin ][ $type ] ) && is_array( $options[ $plugin ][ $type ] ) && in_array( $handle, $options[ $plugin ][ $type ] );
-		
+
 		/*if( !$active && !isset($options[$plugin]) ) {
 
 				switch( $index ) {
@@ -1355,10 +1360,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						break;
 				}
 			}*/
-		
+
 		return $active;
 	}
-	
+
 	/**
 	 * Get controls columns
 	 *
@@ -1371,23 +1376,23 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 */
 	public function getAdditionalControlsColumns( $html, $type, $handle, $plugin_handle ) {
 		if ( ! empty( $this->sided_plugins ) ) {
-			
+
 			// todo: вынести в метод
 			if ( is_multisite() && is_network_admin() ) {
-				$options = $this->getNetworkOption( 'assets_manager_sided_plugins', array() );
+				$options = $this->getNetworkOption( 'assets_manager_sided_plugins', [] );
 			} else {
-				$options = $this->getOption( 'assets_manager_sided_plugins', array() );
+				$options = $this->getOption( 'assets_manager_sided_plugins', [] );
 			}
-			
+
 			foreach ( $this->sided_plugins as $index => $plugin_path ) {
 				if ( $this->isComponentActive( $index ) ) {
 					$plugin = $this->getSidedPluginName( $index );
-					
+
 					$active = $this->getActiveStatusForSidedPlugin( $index, $options, $plugin, $type, $handle );
 					$name   = "sided_plugins[{$plugin}][{$type}][{$handle}]";
-					
+
 					$html .= "<td>";
-					
+
 					if ( ! empty( $handle ) && ( 'plugins' != $type && false !== strpos( $handle, '.' . $type ) || 'plugins' == $type ) ) {
 						$html .= '<label class="wbcr-gnz-switch">';
 						$html .= '<input class="wbcr-gnz-switch__input visually-hidden wbcr-gnz-sided-disable';
@@ -1403,10 +1408,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				}
 			}
 		}
-		
+
 		return $html;
 	}
-	
+
 	/**
 	 * @param $index
 	 * @param $type
@@ -1416,7 +1421,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 */
 	private function filterExclusions( $index, $type, $exclude ) {
 		$files = $this->getSidedPluginFiles( $index, $type );
-		
+
 		if ( ! empty( $files ) ) {
 			if ( is_array( $exclude ) ) {
 				$exclude = array_merge( $exclude, $files );
@@ -1425,10 +1430,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				$exclude  .= ! empty( $exclude ) ? ',' . $dontmove : $dontmove;
 			}
 		}
-		
+
 		return $exclude;
 	}
-	
+
 	/**
 	 * aopt filter js exclude
 	 *
@@ -1440,7 +1445,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function aoptFilterJsExclude( $exclude, $content ) {
 		return $this->filterExclusions( 'aopt', 'js', $exclude );
 	}
-	
+
 	/**
 	 * aopt filter css exclude
 	 *
@@ -1452,7 +1457,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function aoptFilterCssExclude( $exclude, $content ) {
 		return $this->filterExclusions( 'aopt', 'css', $exclude );
 	}
-	
+
 	/**
 	 * wmac filter js exclude
 	 *
@@ -1464,7 +1469,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function wmacFilterJsExclude( $exclude, $content ) {
 		return $this->filterExclusions( 'wmac', 'js', $exclude );
 	}
-	
+
 	/**
 	 * wmac filter css exclude
 	 *
@@ -1476,7 +1481,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function wmacFilterCssExclude( $exclude, $content ) {
 		return $this->filterExclusions( 'wmac', 'css', $exclude );
 	}
-	
+
 	/**
 	 * Filter js minify exclusions
 	 *
@@ -1489,7 +1494,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 */
 	private function filterJsMinifyExclusions( $index, $type, $result, $url ) {
 		$files = $this->getSidedPluginFiles( $index, $type );
-		
+
 		if ( ! empty( $files ) ) {
 			foreach ( $files as $file ) {
 				if ( false !== strpos( $url, $file ) ) {
@@ -1497,10 +1502,10 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				}
 			}
 		}
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Action wmac_filter_js_minify_excluded
 	 *
@@ -1512,7 +1517,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function wmacFilterJsMinifyExclude( $result, $url ) {
 		return $this->filterJsMinifyExclusions( 'wmac', 'js', $result, $url );
 	}
-	
+
 	/**
 	 * Action wmac_filter_css_minify_excluded
 	 *
@@ -1524,7 +1529,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function wmacFilterCssMinifyExclude( $result, $url ) {
 		return $this->filterJsMinifyExclusions( 'wmac', 'css', $result, $url );
 	}
-	
+
 	/**
 	 * Manage excluded files
 	 *
@@ -1558,29 +1563,29 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			default:
 				return;
 		}
-		
+
 		// For clearfy need new line
 		$delimeter             = $index == 'wclp' ? "\n" : ",";
-		$current_exclude_files = ! empty( $exclude_files ) ? array_filter( array_map( 'trim', explode( $delimeter, $exclude_files ) ) ) : array();
-		
+		$current_exclude_files = ! empty( $exclude_files ) ? array_filter( array_map( 'trim', explode( $delimeter, $exclude_files ) ) ) : [];
+
 		$delete_files = array_diff( $sided_exclude_files['before'][ $type ], $sided_exclude_files['after'][ $type ] );
 		$new_files    = array_diff( $sided_exclude_files['after'][ $type ], $current_exclude_files );
-		
+
 		if ( empty( $current_exclude_files ) && ! empty( $new_files ) ) {
 			$current_exclude_files = $new_files;
 		} else if ( ! empty( $current_exclude_files ) ) {
-			$new_exclude_files = array();
+			$new_exclude_files = [];
 			foreach ( $current_exclude_files as $file ) {
-				
+
 				if ( ! in_array( $file, $delete_files ) ) {
 					$new_exclude_files[] = $file;
 				}
 			}
 			$current_exclude_files = array_merge( $new_exclude_files, $new_files );
 		}
-		
+
 		$current_exclude_files = array_filter( array_unique( $current_exclude_files ) );
-		
+
 		switch ( $index ) {
 			case 'aopt':
 				update_option( 'autoptimize_' . $type . '_exclude', implode( ', ', $current_exclude_files ) );
@@ -1597,7 +1602,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				break;
 		}
 	}
-	
+
 	/**
 	 * Action form save
 	 *
@@ -1606,55 +1611,55 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function actionFormSave( $empty_before = false ) {
 		if ( ! empty( $this->sided_plugins ) && ! $empty_before ) {
 			foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-				$sided_exclude_files[ $index ]['before'] = array(
-					'js'  => array(),
-					'css' => array()
-				);
+				$sided_exclude_files[ $index ]['before'] = [
+					'js'  => [],
+					'css' => []
+				];
 				// For clearfy need full url
 				$full = ( $index == 'wclp' ? true : false );
-				
+
 				$sided_exclude_files[ $index ]['before']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
 				$sided_exclude_files[ $index ]['before']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
 			}
 		}
-		
+
 		if ( isset( $_POST['sided_plugins'] ) && ! empty( $_POST['sided_plugins'] ) ) {
-			$sided_plugins_options = array();
+			$sided_plugins_options = [];
 			foreach ( $_POST['sided_plugins'] as $plugin => $types ) {
 				foreach ( $types as $type => $urls ) {
 					foreach ( $urls as $url => $active ) {
-						
+
 						if ( ! empty( $url ) && $active ) {
 							$sided_plugins_options[ $plugin ][ $type ][] = $url;
 						}
 					}
 				}
 			}
-			
+
 			if ( is_multisite() && is_network_admin() ) {
 				$this->updateNetworkOption( 'assets_manager_sided_plugins', $sided_plugins_options );
 			} else {
 				$this->updateOption( 'assets_manager_sided_plugins', $sided_plugins_options );
 			}
 		}
-		
+
 		if ( ! empty( $this->sided_plugins ) ) {
-			$this->sided_plugin_files = array();
+			$this->sided_plugin_files = [];
 			foreach ( $this->sided_plugins as $index => $sided_plugin ) {
-				$sided_exclude_files[ $index ]['after'] = array(
-					'js'  => array(),
-					'css' => array()
-				);
+				$sided_exclude_files[ $index ]['after'] = [
+					'js'  => [],
+					'css' => []
+				];
 				// For clearfy need full url
 				$full = ( $index == 'wclp' ? true : false );
-				
+
 				$sided_exclude_files[ $index ]['after']['js']  += $this->getSidedPluginFiles( $index, 'js', $full );
 				$sided_exclude_files[ $index ]['after']['css'] += $this->getSidedPluginFiles( $index, 'css', $full );
-				
+
 				if ( ! empty( $sided_exclude_files[ $index ]['before']['js'] ) || ! empty( $sided_exclude_files[ $index ]['after']['js'] ) ) {
 					$this->manageExcludeFiles( $sided_exclude_files[ $index ], $index, 'js' );
 				}
-				
+
 				if ( ! empty( $sided_exclude_files[ $index ]['before']['css'] ) || ! empty( $sided_exclude_files[ $index ]['after']['css'] ) ) {
 					$this->manageExcludeFiles( $sided_exclude_files[ $index ], $index, 'css' );
 				}
