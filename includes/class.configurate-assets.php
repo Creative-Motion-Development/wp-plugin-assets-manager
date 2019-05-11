@@ -611,6 +611,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= '</label>';
 		$html .= '</li>';
 
+		$html       .= '<li><strong>' . __( 'Post types', 'gonzales' ) . '</strong></li>';
 		$post_types = get_post_types( [ 'public' => true ], 'objects', 'and' );
 		if ( ! empty( $post_types ) ) {
 			$html .= "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
@@ -630,8 +631,8 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			}
 		}
 
+		$html       .= '<li><strong>' . __( 'Categories, Taxonomies, Tags', 'gonzales' ) . '</strong></li>';
 		$taxonomies = get_taxonomies( [ 'public' => true ], 'objects', 'and' );
-
 		if ( ! empty( $taxonomies ) ) {
 			unset( $taxonomies['category'] );
 			$html .= "<input type='hidden' name='enabled{$id}[taxonomies]' value='' />";
