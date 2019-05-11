@@ -591,13 +591,13 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html    .= '</select>';
 
 		// Everywhere
-		$html .= "<span class='wbcr-assets-manager everywhere'";
+		$html .= "<div class='wbcr-assets-manager everywhere'";
 		if ( ! $is_disabled || empty( $disabled['everywhere'] ) ) {
 			$html .= " style='display: none;'";
 		}
 		$html .= ">";
 		$html .= '<div class="wbcr-gnz-table__label">' . __( 'Exclude', 'gonzales' ) . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __( 'You can disable this resource for all pages, except sections and page types listed below. Specify sections and page types with the enabled resource.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
-		$html .= '<ul class="wbcr-gnz-table__options">';
+		$html .= '<div class="wbcr-gnz-table__wrap-options"><ul class="wbcr-gnz-table__options">';
 
 		$html .= '<li class="wbcr-gnz-table__options-item">';
 		$html .= "<input type='hidden' name='enabled{$id}[current]' value='' />";
@@ -671,8 +671,8 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			}
 		}
 
-		$html .= '</ul>';
-		$html .= '</span>';
+		$html .= '</ul></div>';
+		$html .= '</div>';
 
 		// Custom URL
 		$control_html = '<div class="wbcr-gnz-table__field wbcr-assets-manager custom"';
@@ -730,6 +730,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 
 				return;
 			}
+
+			// If mu  plugin does not exist, install it.
+			wbcr_gnz_deploy_mu_plugin();
 
 			// todo: вынести в метод
 			if ( is_multisite() && is_network_admin() ) {

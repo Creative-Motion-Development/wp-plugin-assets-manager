@@ -1,44 +1,47 @@
 <?php
 
-	// if uninstall.php is not called by WordPress, die
-	if( !defined('WP_UNINSTALL_PLUGIN') ) {
-		die;
-	}
+// if uninstall.php is not called by WordPress, die
+if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+	die;
+}
 
+// remove plugin options
+global $wpdb;
+
+if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+	require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+}
+
+function uninstall() {
 	// remove plugin options
 	global $wpdb;
 
-	if( !function_exists('is_plugin_active_for_network') ) {
-		require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-	}
+	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wbcr_gonzales_%';" );
+	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wbcr_gnz_%';" );
+}
 
-	function uninstall()
-	{
-		// remove plugin options
-		global $wpdb;
+if ( is_multisite() ) {
+	global $wpdb, $wp_version;
 
-		$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wbcr_gonzales_%';");
-		$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wbcr_gnz_%';");
-	}
+	$wpdb->query( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'wbcr_gonzales_%';" );
+	$wpdb->query( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'wbcr_gnz_%';" );
 
-	if( is_multisite() ) {
-		global $wpdb, $wp_version;
+	$blogs = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
 
-		$wpdb->query("DELETE FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'wbcr_gonzales_%';");
-		$wpdb->query("DELETE FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'wbcr_gnz_%';");
+	if ( ! empty( $blogs ) ) {
+		foreach ( $blogs as $id ) {
 
-		$blogs = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
+			switch_to_blog( $id );
 
-		if( !empty($blogs) ) {
-			foreach($blogs as $id) {
+			uninstall();
 
-				switch_to_blog($id);
-
-				uninstall();
-
-				restore_current_blog();
-			}
+			restore_current_blog();
 		}
-	} else {
-		uninstall();
 	}
+} else {
+	uninstall();
+}
+
+// Remove mu plugin
+require_once dirname( __FILE__ ) . 'includes/functions.php';
+wbcr_gnz_remove_mu_plugin();
