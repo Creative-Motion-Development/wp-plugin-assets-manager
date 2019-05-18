@@ -2,7 +2,7 @@
 /*
   Plugin Name: Webcraftic AM plugin load filter
   Description: Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
-  Version: 1.0.0
+  Version: 1.0.1
   Plugin URI: https://wordpress.org/plugins/gonzales/
   Author: Webcraftic <alex.kovalevv@gmail.com>
   Author URI: https://clearfy.pro/assets-manager
@@ -14,18 +14,22 @@
 
 defined( 'ABSPATH' ) || exit;
 
+if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || is_admin() || isset( $_GET['wbcr_assets_manager'] ) ) {
+	return;
+}
+
 // @formatter:off
 // @formatter:on
 
 //-------------------------------------------------------------------------------------------
 // pluggable.php defined function overwrite
-// pluggable.php read before the query_posts () is processed by the current user undetermined
+// pluggable.php read before the query_posts() is processed by the current user undetermined
 //-------------------------------------------------------------------------------------------
-if ( ! function_exists( 'wp_get_current_user' ) ) {
+if ( ! function_exists( 'wp_get_current_user' ) ) :
 	/**
 	 * Retrieve the current user object.
 	 *
-	 * @return int|WP_User Current user WP_User object
+	 * @return WP_User Current user WP_User object
 	 */
 	function wp_get_current_user() {
 		if ( ! function_exists( 'wp_set_current_user' ) ) {
@@ -34,9 +38,9 @@ if ( ! function_exists( 'wp_get_current_user' ) ) {
 			return _wp_get_current_user();
 		}
 	}
-}
+endif;
 
-if ( ! function_exists( 'get_userdata' ) ) {
+if ( ! function_exists( 'get_userdata' ) ) :
 	/**
 	 * Retrieve user info by user ID.
 	 *
@@ -47,9 +51,9 @@ if ( ! function_exists( 'get_userdata' ) ) {
 	function get_userdata( $user_id ) {
 		return get_user_by( 'id', $user_id );
 	}
-}
+endif;
 
-if ( ! function_exists( 'get_user_by' ) ) {
+if ( ! function_exists( 'get_user_by' ) ) :
 	/**
 	 * Retrieve user info by a given field
 	 *
@@ -70,9 +74,9 @@ if ( ! function_exists( 'get_user_by' ) ) {
 
 		return $user;
 	}
-}
+endif;
 
-if ( ! function_exists( 'is_user_logged_in' ) ) {
+if ( ! function_exists( 'is_user_logged_in' ) ) :
 	/**
 	 * Checks if the current visitor is a logged in user.
 	 *
@@ -91,7 +95,7 @@ if ( ! function_exists( 'is_user_logged_in' ) ) {
 
 		return true;
 	}
-}
+endif;
 
 //-------------------------------------------------------------------------------------------
 // Plugins load filter
@@ -100,24 +104,55 @@ if ( ! function_exists( 'is_user_logged_in' ) ) {
 class WGNZ_Plugins_Loader {
 
 	protected $prefix = 'wbcr_gnz_';
+	protected $settings;
 	protected $active_plugins = array();
 
 	public function __construct() {
-
-		if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || isset( $_GET['wbcr_assets_manager'] ) ) {
+		# We must always load the plugin if it is an ajax request, a cron
+		# task or a rest api request. Otherwise, the user may have problems
+		# with the work of plugins.
+		if ( $this->doing_ajax() || $this->doing_cron() || $this->doing_rest_api() ) {
 			return;
 		}
 
-		if ( is_multisite() ) {
-			add_filter( 'site_option_active_sitewide_plugins', array( $this, 'disable_network_plugins' ), 1 );
+		$is_assets_manager_active = false;
+		$is_clearfy_active        = false;
+
+		$active_plugins = $this->get_active_plugins();
+
+		if ( in_array( 'clearfy/clearfy.php', $active_plugins ) || in_array( 'wp-plugin-clearfy/clearfy.php', $active_plugins ) ) {
+			$this->prefix = 'wbcr_clearfy_';
+
+			if ( is_multisite() ) {
+				$deactivate_components = get_site_option( $this->prefix . 'deactive_preinstall_components', array() );
+			} else {
+				$deactivate_components = get_option( $this->prefix . 'deactive_preinstall_components', array() );
+			}
+
+			if ( empty( $deactivate_components ) || ! in_array( 'assets_manager', $deactivate_components ) ) {
+				$is_clearfy_active = true;
+			}
+		} else if ( in_array( 'gonzales/gonzales.php', $active_plugins ) || in_array( 'wp-plugin-gonzales/gonzales.php', $active_plugins ) ) {
+			$is_assets_manager_active = true;
+			$this->prefix             = 'wbcr_gnz_';
 		}
 
-		add_filter( 'option_active_plugins', array( $this, 'disable_plugins' ), 1 );
+		# Disable plugins only if Asset Manager and Clearfy are activated
+		if ( $is_clearfy_active || $is_assets_manager_active ) {
+			$this->settings = get_option( $this->prefix . 'assets_manager_options', array() );
 
-		add_filter( 'option_hack_file', array( $this, 'hack_file_filter' ), 1 );
-		add_action( 'plugins_loaded', array( $this, 'remove_plugin_filters' ), 1 );
-		//add_action( 'wp_loaded', array( &$this, 'cache_post_type' ), 1 );
+			if ( ! empty( $this->settings ) ) {
+				if ( is_multisite() ) {
+					add_filter( 'site_option_active_sitewide_plugins', array( $this, 'disable_network_plugins' ), 1 );
+				}
 
+				add_filter( 'option_active_plugins', array( $this, 'disable_plugins' ), 1 );
+
+				add_filter( 'option_hack_file', array( $this, 'hack_file_filter' ), 1 );
+				add_action( 'plugins_loaded', array( $this, 'remove_plugin_filters' ), 1 );
+				//add_action( 'wp_loaded', array( &$this, 'cache_post_type' ), 1 );
+			}
+		}
 	}
 
 	/**
@@ -179,39 +214,9 @@ class WGNZ_Plugins_Loader {
 			return $plugins_list;
 		}
 
-		# We must always load the plugin if it is an ajax request, a cron
-		# task or a rest api request. Otherwise, the user may have problems
-		# with the work of plugins.
-		if ( is_admin() || $this->doing_ajax() || $this->doing_cron() || $this->doing_rest_api() ) {
-			return $plugins_list;
-		}
-
-		$is_asmanager_active         = false;
-		$is_clearfy_component_active = false;
-
-		if ( in_array( 'clearfy/clearfy.php', (array) $plugins_list ) || in_array( 'wp-plugin-clearfy/clearfy.php', (array) $plugins_list ) ) {
-			$this->prefix = 'wbcr_clearfy_';
-
-			if ( is_multisite() ) {
-				$deactivate_components = get_site_option( $this->prefix . 'deactive_preinstall_components', array() );
-			} else {
-				$deactivate_components = get_option( $this->prefix . 'deactive_preinstall_components', array() );
-			}
-
-			if ( empty( $deactivate_components ) || ! in_array( 'assets_manager', $deactivate_components ) ) {
-				$is_clearfy_component_active = true;
-			}
-		} else if ( in_array( 'gonzales/gonzales.php', (array) $plugins_list ) || in_array( 'wp-plugin-gonzales/gonzales.php', (array) $plugins_list ) ) {
-			$is_asmanager_active = true;
-			$this->prefix        = 'wbcr_gnz_';
-		}
-
-		# Disable plugins only if Asset Manager and Clearfy are activated
-		if ( $is_clearfy_component_active || $is_asmanager_active ) {
-			foreach ( (array) $plugins_list as $key => $plugin_base ) {
-				if ( $this->is_disabled_plugin( $plugin_base ) ) {
-					unset( $plugins_list[ $key ] );
-				}
+		foreach ( (array) $plugins_list as $key => $plugin_base ) {
+			if ( $this->is_disabled_plugin( $plugin_base ) ) {
+				unset( $plugins_list[ $key ] );
 			}
 		}
 
@@ -219,14 +224,22 @@ class WGNZ_Plugins_Loader {
 	}
 
 	/**
-	 * Get asset manager settings. We need to know which plugins have been disabled.
+	 * Get a list of active plugins.
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.0.0
-	 * @return mixed|void
+	 * @return array
 	 */
-	private function get_settings() {
-		return get_option( $this->prefix . 'assets_manager_options', array() );
+	private function get_active_plugins() {
+		if ( is_multisite() ) {
+			$active_network_plugins = (array) get_site_option( 'active_sitewide_plugins' );
+			$active_network_plugins = array_keys( $active_network_plugins );
+			$active_blog_plugins    = (array) get_option( 'active_plugins' );
+
+			return array_unique( array_merge( $active_network_plugins, $active_blog_plugins ) );
+		}
+
+		return (array) get_option( 'active_plugins' );
 	}
 
 	/**
@@ -258,7 +271,7 @@ class WGNZ_Plugins_Loader {
 			$this->force_initial_taxonomies();
 
 			//Post Format, Custom Post Type support
-			add_action( 'parse_request', array( $this, 'parse_request' ) );
+			//add_action( 'parse_request', array( $this, 'parse_request' ) );
 
 			$GLOBALS['wp']->parse_request( '' );
 			$GLOBALS['wp']->query_posts();
@@ -303,7 +316,6 @@ class WGNZ_Plugins_Loader {
 	 * @return bool
 	 */
 	private function is_disabled_plugin( $plugin_base ) {
-		$settings = $this->get_settings();
 
 		$white_plgins_list = array(
 			'clearfy', // prod
@@ -321,16 +333,16 @@ class WGNZ_Plugins_Loader {
 		}
 
 		# If there are no plugins disabled
-		if ( ! isset( $settings['disabled'] ) || ! isset( $settings['disabled']['plugins'] ) || empty( $settings['disabled']['plugins'] ) ) {
+		if ( ! isset( $this->settings['disabled'] ) || ! isset( $this->settings['disabled']['plugins'] ) || empty( $this->settings['disabled']['plugins'] ) ) {
 			return false;
 		}
 
 		$enabled = array();
-		if ( isset( $settings['enabled'] ) && isset( $settings['enabled']['plugins'] ) && ! empty( $settings['enabled']['plugins'] ) ) {
-			$enabled = $settings['enabled']['plugins'];
+		if ( isset( $this->settings['enabled'] ) && isset( $this->settings['enabled']['plugins'] ) && ! empty( $this->settings['enabled']['plugins'] ) ) {
+			$enabled = $this->settings['enabled']['plugins'];
 		}
 
-		foreach ( (array) $settings['disabled']['plugins'] as $plugin_slug => $conditions ) {
+		foreach ( (array) $this->settings['disabled']['plugins'] as $plugin_slug => $conditions ) {
 			$enabled_conditions = isset( $enabled[ $plugin_slug ] ) ? $enabled[ $plugin_slug ] : array();
 
 			if ( $plugin_base_part[0] == $plugin_slug && $this->is_plugin_disabled( $conditions, $enabled_conditions ) ) {
@@ -460,7 +472,7 @@ class WGNZ_Plugins_Loader {
 	}
 
 	//Post Format Type, Custom Post Type Data Cache for parse request
-	private function cache_post_type() {
+	/*private function cache_post_type() {
 		if ( ! is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) || ( defined( 'DOING_CRON' ) && DOING_CRON ) ) {
 			return;
 		}
@@ -491,10 +503,10 @@ class WGNZ_Plugins_Loader {
 			$data['wp_post_statuses']     = '';
 			update_option( $this->prefix . 'queryvars', $data );
 		}
-	}
+	}*/
 
 	//parse_request Action Hook for Custom Post Type query add
-	public function parse_request( &$args ) {
+	/*public function parse_request( &$args ) {
 		if ( did_action( 'plugins_loaded' ) === 0 ) {
 			$data = get_option( $this->prefix . 'queryvars' );
 
@@ -548,7 +560,7 @@ class WGNZ_Plugins_Loader {
 				}
 			}
 		}
-	}
+	}*/
 
 
 	/**
