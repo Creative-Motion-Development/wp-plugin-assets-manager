@@ -81,7 +81,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		}
 
 		if ( ! is_admin() && ! $on_frontend ) {
-			add_action( 'wp_head', [ $this, 'collectAssets' ], 10000 );
+			add_action( 'wp_print_styles', [ $this, 'collectAssets' ], 10000 );
+			add_action( 'wp_print_scripts', [ $this, 'collectAssets' ], 10000 );
+			//add_action( 'wp_head', [ $this, 'collectAssets' ], 10000 );
 			add_action( 'wp_footer', [ $this, 'collectAssets' ], 10000 );
 		}
 
@@ -1019,7 +1021,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 
 		$denied = [
 			'js'  => [ 'wbcr-assets-manager', 'admin-bar' ],
-			'css' => [ 'wbcr-assets-manager', 'admin-bar', 'dashicons' ],
+			'css' => [ 'wbcr-clearfy-adminbar-styles', 'wbcr-assets-manager', 'admin-bar', 'dashicons' ],
 		];
 		$denied = apply_filters( 'wbcr_gnz_denied_assets', $denied );
 
@@ -1033,10 +1035,15 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		];
 
 		foreach ( $data_assets as $type => $data ) {
-			//$resource = array();
-			foreach ( $data->groups as $el => $val ) {
+			if ( "wp_print_scripts" === current_action() || "wp_print_styles" === current_action() ) {
+				$queue[ $type ] = $data->queue;
+			} else {
+				$queue[ $type ] = $data->done;
+			}
+
+			foreach ( $queue[ $type ] as $el ) {
 				if ( isset( $data->registered[ $el ] ) ) {
-					//foreach($resource as $el) {
+
 					if ( ! in_array( $el, $denied[ $type ] ) ) {
 						if ( isset( $data->registered[ $el ]->src ) ) {
 							$url       = $this->prepareCorrectUrl( $data->registered[ $el ]->src );
@@ -1057,17 +1064,37 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 								$resource_name = isset( $url_parts[0] ) ? $url_parts[0] : '';
 							}
 
-							$this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] = [
-								'url_full'  => $url,
-								'url_short' => $url_short,
-								//'state' => $this->get_visibility($type, $el),
-								'size'      => $this->getAssetSize( $url ),
-								'ver'       => $data->registered[ $el ]->ver,
-								'deps'      => ( isset( $data->registered[ $el ]->deps ) ? $data->registered[ $el ]->deps : [] ),
-							];
+							if ( ! isset( $this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] ) ) {
+
+								# Deregister scripts, styles so that they do not conflict with assets managers.
+								# ------------------------------------------------
+								$no_js = [
+									'jquery',
+									'jquery-core',
+									'jquery-migrate',
+									'jquery-ui-core'
+								];
+
+								if ( "js" == $type && ! in_array( $el, $no_js ) ) {
+									wp_deregister_script( $el );
+								}
+
+								if ( "css" == $type ) {
+									wp_deregister_style( $el );
+								}
+								#-------------------------------------------------
+
+								$this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] = [
+									'url_full'  => $url,
+									'url_short' => $url_short,
+									//'state' => $this->get_visibility($type, $el),
+									'size'      => $this->getAssetSize( $url ),
+									'ver'       => $data->registered[ $el ]->ver,
+									'deps'      => ( isset( $data->registered[ $el ]->deps ) ? $data->registered[ $el ]->deps : [] ),
+								];
+							}
 						}
 					}
-					//}
 				}
 			}
 		}
