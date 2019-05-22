@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/gonzales/
  * Description: Increase the speed of the pages by disabling unused scripts (.JS) and styles (.CSS). Make your website REACTIVE!
  * Author: Webcraftic <wordpress.webraftic@gmail.com>
- * Version: 1.0.7
+ * Version: 1.0.8
  * Text Domain: gonzales
  * Domain Path: /languages/
  * Author URI: https://clearfy.pro
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 if ( ! defined( 'WGZ_PLUGIN_VERSION' ) ) {
-	define( 'WGZ_PLUGIN_VERSION', '1.0.7' );
+	define( 'WGZ_PLUGIN_VERSION', '1.0.8' );
 }
 
 // Fix for ithemes sync. When the ithemes sync plugin accepts the request, set the WP_ADMIN constant,
