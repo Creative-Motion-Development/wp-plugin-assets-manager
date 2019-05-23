@@ -120,6 +120,60 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		add_filter( 'wmac_filter_css_exclude', [ $this, 'wmacFilterCssExclude' ], 10, 2 );
 		add_filter( 'wmac_filter_js_minify_excluded', [ $this, 'wmacFilterJsMinifyExclude' ], 10, 2 );
 		add_filter( 'wmac_filter_css_minify_excluded', [ $this, 'wmacFilterCssMinifyExclude' ], 10, 2 );
+
+		// Stop optimizing scripts and caching the asset manager page.
+		add_action( 'wp', [ $this, 'stop_caching_and_script_optimize' ] );
+		// Disable autoptimize on Assets manager page
+		add_filter( 'autoptimize_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
+		add_filter( 'wmac_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
+	}
+
+	/**
+	 * Stop optimizing scripts and caching the asset manager page.
+	 *
+	 * For some types of pages it is imperative to not be cached. Think of an e-commerce scenario:
+	 * when a customer enters checkout, they wouldn’t want to see a cached page with some previous
+	 * customer’s payment data.
+	 *
+	 * Elaborate plugins like WooCommerce (and many others) use the DONOTCACHEPAGE constant to let
+	 * caching plugins know about certain pages or endpoints that should not be cached in any case.
+	 * Accordingly, all popular caching plugins, including WP Rocket, support the constant and would
+	 * not cache a request for which DONOTCACHEPAGE is defined as true.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.8
+	 */
+	public function stop_caching_and_script_optimize() {
+		if ( ! isset( $_GET['wbcr_assets_manager'] ) ) {
+			return;
+		}
+
+		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+			define( 'DONOTCACHEPAGE', true );
+		}
+
+		if ( ! defined( 'DONOTCACHCEOBJECT' ) ) {
+			define( 'DONOTCACHCEOBJECT', true );
+		}
+
+		if ( ! defined( 'DONOTMINIFY' ) ) {
+			define( 'DONOTMINIFY', true );
+		}
+	}
+
+	/**
+	 * Disable autoptimize on Assets manager page
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.8
+	 * @return bool
+	 */
+	public function autoptimize_noptimize() {
+		if ( ! isset( $_GET['wbcr_assets_manager'] ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -194,7 +248,8 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						'jquery-migrate.min.js',
 						'wp-includes/js/admin-bar.min.js',
 						'assets-manager/assets/js/assets-manager.js',
-						'assets-manager-premium/assets/js/assets-manager.js'
+						'assets-manager-premium/assets/js/assets-manager.js',
+						'assets-manager-premium-premium/assets/js/assets-manager.js'
 					];
 
 					if ( ! empty( $src ) ) {
