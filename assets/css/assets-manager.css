@@ -1056,9 +1056,12 @@ body p {
   color: #646D78;
   font-size: 13px;
 }
+#WBCR .wbcr-gnz-table__options-item-group {
+  margin: 10px 0 5px;
+}
 #WBCR .wbcr-gnz-table__options-item {
   display: block;
-  padding: 0 20px 0 0;
+  padding: 0 20px 5px 0;
 }
 #WBCR .wbcr-gnz-table__checkbox {
   cursor: pointer;

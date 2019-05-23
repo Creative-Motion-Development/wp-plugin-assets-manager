@@ -81,9 +81,8 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		}
 
 		if ( ! is_admin() && ! $on_frontend ) {
-			add_action( 'wp_print_styles', [ $this, 'collectAssets' ], 10000 );
-			add_action( 'wp_print_scripts', [ $this, 'collectAssets' ], 10000 );
-			//add_action( 'wp_head', [ $this, 'collectAssets' ], 10000 );
+			add_action( 'template_redirect', [ $this, 'clean_source_code' ], 9999 );
+			add_action( 'wp_head', [ $this, 'collectAssets' ], 10000 );
 			add_action( 'wp_footer', [ $this, 'collectAssets' ], 10000 );
 		}
 
@@ -121,6 +120,102 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		add_filter( 'wmac_filter_css_exclude', [ $this, 'wmacFilterCssExclude' ], 10, 2 );
 		add_filter( 'wmac_filter_js_minify_excluded', [ $this, 'wmacFilterJsMinifyExclude' ], 10, 2 );
 		add_filter( 'wmac_filter_css_minify_excluded', [ $this, 'wmacFilterCssMinifyExclude' ], 10, 2 );
+	}
+
+	/**
+	 * We remove scripts and styles of themes, plugins to avoid
+	 * unnecessary conflicts during the use of the asset manager.
+	 *
+	 * todo: the method requires better study. Sorry, I don't have time for this.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.8
+	 */
+	public function clean_source_code() {
+		if ( ! isset( $_GET['wbcr_assets_manager'] ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			return false;
+		}
+
+		ob_start( function ( $html ) {
+
+			$raw_html = $html;
+
+			$html = preg_replace( [
+				"'<\s*style.*?<\s*/\s*style\s*>'is",
+			], [
+				""
+			], $html );
+
+			$html = preg_replace_callback( [
+				"'<\s*link.*?>'is",
+			], function ( $matches ) {
+				$doc = new DOMDocument();
+				$doc->loadHTML( $matches[0] );
+				$imageTags = $doc->getElementsByTagName( 'link' );
+
+				foreach ( $imageTags as $tag ) {
+					$src = $tag->getAttribute( 'href' );
+
+					$white_list_js = [
+						'wp-includes/css/dashicons.min.css',
+						'wp-includes/css/admin-bar.min.css',
+						'assets-manager/assets/css/assets-manager.css',
+						'clearfy/assets/css/admin-bar.css'
+					];
+
+					if ( ! empty( $src ) ) {
+						foreach ( $white_list_js as $js ) {
+							if ( false !== strpos( $src, $js ) ) {
+								return $matches[0];
+							}
+						}
+					}
+
+					return '';
+				}
+			}, $html );
+
+			$html = preg_replace_callback( [
+				"'<\s*script.*?<\s*\/\s*script\s*>'is",
+			], function ( $matches ) {
+				if ( false !== strpos( $matches[0], 'wbcramp_data' ) ) {
+					return $matches[0];
+				}
+
+				$doc = new DOMDocument();
+				$doc->loadHTML( $matches[0] );
+				$imageTags = $doc->getElementsByTagName( 'script' );
+
+				foreach ( $imageTags as $tag ) {
+					$src = $tag->getAttribute( 'src' );
+
+					$white_list_js = [
+						'jquery.js',
+						'jquery-migrate.min.js',
+						'wp-includes/js/admin-bar.min.js',
+						'assets-manager/assets/js/assets-manager.js',
+						'assets-manager-premium/assets/js/assets-manager.js'
+					];
+
+					if ( ! empty( $src ) ) {
+						foreach ( $white_list_js as $js ) {
+							if ( false !== strpos( $src, $js ) ) {
+								return $matches[0];
+							}
+						}
+					}
+
+					return '';
+				}
+				//return $matches[0];
+			}, $html );
+
+			if ( empty( $html ) ) {
+				return $raw_html;
+			}
+
+			return $html;
+		} );
 	}
 
 	function clearfyAdminBarMenu( $menu_items ) {
@@ -613,7 +708,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= '</label>';
 		$html .= '</li>';
 
-		$html       .= '<li><strong>' . __( 'Post types', 'gonzales' ) . '</strong></li>';
+		$html       .= '<li class="wbcr-gnz-table__options-item-group"><strong>' . __( 'Post types', 'gonzales' ) . '</strong></li>';
 		$post_types = get_post_types( [ 'public' => true ], 'objects', 'and' );
 		if ( ! empty( $post_types ) ) {
 			$html .= "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
@@ -633,7 +728,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			}
 		}
 
-		$html       .= '<li><strong>' . __( 'Categories, Taxonomies, Tags', 'gonzales' ) . '</strong></li>';
+		$html       .= '<li class="wbcr-gnz-table__options-item-group"><strong>' . __( 'Categories, Taxonomies, Tags', 'gonzales' ) . '</strong></li>';
 		$taxonomies = get_taxonomies( [ 'public' => true ], 'objects', 'and' );
 		if ( ! empty( $taxonomies ) ) {
 			unset( $taxonomies['category'] );
@@ -922,11 +1017,6 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$options = $this->getOption( 'assets_manager_options', [] );
 		}
 
-		$results = apply_filters( 'wbcr_gnz_get_disabled_from_options', false, $options, $type, $handle );
-		if ( false !== $results ) {
-			return $results;
-		}
-
 		if ( isset( $options['disabled'] ) && isset( $options['disabled'][ $type ] ) && isset( $options['disabled'][ $type ][ $handle ] ) ) {
 			return $options['disabled'][ $type ][ $handle ];
 		}
@@ -948,11 +1038,6 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$options = $this->getNetworkOption( 'assets_manager_options', [] );
 		} else {
 			$options = $this->getOption( 'assets_manager_options', [] );
-		}
-
-		$results = apply_filters( 'wbcr_gnz_get_enabled_from_options', false, $options, $type, $handle );
-		if ( false !== $results ) {
-			return $results;
 		}
 
 		if ( isset( $options['enabled'] ) && isset( $options['enabled'][ $type ] ) && isset( $options['enabled'][ $type ][ $handle ] ) ) {
@@ -978,14 +1063,51 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$disabled = $this->getDisabledFromOptions( $type, $handle );
 		$enabled  = $this->getEnabledFromOptions( $type, $handle );
 
-		if ( ( isset( $disabled['everywhere'] ) && $disabled['everywhere'] == 1 ) || ( isset( $disabled['current'] ) && is_array( $disabled['current'] ) && in_array( $current_url, $disabled['current'] ) ) || apply_filters( 'wbcr_gnz_check_disabled_is_set', false, $disabled, $current_url ) ) {
+		$is_everywhere = isset( $disabled['everywhere'] ) && $disabled['everywhere'] == 1;
+		$is_custom     = isset( $disabled['custom'] ) && is_array( $disabled['custom'] ) && ! empty( $disabled['custom'] );
+		$is_current    = isset( $disabled['current'] ) && is_array( $disabled['current'] ) && in_array( $current_url, $disabled['current'] );
+		$is_regex      = isset( $disabled['regex'] ) && ! empty( $disabled['regex'] );
+
+		if ( $is_everywhere || $is_current || ( $is_custom || $is_regex ) ) {
 
 			if ( isset( $enabled['current'] ) && is_array( $enabled['current'] ) && in_array( $current_url, $enabled['current'] ) ) {
 				return $src;
 			}
 
-			if ( apply_filters( 'wbcr_gnz_check_unload_disabled', false, $disabled, $current_url ) ) {
-				return $src;
+			if ( $is_custom ) {
+				$found_match = false;
+
+				foreach ( $disabled['custom'] as $url ) {
+					// Убираем базовый url
+					$free_url = str_replace( site_url(), '', $url );
+					// Если есть *
+					if ( strpos( $free_url, '*' ) ) {
+						// Получаем строку до *
+						$free_url = strstr( $free_url, '*', true );
+						// Если это был не пустой url (типа http://site/*) и есть вхождение с начала
+						if ( untrailingslashit( $free_url ) && strpos( untrailingslashit( $current_url ), $free_url ) === 0 ) {
+							$found_match = true;
+							break;
+						}
+						// Если url'ы идентичны
+					} else if ( untrailingslashit( esc_url( $free_url ) ) === untrailingslashit( $current_url ) ) {
+						$found_match = true;
+						break;
+					}
+				}
+
+				if ( ! $found_match ) {
+					return $src;
+				}
+			}
+
+			if ( $is_regex ) {
+				$check_url = ltrim( $current_url, '/\\' );
+				$regexp    = trim( str_replace( '\\\\', '\\', $disabled['regex'] ), '/' );
+
+				if ( ! @preg_match( "/{$regexp}/", $check_url ) ) {
+					return $src;
+				}
 			}
 
 			if ( isset( $enabled['post_types'] ) && is_singular() && in_array( get_post_type(), $enabled['post_types'] ) ) {
@@ -1036,13 +1158,13 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		];
 
 		foreach ( $data_assets as $type => $data ) {
-			if ( "wp_print_scripts" === current_action() || "wp_print_styles" === current_action() ) {
+			/*if ( "wp_print_scripts" === current_action() || "wp_print_styles" === current_action() ) {
 				$queue[ $type ] = $data->queue;
 			} else {
 				$queue[ $type ] = $data->done;
-			}
+			}*/
 
-			foreach ( $queue[ $type ] as $el ) {
+			foreach ( $data->done as $el ) {
 				if ( isset( $data->registered[ $el ] ) ) {
 
 					if ( ! in_array( $el, $denied[ $type ] ) ) {
