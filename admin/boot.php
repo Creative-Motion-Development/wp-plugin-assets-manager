@@ -19,7 +19,7 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	 *
 	 * @param array $notices
 	 */
-	add_filter( 'wbcr_factory_notices_000_list', function ( $notices ) {
+	add_filter( 'wbcr/factory/admin_notices', function ( $notices ) {
 
 		if ( is_multisite() && is_network_admin() ) {
 			$am_options = get_site_option( 'wbcr_gnz_assets_manager_options' );
@@ -31,23 +31,23 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 			$notice_text = '<p><b>Clearfy:</b> ' . __( 'We detected that you used the Assets manager plugin. Do you want to import settings from this plugin to the Clearfy plugin?', 'gonzales' ) . '</p>';
 			$notice_text .= '<p><a href="' . admin_url( '?wbcr_assets_manager_transfer' ) . '" class="button button-default">' . __( 'Import options', 'gonzales' ) . '</a></p>';
 
-			$notices[] = array(
+			$notices[] = [
 				'id'              => 'gnz_plugin_import_options',
 				'type'            => 'warning',
 				'dismissible'     => true,
 				'dismiss_expires' => 0,
 				'text'            => $notice_text
-			);
+			];
 		}
 
 		if ( isset( $_GET['wbcr_assets_manager_transfer_completed'] ) ) {
-			$notices[] = array(
+			$notices[] = [
 				'id'              => 'gnz_plugin_transfer_options_completed',
 				'type'            => 'success',
 				'dismissible'     => false,
 				'dismiss_expires' => 0,
 				'text'            => '<p><b>Clearfy:</b> ' . __( 'Settings has been successfully imported!', 'gonzales' )
-			);
+			];
 		}
 
 		return $notices;
@@ -138,36 +138,36 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	} );
 
 	function wbcr_gnz_group_options( $options ) {
-		$options[] = array(
+		$options[] = [
 			'name'   => 'disable_assets_manager',
 			'title'  => __( 'Disable assets manager', 'gonzales' ),
-			'tags'   => array(),
-			'values' => array()
-		);
+			'tags'   => [],
+			'values' => []
+		];
 
-		$options[] = array(
+		$options[] = [
 			'name'  => 'disable_assets_manager_panel',
 			'title' => __( 'Disable assets manager panel', 'gonzales' ),
-			'tags'  => array()
-		);
+			'tags'  => []
+		];
 
-		$options[] = array(
+		$options[] = [
 			'name'  => 'disable_assets_manager_on_front',
 			'title' => __( 'Disable assets manager on front', 'gonzales' ),
-			'tags'  => array()
-		);
+			'tags'  => []
+		];
 
-		$options[] = array(
+		$options[] = [
 			'name'  => 'disable_assets_manager_on_backend',
 			'title' => __( 'Disable assets manager on back-end', 'gonzales' ),
-			'tags'  => array()
-		);
+			'tags'  => []
+		];
 
-		$options[] = array(
+		$options[] = [
 			'name'  => 'manager_options',
 			'title' => __( 'Assets manager options', 'gonzales' ),
-			'tags'  => array()
-		);
+			'tags'  => []
+		];
 
 		return $options;
 	}
@@ -204,7 +204,7 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	add_filter( 'wbcr/clearfy/page_bussines_suggetion_features', function ( $features, $plugin_name, $page_id ) {
 
 		if ( ! empty( $plugin_name ) && ( $plugin_name == WGZ_Plugin::app()->getPluginName() ) ) {
-			$upgrade_feature   = array();
+			$upgrade_feature   = [];
 			$upgrade_feature[] = __( 'Disable plugins (groups of scripts)', 'gonzales' );
 			$upgrade_feature[] = __( 'Conditions by the link template', 'gonzales' );
 			$upgrade_feature[] = __( 'Conditions by the regular expression', 'gonzales' );

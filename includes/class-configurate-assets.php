@@ -1,18 +1,16 @@
 <?php
-
-/**
- * Assets manager base class
- *
- * @author        Webcraftic <wordpress.webraftic@gmail.com>
- * @copyright (c) 05.11.2017, Webcraftic
- * @version       1.0
- */
-
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Assets manager base class
+ *
+ * @author        Alex Kovalev <alex.kovalevv@gmail.com>, Github: https://github.com/alexkovalevv
+ * @copyright (c) 05.11.2017, Webcraftic
+ * @version       1.0
+ */
 class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 
 	/**

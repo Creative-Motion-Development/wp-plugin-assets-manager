@@ -3,7 +3,7 @@
 /**
  * Activator for the cyrlitera
  *
- * @author        Webcraftic <wordpress.webraftic@gmail.com>
+ * @author        Alex Kovalev <alex.kovalevv@gmail.com>, Github: https://github.com/alexkovalevv
  * @copyright (c) 09.03.2018, Webcraftic
  * @see           Wbcr_Factory000_Activator
  * @version       1.0

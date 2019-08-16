@@ -2,7 +2,7 @@
 /**
  * Helpers functions
  *
- * @author        Webcraftic <wordpress.webraftic@gmail.com>, Alexander Kovalev <alex.kovalevv@gmail.com>
+ * @author        Alex Kovalev <alex.kovalevv@gmail.com>, Github: https://github.com/alexkovalevv
  * @copyright (c) 11.05.2019, Webcraftic
  * @version       1.0
  */
