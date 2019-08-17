@@ -53,7 +53,7 @@ class WGZ_Plugin extends Wbcr_Factory000_Plugin {
 	 * Используется для получения настроек плагина, информации о плагине, для доступа к вспомогательным
 	 * классам.
 	 *
-	 * @return \Wbcr_Factory000_Plugin|\WCM_Plugin
+	 * @return \Wbcr_Factory000_Plugin|\WGZ_Plugin
 	 */
 	public static function app() {
 		return self::$app;
