@@ -1,0 +1,37 @@
+<?php
+
+defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
+
+/**
+ * @var array     $data
+ * @var WGZ_Views $this
+ */
+
+?>
+<div id="WBCR-AM" class="wam-wrapper" style="display: block;">
+    <form method="POST">
+		<?php $this->print_template( 'part-assets-manager-header' ); ?>
+        <main class="wam-content">
+			<?php $this->print_template( 'part-assets-manager-tabs-menu' ); ?>
+			<?php //$this->print_template( 'part-assets-manager-info-bar' ); ?>
+            <div id="wam-assets-type-tab-content__theme" class="wam-assets-type-tab-content">
+				<?php $this->print_template( 'tab-content-assets', [
+					'assets' => $data['theme_assets']
+				] ); ?>
+            </div>
+            <div id="wam-assets-type-tab-content__misc" class="wam-assets-type-tab-content">
+				<?php $this->print_template( 'tab-content-assets', [
+					'assets' => $data['misc_assets']
+				] ); ?>
+            </div>
+            <div id="wam-assets-type-tab-content__plugins" class="wam-assets-type-tab-content wam-assets-type-tab-content__active">
+				<?php $this->print_template( 'tab-content-assets-plugins', $data ); ?>
+            </div>
+        </main>
+    </form> <!-- /endform -->
+    <!-- Html template Conditions Editor -->
+    <script type="text/html" id="wam-conditions-builder-template">
+		<?php $this->print_template( 'conditions-logic-editor-template', $data ); ?>
+    </script>
+    <!-- /End Html template -->
+</div> <!-- /div2 -->

@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @copyright (c) 2018 Webraftic Ltd
  */
-class WbcrGnz_AssetsManagerPage extends Wbcr_FactoryClearfy000_PageBase {
+class WGZ_AssetsManagerPage extends Wbcr_FactoryClearfy000_PageBase {
 
 	/**
 	 * The id of the page in the admin menu.

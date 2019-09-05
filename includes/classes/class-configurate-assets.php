@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @copyright (c) 05.11.2017, Webcraftic
  * @version       1.0
  */
-class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
+class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 
 	/**
 	 * Stores list of all available assets (used in rendering panel)
@@ -124,6 +124,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		// Disable autoptimize on Assets manager page
 		add_filter( 'autoptimize_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
 		add_filter( 'wmac_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
+
+		//add_action( 'wp_print_scripts', [ $this, 'print_head_scripts' ] );
+		//add_action( 'admin_print_scripts', [ $this, 'print_head_scripts' ] );
 	}
 
 	/**
@@ -175,7 +178,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	}
 
 	/**
-	 * We remove scripts and styles of themes, plugins to avoid
+	 * We remove scripts and styles of themes, plugins to avoidE
 	 * unnecessary conflicts during the use of the asset manager.
 	 *
 	 * todo: the method requires better study. Sorry, I don't have time for this.
@@ -211,7 +214,15 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 					$white_list_js = [
 						'wp-includes/css/dashicons.min.css',
 						'wp-includes/css/admin-bar.min.css',
+						// --
 						'assets-manager/assets/css/assets-manager.css',
+						'assets-manager-premium/assets/css/assets-manager.css',
+						'assets-manager-premium-premium/assets/css/assets-manager.css',
+						// --
+						'assets-manager/assets/css/assets-conditions.css',
+						'assets-manager-premium/assets/css/assets-conditions.css',
+						'assets-manager-premium-premium/assets/css/assets-conditions.css',
+						// --
 						'clearfy/assets/css/admin-bar.css'
 					];
 
@@ -233,6 +244,12 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				if ( false !== strpos( $matches[0], 'wbcramp_data' ) ) {
 					return $matches[0];
 				}
+				/*if ( false !== strpos( $matches[0], 'wam-condition-logic-params' ) ) {
+					return $matches[0];
+				}*/
+				if ( false !== strpos( $matches[0], 'wam-conditions-builder-template' ) ) {
+					return $matches[0];
+				}
 
 				$doc = new DOMDocument();
 				$doc->loadHTML( $matches[0] );
@@ -245,9 +262,16 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						'jquery.js',
 						'jquery-migrate.min.js',
 						'wp-includes/js/admin-bar.min.js',
+						// --
 						'assets-manager/assets/js/assets-manager.js',
 						'assets-manager-premium/assets/js/assets-manager.js',
-						'assets-manager-premium-premium/assets/js/assets-manager.js'
+						'assets-manager-premium-premium/assets/js/assets-manager.js',
+						// --
+						'assets-manager/assets/js/assets-conditions.js',
+						'assets-manager-premium/assets/js/assets-conditions.js',
+						'assets-manager-premium-premium/assets/js/assets-conditions.js',
+						// --
+
 					];
 
 					if ( ! empty( $src ) ) {
@@ -335,6 +359,17 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			return;
 		}
 
+		$views = new WGZ_Views( WGZ_PLUGIN_DIR );
+		$views->print_template( 'assets-manager', [
+			'collection'              => $this->collection,
+			'loaded_plugins'          => $this->get_loaded_plugins(),
+			'theme_assets'            => $this->get_collected_assets( 'theme' ),
+			'misc_assets'             => $this->get_collected_assets( 'misc' ),
+			'conditions_logic_params' => $this->get_conditions_login_params( true )
+		] );
+
+		return;
+
 		$current_url = esc_url( $this->getCurrentUrl() );
 
 		// todo: вынести в метод
@@ -344,7 +379,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$options = $this->getOption( 'assets_manager_options', [] );
 		}
 
-		echo '<div id="WBCR" class="wbcr-gnz-wrapper"';
+		echo '<div id="WBCR" class="wam-wrapper"';
 		if ( isset( $_GET['wbcr_assets_manager'] ) ) {
 			echo 'style="display: block;"';
 		}
@@ -365,13 +400,13 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		echo '<li class="wbcr-gnz-panel__data-item __info-off-js">' . __( 'Disabled js', 'gonzales' ) . ': <b class="wbcr-gnz-panel__item_value">--</li></b>';
 		echo '<li class="wbcr-gnz-panel__data-item __info-off-css">' . __( 'Disabled css', 'gonzales' ) . ': <b class="wbcr-gnz-panel__item_value">--</li></b>';
 		echo '</ul>';
-		$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="wbcr-gnz-tooltip wbcr-gnz-tooltip-bottom" data-tooltip="' . __( 'This is the general statistics to see the optimization result. Available in the paid version only.', 'gonzales' ) . '.">PRO</div></div>';
+		$panel_to_premium_info = '<div class="wbcr-gnz-panel__premium"><div class="wam-tooltip wam-tooltip--bottom" data-tooltip="' . __( 'This is the general statistics to see the optimization result. Available in the paid version only.', 'gonzales' ) . '.">PRO</div></div>';
 		echo apply_filters( 'wbcr_gnz_panel_premium', $panel_to_premium_info );
 		echo '</div>';
 		echo '<div class="wbcr-gnz-panel__right">';
 		echo '<button class="wbcr-gnz-panel__reset wbcr-reset-button" type="button">' . __( 'Reset', 'gonzales' ) . '</button>';
 		echo '<input class="wbcr-gnz-panel__save" type="submit" value="' . __( 'Save', 'gonzales' ) . '">';
-		echo '<label class="wbcr-gnz-panel__checkbox  wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) . '.">';
+		echo '<label class="wbcr-gnz-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="' . __( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) . '.">';
 		echo apply_filters( 'wbcr_gnz_test_mode_checkbox', '<input class="wbcr-gnz-panel__checkbox-input visually-hidden" type="checkbox" disabled="disabled" checked/><span class="wbcr-gnz-panel__checkbox-text-premium">' . __( 'Safe mode <b>PRO</b>', 'gonzales' ) . '</span>' );
 		echo '</label>';
 		echo '<button class="wbcr-gnz-panel__close wbcr-close-button" type="button" aria-label="' . __( 'Close', 'gonzales' ) . '" data-href="' . remove_query_arg( 'wbcr_assets_manager' ) . '"></button>';
@@ -379,7 +414,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		echo '</header>';
 
 		// Main content
-		echo '<main class="wbcr-gnz-content">';
+		echo '<main class="wam-content">';
 
 		uksort( $this->collection, function ( $a, $b ) {
 			if ( 'plugins' == $a ) {
@@ -403,7 +438,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		echo '</ul>';
 
 		// Info
-		echo '<div class="wbcr-gnz-info"><div class="wbcr-gnz-info__warning">';
+		echo '<div class="wam-info-section"><div class="wam-info-section__warning">';
 		echo '<p><b>' . __( 'Important! Each page of your website has different sets of scripts and styles files.', 'gonzales' ) . '</b></p>';
 		echo '<p>' . __( 'Use this feature to disable unwanted scripts and styles by setting up the logic for different types of pages. We recommend working in "Safe mode" because disabling any necessary system script file can corrupt the website. All changes done in Safe mode are available for administrator only. This way only you, as the administrator, can see the result of optimization. To enable the changes for other users, uncheck Safe mode.', 'gonzales' ) . '</p>';
 		echo '<p>' . sprintf( __( 'For more details and user guides, check the plugin’s <a href="%s" target="_blank" rel="noreferrer noopener">documentation</a>.', 'gonzales' ), WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'docs' ) ) . '</p>';
@@ -411,7 +446,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 
 		$premium_button = '<a class="wbcr-gnz-button__pro" href="' . WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'assets-manager' ) . '" target="_blank" rel="noreferrer noopener">' . __( 'Upgrade to Premium', 'gonzales' ) . '</a>';
 
-		$upgrade_to_premium_info = '<div class="wbcr-gnz-info__go-to-premium"><ul>';
+		$upgrade_to_premium_info = '<div class="wam-info-section__go-to-premium"><ul>';
 		$upgrade_to_premium_info .= '<h3><span>' . __( 'MORE IN CLEARFY BUSINESS', 'gonzales' ) . '</span>' . $premium_button . '</h3><ul>';
 		$upgrade_to_premium_info .= '<li>' . __( 'Disable plugins (groups of scripts)', 'gonzales' ) . '</li>';
 		$upgrade_to_premium_info .= '<li>' . __( 'Conditions by the link template', 'gonzales' ) . '</li>';
@@ -428,19 +463,19 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		foreach ( $this->collection as $resource_type => $resources ) {
 			// Tabs content
 			echo '<div class="wbcr-gnz-tabs-content">';
-			echo '<div class="wbcr-gnz-table">';
+			echo '<div class="wam-table">';
 			echo '<table>';
-			echo '<col class="wbcr-gnz-table__loaded"/>';
-			echo '<col class="wbcr-gnz-table__size"/>';
-			echo '<col class="wbcr-gnz-table__script"/>';
-			echo '<col class="wbcr-gnz-table__state"/>';
-			echo '<col class="wbcr-gnz-table__turn-on"/>';
+			echo '<col class="wam-table__loaded"/>';
+			echo '<col class="wam-table__size"/>';
+			echo '<col class="wam-table__script"/>';
+			echo '<col class="wam-table__state"/>';
+			echo '<col class="wam-table__turn-on"/>';
 
 			foreach ( $resources as $resource_name => $types ) {
 				$plugin_state = false;
 
 				if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
-					$plugin_data = $this->getPluginData( $resource_name );
+					$plugin_data = $this->get_plugin_data( $resource_name );
 
 					echo '<tbody>';
 
@@ -454,23 +489,23 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						$plugin_state = $this->getState( $is_disabled, $disabled, $current_url );
 						$plugin_state = apply_filters( 'wbcr_gnz_get_plugin_state', false, $plugin_state );
 
-						echo '<tr class="wbcr-gnz-table__alternate">';
+						echo '<tr class="wam-table__alternate">';
 						echo '<th style="width:5%">' . __( 'Loaded', 'gonzales' ) . '</th>';
 						echo '<th colspan="2">' . __( 'Plugin', 'gonzales' ) . '</th>';
 
 						echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
 
-						echo '<th class="wbcr-gnz-table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
-						echo '<th class="wbcr-gnz-table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
+						echo '<th class="wam-table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
+						echo '<th class="wam-table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
 						echo '</tr>';
 						echo '<tr>';
 						echo '<td>';
-						echo '<div class="wbcr-gnz-table__loaded-state wbcr-gnz-table__loaded-' . ( $plugin_state ? 'no' : 'yes' ) . ' wbcr-state"></div>';
+						echo '<div class="wam-table__loaded-state wam-table__loaded-' . ( $plugin_state ? 'no' : 'yes' ) . ' wbcr-state"></div>';
 						echo '</td>';
-						echo '<td colspan="2" class="wbcr-gnz-table__item">';
-						echo '<div class="wbcr-gnz-table__item-name">' . $plugin_data['Name'] . '</div>';
-						echo '<div class="wbcr-gnz-table__item-author"><strong>' . __( 'Author', 'gonzales' ) . ':</strong> ' . $plugin_data['Author'] . '</div>';
-						echo '<div class="wbcr-gnz-table__item-version"><strong>' . __( 'Version', 'gonzales' ) . ':</strong> ' . $plugin_data['Version'] . '</div>';
+						echo '<td colspan="2" class="wam-table__item">';
+						echo '<div class="wam-table__item-name">' . $plugin_data['Name'] . '</div>';
+						echo '<div class="wam-table__item-author"><strong>' . __( 'Author', 'gonzales' ) . ':</strong> ' . $plugin_data['Author'] . '</div>';
+						echo '<div class="wam-table__item-version"><strong>' . __( 'Version', 'gonzales' ) . ':</strong> ' . $plugin_data['Version'] . '</div>';
 						echo '</td>';
 
 						echo apply_filters( 'wbcr_gnz_get_additional_controls_columns', '', $resource_type, $resource_name, $resource_name );
@@ -482,15 +517,15 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 					}
 				}
 
-				echo '<tr class="wbcr-gnz-table__alternate">';
+				echo '<tr class="wam-table__alternate">';
 				echo '<th style="width:5%">' . __( 'Loaded', 'gonzales' ) . '</th>';
 				echo '<th style="width:5%">' . __( 'Size', 'gonzales' ) . '</th>';
 				echo '<th class="wgz-th">' . __( 'Resource', 'gonzales' ) . '</th>';
 
 				echo apply_filters( 'wbcr_gnz_get_additional_head_columns', '' );
 
-				echo '<th class="wbcr-gnz-table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
-				echo '<th class="wbcr-gnz-table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
+				echo '<th class="wam-table__column_switch"><b>' . __( 'Load resource?', 'gonzales' ) . '</b></th>';
+				echo '<th class="wam-table__column_condition">' . __( 'Conditions', 'gonzales' ) . '</th>';
 				echo '</tr>';
 
 				foreach ( $types as $type_name => $rows ) {
@@ -529,26 +564,26 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							$state         = $this->getState( $is_disabled, $disabled, $current_url );
 							$display_state = $plugin_state === 1 ? 1 : $state;
 							echo '<td>';
-							echo '<div class="wbcr-gnz-table__loaded-state wbcr-gnz-table__loaded-' . ( $plugin_state ? 'no' : 'yes' );
-							echo ' wbcr-state' . ( $state ? ' wbcr-gnz-table__loaded-super-no' : '' );
+							echo '<div class="wam-table__loaded-state wam-table__loaded-' . ( $plugin_state ? 'no' : 'yes' );
+							echo ' wbcr-state' . ( $state ? ' wam-table__loaded-super-no' : '' );
 							echo ( 'plugins' == $resource_type ? ' wbcr-state-' . $resource_name : '' ) . '">';
 							echo '</div>';
 							echo '</td>';
 
 							// Size
 							echo '<td>';
-							echo '<div class="wbcr-gnz-table__size-value">' . $row['size'] . ' <b>KB</b></div>';
+							echo '<div class="wam-table__size-value">' . $row['size'] . ' <b>KB</b></div>';
 							echo '</td>';
 
 							// Handle + Path + In use
 							echo '<td class="wgz-td">';
-							echo '<div class="wbcr-gnz-table__script-name"><b class="wbcr-wgz-resource-type-' . $type_name . '">' . $type_name . '</b>[' . $handle . ']</div>';
+							echo '<div class="wam-table__script-name"><b class="wbcr-wgz-resource-type-' . $type_name . '">' . $type_name . '</b>[' . $handle . ']</div>';
 							echo "<a id='" . $type_name . "-" . $handle . "' class='wbcr-anchor'></a>";
-							echo '<div class="wbcr-gnz-table__script-path">';
+							echo '<div class="wam-table__script-path">';
 							echo "<a href='" . $row['url_full'] . "' target='_blank'>";
 							echo str_replace( get_home_url(), '', $row['url_full'] ) . "</a>";
 							echo '</div>';
-							echo '<div class="wbcr-gnz-table__script-version">';
+							echo '<div class="wam-table__script-version">';
 							echo __( 'Version', 'gonzales' ) . ': ' . ( ! empty( $row['ver'] ) ? $row['ver'] : __( '--', 'gonzales' ) );
 							echo '</div>';
 							echo '<div>' . $comment . $requires . '</div>';
@@ -717,7 +752,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$class_name = apply_filters( 'wbcr_gnz_control_classname', 'wbcr-gnz' );
 		}
 		$html .= '<td>';
-		$html .= '<div class="wbcr-gnz-table__note ' . $class_name . '-placeholder"';
+		$html .= '<div class="wam-table__note ' . $class_name . '-placeholder"';
 		if ( $state ) {
 			$html .= ' style="display: none;"';
 		}
@@ -732,11 +767,11 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$html .= ' style="display: none;"';
 		}
 		$html    .= '>';
-		$html    .= '<select class="wbcr-gnz-table__select wbcr-gnz-action-select" name="wgz_action' . $id . '">';
+		$html    .= '<select class="wam-table__select wbcr-gnz-action-select" name="wgz_action' . $id . '">';
 		$html    .= '<option value="current"' . selected( $is_disabled && ! empty( $disabled['current'] ), true, false ) . '>' . __( 'Current URL', 'gonzales' ) . '</option>';
 		$html    .= '<option value="everywhere"' . selected( $is_disabled && ! empty( $disabled['everywhere'] ), true, false ) . '>' . __( 'Everywhere', 'gonzales' ) . '</option>';
-		$options = '<option value="custom"' . selected( $is_disabled && ! empty( $disabled['custom'] ), true, false ) . ' class="wbcr-gnz-table__select-pro">' . __( 'Custom URL (PRO)', 'gonzales' ) . '</option>';
-		$options .= '<option value="regex"' . selected( $is_disabled && ! empty( $disabled['regex'] ), true, false ) . ' class="wbcr-gnz-table__select-pro">' . __( 'Regular expression (PRO)', 'gonzales' ) . '</option>';
+		$options = '<option value="custom"' . selected( $is_disabled && ! empty( $disabled['custom'] ), true, false ) . ' class="wam-table__select-pro">' . __( 'Custom URL (PRO)', 'gonzales' ) . '</option>';
+		$options .= '<option value="regex"' . selected( $is_disabled && ! empty( $disabled['regex'] ), true, false ) . ' class="wam-table__select-pro">' . __( 'Regular expression (PRO)', 'gonzales' ) . '</option>';
 		$html    .= apply_filters( 'wbcr_gnz_select_options', $options, $is_disabled, $disabled );
 		$html    .= '</select>';
 
@@ -746,57 +781,57 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$html .= " style='display: none;'";
 		}
 		$html .= ">";
-		$html .= '<div class="wbcr-gnz-table__label">' . __( 'Exclude', 'gonzales' ) . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __( 'You can disable this resource for all pages, except sections and page types listed below. Specify sections and page types with the enabled resource.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
-		$html .= '<div class="wbcr-gnz-table__wrap-options"><ul class="wbcr-gnz-table__options">';
+		$html .= '<div class="wam-table__label">' . __( 'Exclude', 'gonzales' ) . ': <i class="wam-help-hint wam-tooltip  wam-tooltip--bottom" data-tooltip="' . __( 'You can disable this resource for all pages, except sections and page types listed below. Specify sections and page types with the enabled resource.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></div>';
+		$html .= '<div class="wam-table__wrap-options"><ul class="wam-table__options">';
 
-		$html .= '<li class="wbcr-gnz-table__options-item">';
+		$html .= '<li class="wam-table__options-item">';
 		$html .= "<input type='hidden' name='enabled{$id}[current]' value='' />";
-		$html .= '<label class="wbcr-gnz-table__checkbox">';
-		$html .= '<input class="wbcr-gnz-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[current]" value="' . $current_url . '"';
+		$html .= '<label class="wam-table__checkbox">';
+		$html .= '<input class="wam-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[current]" value="' . $current_url . '"';
 		if ( $is_enabled && in_array( $current_url, $enabled['current'] ) ) {
 			$html .= ' checked';
 		}
 		$html .= '/>';
-		$html .= '<span class="wbcr-gnz-table__checkbox-text">' . __( 'Current URL', 'gonzales' ) . '</span>';
+		$html .= '<span class="wam-table__checkbox-text">' . __( 'Current URL', 'gonzales' ) . '</span>';
 		$html .= '</label>';
 		$html .= '</li>';
 
-		$html       .= '<li class="wbcr-gnz-table__options-item-group"><strong>' . __( 'Post types', 'gonzales' ) . '</strong></li>';
+		$html       .= '<li class="wam-table__options-item-group"><strong>' . __( 'Post types', 'gonzales' ) . '</strong></li>';
 		$post_types = get_post_types( [ 'public' => true ], 'objects', 'and' );
 		if ( ! empty( $post_types ) ) {
 			$html .= "<input type='hidden' name='enabled{$id}[post_types]' value='' />";
 			foreach ( $post_types as $key => $value ) {
-				$html .= '<li class="wbcr-gnz-table__options-item">';
-				$html .= '<label class="wbcr-gnz-table__checkbox">';
-				$html .= '<input class="wbcr-gnz-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[post_types][]" value="' . $key . '"';
+				$html .= '<li class="wam-table__options-item">';
+				$html .= '<label class="wam-table__checkbox">';
+				$html .= '<input class="wam-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[post_types][]" value="' . $key . '"';
 				if ( isset( $enabled['post_types'] ) ) {
 					if ( in_array( $key, $enabled['post_types'] ) ) {
 						$html .= ' checked';
 					}
 				}
 				$html .= '/>';
-				$html .= '<span class="wbcr-gnz-table__checkbox-text">' . $value->label . '</span>';
+				$html .= '<span class="wam-table__checkbox-text">' . $value->label . '</span>';
 				$html .= '</label>';
 				$html .= '</li>';
 			}
 		}
 
-		$html       .= '<li class="wbcr-gnz-table__options-item-group"><strong>' . __( 'Categories, Taxonomies, Tags', 'gonzales' ) . '</strong></li>';
+		$html       .= '<li class="wam-table__options-item-group"><strong>' . __( 'Categories, Taxonomies, Tags', 'gonzales' ) . '</strong></li>';
 		$taxonomies = get_taxonomies( [ 'public' => true ], 'objects', 'and' );
 		if ( ! empty( $taxonomies ) ) {
 			unset( $taxonomies['category'] );
 			$html .= "<input type='hidden' name='enabled{$id}[taxonomies]' value='' />";
 			foreach ( $taxonomies as $key => $value ) {
-				$html .= '<li class="wbcr-gnz-table__options-item">';
-				$html .= '<label class="wbcr-gnz-table__checkbox">';
-				$html .= '<input class="wbcr-gnz-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[taxonomies][]" value="' . $key . '"';
+				$html .= '<li class="wam-table__options-item">';
+				$html .= '<label class="wam-table__checkbox">';
+				$html .= '<input class="wam-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[taxonomies][]" value="' . $key . '"';
 				if ( isset( $enabled['taxonomies'] ) ) {
 					if ( in_array( $key, $enabled['taxonomies'] ) ) {
 						$html .= ' checked';
 					}
 				}
 				$html .= '/>';
-				$html .= '<span class="wbcr-gnz-table__checkbox-text">' . $value->label . '</span>';
+				$html .= '<span class="wam-table__checkbox-text">' . $value->label . '</span>';
 				$html .= '</label>';
 				$html .= '</li>';
 			}
@@ -807,16 +842,16 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		if ( ! empty( $categories ) ) {
 			$html .= "<input type='hidden' name='enabled{$id}[categories]' value='' />";
 			foreach ( $categories as $key => $cat ) {
-				$html .= '<li class="wbcr-gnz-table__options-item">';
-				$html .= '<label class="wbcr-gnz-table__checkbox">';
-				$html .= '<input class="wbcr-gnz-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[categories][]" value="' . $cat->term_id . '"';
+				$html .= '<li class="wam-table__options-item">';
+				$html .= '<label class="wam-table__checkbox">';
+				$html .= '<input class="wam-table__checkbox-input visually-hidden" type="checkbox" name="enabled' . $id . '[categories][]" value="' . $cat->term_id . '"';
 				if ( isset( $enabled['categories'] ) ) {
 					if ( in_array( $cat->term_id, $enabled['categories'] ) ) {
 						$html .= ' checked';
 					}
 				}
 				$html .= '/>';
-				$html .= '<span class="wbcr-gnz-table__checkbox-text">' . $cat->name . '</span>';
+				$html .= '<span class="wam-table__checkbox-text">' . $cat->name . '</span>';
 				$html .= '</label>';
 				$html .= '</li>';
 			}
@@ -826,26 +861,26 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= '</div>';
 
 		// Custom URL
-		$control_html = '<div class="wbcr-gnz-table__field wbcr-assets-manager custom"';
+		$control_html = '<div class="wam-table__field wbcr-assets-manager custom"';
 		if ( ! $is_disabled || empty( $disabled['custom'] ) ) {
 			$control_html .= ' style="display: none;"';
 		}
 		$control_html .= '>';
-		$control_html .= '<label class="wbcr-gnz-table__label" for="disabled' . $id . '[custom][]" title="' . __( 'Example', 'gonzales' ) . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __( 'Enter URL (set * for mask)', 'gonzales' ) . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __( 'You can disable the resource only for the pages with the matched to the template address. For example, if you set the template for the link as http://yoursite.test/profile/*, then the resource is disabled for the following pages: http://yoursite.test/profile/12, http://yoursite.test/profile/43, http://yoursite.test/profile/999. If you don’t use the asterisk symbol in the template then the plugin will disable the resource only for the pages with 100% match in the specified link type. This feature is available at the paid version.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
-		$control_html .= '<div class="wbcr-gnz-table__field-item">';
-		$control_html .= '<input class="wbcr-gnz-table__field-input" name="disabled' . $id . '[custom][]" type="text" placeholder="http://yoursite.test/profile/*" value="" disabled="disabled">';
-		$control_html .= '<button class="wbcr-gnz-table__field-add" type="button" aria-label="' . __( 'Add field', 'gonzales' ) . '" disabled></button>';
+		$control_html .= '<label class="wam-table__label" for="disabled' . $id . '[custom][]" title="' . __( 'Example', 'gonzales' ) . ': ' . site_url() . '/post/*, ' . site_url() . '/page-*>">' . __( 'Enter URL (set * for mask)', 'gonzales' ) . ': <i class="wam-help-hint wam-tooltip  wam-tooltip--bottom" data-tooltip="' . __( 'You can disable the resource only for the pages with the matched to the template address. For example, if you set the template for the link as http://yoursite.test/profile/*, then the resource is disabled for the following pages: http://yoursite.test/profile/12, http://yoursite.test/profile/43, http://yoursite.test/profile/999. If you don’t use the asterisk symbol in the template then the plugin will disable the resource only for the pages with 100% match in the specified link type. This feature is available at the paid version.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
+		$control_html .= '<div class="wam-table__field-item">';
+		$control_html .= '<input class="wam-table__field-input" name="disabled' . $id . '[custom][]" type="text" placeholder="http://yoursite.test/profile/*" value="" disabled="disabled">';
+		$control_html .= '<button class="wam-table__field-add" type="button" aria-label="' . __( 'Add field', 'gonzales' ) . '" disabled></button>';
 		$control_html .= '</div>';
 		//$control_html .= '<em>Пример: http://yoursite.test/profile/*</em>';
 		$control_html .= '</div>';
 		// Regex
-		$control_html .= "<div class='wbcr-gnz-table__field wbcr-assets-manager regex'";
+		$control_html .= "<div class='wam-table__field wbcr-assets-manager regex'";
 		if ( ! $is_disabled || empty( $disabled['regex'] ) ) {
 			$control_html .= " style='display: none;'";
 		}
 		$control_html .= ">";
-		$control_html .= '<label class="wbcr-gnz-table__label" for="disabled' . $id . '[regex]">' . __( 'Enter regular expression', 'gonzales' ) . ': <i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
-		$control_html .= '<textarea class="wbcr-gnz-table__textarea" rows="3" name="disabled' . $id . '[regex]" placeholder="^rockstar-[0-9]{2,5}" disabled="disabled"></textarea>';
+		$control_html .= '<label class="wam-table__label" for="disabled' . $id . '[regex]">' . __( 'Enter regular expression', 'gonzales' ) . ': <i class="wam-help-hint wam-tooltip  wam-tooltip--bottom" data-tooltip="' . __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' ) . '"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></label>';
+		$control_html .= '<textarea class="wam-table__textarea" rows="3" name="disabled' . $id . '[regex]" placeholder="^rockstar-[0-9]{2,5}" disabled="disabled"></textarea>';
 		$control_html .= "</div>";
 		$html         .= apply_filters( 'wbcr_gnz_control_html', $control_html, $id, $is_disabled, $disabled );
 
@@ -862,9 +897,9 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			}
 
 			if ( ! empty( $custom_urls ) ) {
-				$html .= '<div class="wbcr-gnz-table__also">';
-				$html .= '<div class="wbcr-gnz-table__label">' . __( 'Also disabled for pages', 'gonzales' ) . ':</div>';
-				$html .= '<div class="wbcr-gnz-table__also-url">' . $custom_urls . '</div>';
+				$html .= '<div class="wam-table__also">';
+				$html .= '<div class="wam-table__label">' . __( 'Also disabled for pages', 'gonzales' ) . ':</div>';
+				$html .= '<div class="wam-table__also-url">' . $custom_urls . '</div>';
 				$html .= '</div>';
 			}
 		}
@@ -1196,8 +1231,14 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		}
 
 		$denied = [
-			'js'  => [ 'wbcr-assets-manager', 'admin-bar' ],
-			'css' => [ 'wbcr-clearfy-adminbar-styles', 'wbcr-assets-manager', 'admin-bar', 'dashicons' ],
+			'js'  => [ 'wbcr-assets-manager', 'wam-assets-conditions', 'admin-bar' ],
+			'css' => [
+				'wbcr-clearfy-adminbar-styles',
+				'wam-assets-conditions',
+				'wbcr-assets-manager',
+				'admin-bar',
+				'dashicons'
+			],
 		];
 		$denied = apply_filters( 'wbcr_gnz_denied_assets', $denied );
 
@@ -1211,12 +1252,6 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		];
 
 		foreach ( $data_assets as $type => $data ) {
-			/*if ( "wp_print_scripts" === current_action() || "wp_print_styles" === current_action() ) {
-				$queue[ $type ] = $data->queue;
-			} else {
-				$queue[ $type ] = $data->done;
-			}*/
-
 			foreach ( $data->done as $el ) {
 				if ( isset( $data->registered[ $el ] ) ) {
 
@@ -1241,6 +1276,14 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 							}
 
 							if ( ! isset( $this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] ) ) {
+								$this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] = [
+									'url_full'  => $url,
+									'url_short' => $url_short,
+									//'state' => $this->get_visibility($type, $el),
+									'size'      => $this->getAssetSize( $url ),
+									'ver'       => $data->registered[ $el ]->ver,
+									'deps'      => ( isset( $data->registered[ $el ]->deps ) ? $data->registered[ $el ]->deps : [] ),
+								];
 
 								# Deregister scripts, styles so that they do not conflict with assets managers.
 								# ------------------------------------------------
@@ -1259,15 +1302,6 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 									wp_deregister_style( $el );
 								}
 								#-------------------------------------------------
-
-								$this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] = [
-									'url_full'  => $url,
-									'url_short' => $url_short,
-									//'state' => $this->get_visibility($type, $el),
-									'size'      => $this->getAssetSize( $url ),
-									'ver'       => $data->registered[ $el ]->ver,
-									'deps'      => ( isset( $data->registered[ $el ]->deps ) ? $data->registered[ $el ]->deps : [] ),
-								];
 							}
 						}
 					}
@@ -1284,9 +1318,33 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	public function appendAsset() {
 		if ( $this->isUserCan() && isset( $_GET['wbcr_assets_manager'] ) ) {
 			wp_enqueue_style( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', [], $this->plugin->getPluginVersion() );
-			wp_enqueue_script( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [ 'jquery' ], $this->plugin->getPluginVersion(), true );
+			wp_enqueue_style( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/css/assets-conditions.css', [], $this->plugin->getPluginVersion() );
+
+			wp_enqueue_script( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [
+				'jquery',
+				'wam-assets-conditions'
+			], $this->plugin->getPluginVersion(), true );
+			wp_enqueue_script( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js', [ 'jquery' ], $this->plugin->getPluginVersion(), true );
 		}
 	}
+
+	/**
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.1
+	 * @return void
+	 */
+	/*public function print_head_scripts() {
+		if ( ! $this->isUserCan() || ! isset( $_GET['wbcr_assets_manager'] ) ) {
+			return;
+		}
+		?>
+        <script id="wam-condition-logic-params">
+			window.wam_assets_manager = window.wam_assets_manager || {};
+			window.wam_assets_manager.filter_params = <?php echo json_encode( $this->get_conditions_login_params() ) ?>;
+			//window.winp.templates = <?php echo json_encode( [] ) ?>;
+        </script>
+		<?php
+	}*/
 
 	/**
 	 * Exception for address starting from "//example.com" instead of
@@ -1366,6 +1424,45 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		return $disabled;
 	}
 
+
+	private function get_collected_assets( $type ) {
+		$assets = [];
+
+		if ( empty( $this->collection ) ) {
+			return $assets;
+		}
+
+		foreach ( (array) $this->collection as $resource_type => $resources ) {
+			if ( $type == $resource_type ) {
+				foreach ( $resources as $resource_name => $types ) {
+					$assets = $types;
+				}
+			}
+		}
+
+		return $assets;
+	}
+
+	private function get_loaded_plugins() {
+		$plugins = [];
+
+		if ( empty( $this->collection ) ) {
+			return $plugins;
+		}
+
+		foreach ( (array) $this->collection as $resource_type => $resources ) {
+			foreach ( $resources as $resource_name => $types ) {
+				if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
+					$plugins[ $resource_name ]['plugin_name']   = $resource_name;
+					$plugins[ $resource_name ]['plugin_data']   = $this->get_plugin_data( $resource_name );
+					$plugins[ $resource_name ]['plugin_assets'] = $types;
+				}
+			}
+		}
+
+		return $plugins;
+	}
+
 	/**
 	 * Get plugin data from folder name
 	 *
@@ -1373,7 +1470,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 *
 	 * @return array
 	 */
-	private function getPluginData( $name ) {
+	private function get_plugin_data( $name ) {
 		$data = [];
 
 		if ( $name ) {
@@ -1385,8 +1482,8 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			if ( ! empty( $all_plugins ) ) {
 				foreach ( $all_plugins as $plugin_path => $plugin_data ) {
 					if ( strpos( $plugin_path, $name . '/' ) !== false ) {
-						$data         = $plugin_data;
-						$data['path'] = $plugin_path;
+						$data             = $plugin_data;
+						$data['basename'] = $plugin_path;
 						break;
 					}
 				}
@@ -1527,7 +1624,7 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 					} else if ( $index == 'aopt' ) {
 						$hint = __( 'You’ve enabled the &#34;Optimize js scripts?&#34; and &#34;Optimize CSS options&#34; in the &#34;Autoptimize&#34;. These settings exclude scripts and styles that you don’t want to optimize. Press No to add a file to the excluded list.', 'gonzales' );
 					}
-					$html .= '<th class="wbcr-gnz-table__column_switch"><span class="wbcr-gnz-table__th-external-plugin">' . $title . ':<i class="wbcr-gnz-help-hint wbcr-gnz-tooltip  wbcr-gnz-tooltip-bottom" data-tooltip="' . $hint . '."><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></span><em>' . $text . '</em></th>';
+					$html .= '<th class="wam-table__column_switch"><span class="wam-table__th-external-plugin">' . $title . ':<i class="wam-help-hint wam-tooltip  wam-tooltip--bottom" data-tooltip="' . $hint . '."><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAQAAABKmM6bAAAAUUlEQVQIHU3BsQ1AQABA0X/komIrnQHYwyhqQ1hBo9KZRKL9CBfeAwy2ri42JA4mPQ9rJ6OVt0BisFM3Po7qbEliru7m/FkY+TN64ZVxEzh4ndrMN7+Z+jXCAAAAAElFTkSuQmCC" alt=""></i></span><em>' . $text . '</em></th>';
 				}
 			}
 		}
@@ -1871,5 +1968,225 @@ class WbcrGnz_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				}
 			}
 		}
+	}
+
+	private function get_conditions_login_params( $group = false ) {
+		global $wp_roles;
+
+		# Add User Roles
+		#---------------------------------------------------------------
+		$all_roles          = $wp_roles->roles;
+		$editable_roles     = apply_filters( 'editable_roles', $all_roles );
+		$roles_param_values = [
+			[
+				'value' => 'guest',
+				'title' => __( 'Guest', 'insert-php' ),
+			]
+		];
+
+		if ( ! empty( $editable_roles ) ) {
+			foreach ( $editable_roles as $role_ID => $role ) {
+				$roles_param_values[] = [ 'value' => $role_ID, 'title' => $role['name'] ];
+			}
+		}
+
+		# Add Post Types
+		#---------------------------------------------------------------
+		$post_types              = get_post_types( [
+			'public' => true
+		], 'objects' );
+		$post_types_param_values = [];
+
+		if ( ! empty( $post_types ) ) {
+			foreach ( $post_types as $type ) {
+				if ( isset( $type->name ) ) {
+					$post_types_param_values[] = [ 'value' => $type->name, 'title' => $type->label ];
+				}
+			}
+		}
+
+		# Add Taxonomies
+		#---------------------------------------------------------------
+		$taxonomies              = get_taxonomies( [
+			'public' => true
+		], 'objects' );
+		$taxonomies_param_values = [];
+
+		if ( ! empty( $taxonomies ) ) {
+			foreach ( $taxonomies as $tax ) {
+				$taxonomies_param_values[] = [ 'value' => $tax->name, 'title' => $tax->label ];
+			}
+		}
+
+		$grouped_filter_params = [
+			[
+				'id'    => 'user',
+				'title' => __( 'User', 'gonzales' ),
+				'items' => [
+					[
+						'id'          => 'user-role',
+						'title'       => __( 'Role', 'gonzales' ),
+						'type'        => 'select',
+						'params'      => $roles_param_values,
+						'description' => __( 'A role of the user who views your website. The role "guest" is applied to unregistered users.', 'gonzales' )
+					],
+					/*[
+						'id'          => 'user-registered',
+						'title'       => __( 'Registration Date', 'gonzales' ),
+						'type'        => 'date',
+						'description' => __( 'The date when the user who views your website was registered. For unregistered users this date always equals to 1 Jan 1970.', 'gonzales' )
+					],*/
+					[
+						'id'          => 'user-mobile',
+						'title'       => __( 'Mobile Device', 'gonzales' ),
+						'type'        => 'select',
+						'params'      => [
+							[ 'value' => 'yes', 'title' => __( 'Yes', 'gonzales' ) ],
+							[ 'value' => 'no', 'title' => __( 'No', 'gonzales' ) ]
+						],
+						'description' => __( 'Determines whether the user views your website from mobile device or not.', 'gonzales' )
+					],
+					[
+						'id'          => 'user-cookie-name',
+						'title'       => __( 'Cookie Name', 'gonzales' ),
+						'type'        => 'text',
+						'only_equals' => true,
+						'description' => __( 'Determines whether the user\'s browser has a cookie with a given name.', 'gonzales' )
+					]
+				]
+			],
+			[
+				'id'    => 'location',
+				'title' => __( 'Location', 'gonzales' ),
+				'items' => [
+					[
+						'id'          => 'current-url',
+						'title'       => __( 'Current URL', 'gonzales' ),
+						'type'        => 'select',
+						'params'      => [
+							[ 'value' => 'yes', 'title' => __( 'Yes', 'gonzales' ) ],
+							[ 'value' => 'no', 'title' => __( 'No', 'gonzales' ) ]
+						],
+						'description' => __( 'Current Url', 'gonzales' )
+					],
+					[
+						'id'          => 'location-page',
+						'title'       => __( 'Custom URL', 'gonzales' ),
+						'type'        => 'text',
+						'description' => __( 'An URL of the current page where a user who views your website is located.', 'gonzales' )
+					],
+					[
+						'id'          => 'regular-expression',
+						'title'       => __( 'Regular Expression', 'gonzales' ),
+						'type'        => 'text',
+						'description' => __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' )
+					],
+					[
+						'id'          => 'location-some-page',
+						'title'       => __( 'Page', 'gonzales' ),
+						'type'        => 'select',
+						'params'      => [
+							'Basic'         => [
+								[
+									'value' => 'base_web',
+									'title' => __( 'Entire Website', 'insert-php' ),
+								],
+								[
+									'value' => 'base_sing',
+									'title' => __( 'All Singulars', 'insert-php' ),
+								],
+								[
+									'value' => 'base_arch',
+									'title' => __( 'All Archives', 'insert-php' ),
+								],
+							],
+							'Special Pages' => [
+								[
+									'value' => 'spec_404',
+									'title' => __( '404 Page', 'insert-php' ),
+								],
+								[
+									'value' => 'spec_search',
+									'title' => __( 'Search Page', 'insert-php' ),
+								],
+								[
+									'value' => 'spec_blog',
+									'title' => __( 'Blog / Posts Page', 'insert-php' ),
+								],
+								[
+									'value' => 'spec_front',
+									'title' => __( 'Front Page', 'insert-php' ),
+								],
+								[
+									'value' => 'spec_date',
+									'title' => __( 'Date Archive', 'insert-php' ),
+								],
+								[
+									'value' => 'spec_auth',
+									'title' => __( 'Author Archive', 'insert-php' ),
+								],
+							],
+							'Posts'         => [
+								[
+									'value' => 'post_all',
+									'title' => __( 'All Posts', 'insert-php' ),
+								],
+								[
+									'value' => 'post_arch',
+									'title' => __( 'All Posts Archive', 'insert-php' ),
+								],
+								[
+									'value' => 'post_cat',
+									'title' => __( 'All Categories Archive', 'insert-php' ),
+								],
+								[
+									'value' => 'post_tag',
+									'title' => __( 'All Tags Archive', 'insert-php' ),
+								],
+							],
+							'Pages'         => [
+								[
+									'value' => 'page_all',
+									'title' => __( 'All Pages', 'insert-php' ),
+								],
+								[
+									'value' => 'page_arch',
+									'title' => __( 'All Pages Archive', 'insert-php' ),
+								],
+							],
+
+						],
+						'description' => __( 'List of specific pages.', 'gonzales' )
+					],
+					/*[
+						'id'          => 'location-referrer',
+						'title'       => __( 'Current Referrer', 'gonzales' ),
+						'type'        => 'text',
+						'description' => __( 'A referrer URL which has brought a user to the current page.', 'gonzales' )
+					],*/
+					[
+						'id'          => 'location-post-type',
+						'title'       => __( 'Post type', 'gonzales' ),
+						'type'        => 'select',
+						'params'      => $post_types_param_values,
+						'description' => __( 'A post type of the current page.', 'gonzales' )
+					],
+					[
+						'id'          => 'location-taxonomy',
+						'title'       => __( 'Taxonomy', 'gonzales' ),
+						'type'        => 'select',
+						'params'      => $taxonomies_param_values,
+						'description' => __( 'A taxonomy of the current page.', 'gonzales' )
+					]
+				]
+			]
+		];
+
+		$filterParams = [];
+		foreach ( (array) $grouped_filter_params as $filter_group ) {
+			$filterParams = array_merge( $filterParams, $filter_group['items'] );
+		}
+
+		return $group ? $grouped_filter_params : $filterParams;
 	}
 }

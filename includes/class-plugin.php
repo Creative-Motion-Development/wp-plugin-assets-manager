@@ -86,13 +86,15 @@ class WGZ_Plugin extends Wbcr_Factory000_Plugin {
 	 */
 	private function register_pages() {
 		$admin_path = WGZ_PLUGIN_DIR . '/admin/pages';
-		self::app()->registerPage( 'WbcrGnz_AssetsManagerPage', $admin_path . '/class-pages-settings.php' );
-		self::app()->registerPage( 'WbcrGnz_MoreFeaturesPage', $admin_path . '/class-pages-more-features.php' );
+		self::app()->registerPage( 'WGZ_AssetsManagerPage', $admin_path . '/class-pages-settings.php' );
+		self::app()->registerPage( 'WGZ_MoreFeaturesPage', $admin_path . '/class-pages-more-features.php' );
 	}
 
 	private function global_scripts() {
-		require( WGZ_PLUGIN_DIR . '/includes/functions.php' );
-		require( WGZ_PLUGIN_DIR . '/includes/class-configurate-assets.php' );
-		new WbcrGnz_ConfigAssetsManager( self::$app );
+		require_once WGZ_PLUGIN_DIR . '/includes/functions.php';
+		require_once( WGZ_PLUGIN_DIR . '/includes/classes/class-views.php' );
+		require_once WGZ_PLUGIN_DIR . '/includes/classes/class-configurate-assets.php';
+
+		new WGZ_ConfigAssetsManager( self::$app );
 	}
 }
