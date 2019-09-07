@@ -40,6 +40,7 @@ $active_plugin = reset( $data['loaded_plugins'] );
 			<?php foreach ( (array) $data['loaded_plugins'] as $plugin_name => $plugin ): ?>
                 <div id="wam-<?php echo esc_attr( $plugin_name ); ?>" class="wam-nav-plugins__tab-content<?php echo( $active_plugin['plugin_name'] == $plugin_name ? ' wam-nav-plugins__tab-content--active' : '' ) ?>">
 					<?php $this->print_template( 'part-tab-content-assets-plugins-settings', [
+						'plugin_name'             => $plugin_name,
 						'plugin_assets'           => $plugin['plugin_assets'],
 						'conditions_logic_params' => $data['conditions_logic_params'],
 					] ); ?>

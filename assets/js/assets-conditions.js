@@ -21,12 +21,12 @@
 		}
 
 		getData() {
-			var paramOptions = this._getParamOptions(),
+			let paramOptions = this._getParamOptions(),
 				currentParam = this._conditionElement.find(".wam-cleditor__param-select").val(),
 				$operator = this._conditionElement.find(".wam-cleditor__operator-select"),
 				currentOperator = $operator.val();
 
-			var value = null;
+			let value = null;
 
 			if( 'select' === paramOptions['type'] ) {
 				value = this._getSelectValue(paramOptions);
@@ -45,7 +45,7 @@
 		}
 
 		_createMarkup() {
-			var conditionTmpl = this.editor.getTemplate(".wam-cleditor__condition");
+			let conditionTmpl = this.editor.getTemplate(".wam-cleditor__condition");
 			this.group.groupElement.find(".wam-cleditor__conditions").append(conditionTmpl);
 			return conditionTmpl;
 		}
@@ -60,7 +60,7 @@
 		}
 
 		_register_events() {
-			var self = this;
+			let self = this;
 
 			this._conditionElement.find(".wam-cleditor__param-select").change(function() {
 				self._prepareFields();
@@ -92,11 +92,11 @@
 				this._selectParam(this.options.param);
 			}
 
-			var paramOptions = this._getParamOptions();
+			let paramOptions = this._getParamOptions();
 
 			this._setParamHint(paramOptions.description);
 
-			var operators = [];
+			let operators = [];
 
 			if( 'select' === paramOptions['type'] || paramOptions['onlyEquals'] ) {
 				operators = ['equals', 'notequal'];
@@ -155,10 +155,10 @@
 		 * Creates the Select control.
 		 */
 		_createValueAsSelect(paramOptions, isInit) {
-			var self = this;
+			let self = this;
 
 			let createSelectField = function(values) {
-				var $select = self._createSelect(values);
+				let $select = self._createSelect(values);
 				self._insertValueControl($select);
 				if( isInit && self.options.value ) {
 					self._setSelectValue(self.options.value);
@@ -171,7 +171,7 @@
 			}
 			if( 'ajax' === paramOptions['values']['type'] ) {
 
-				var $fakeSelect = self._createSelect([
+				let $fakeSelect = self._createSelect([
 					{
 						value: null,
 						title: '- loading -'
@@ -186,7 +186,7 @@
 					$fakeSelect.data('value', this.options.value);
 				}
 
-				var req = $.ajax({
+				let req = $.ajax({
 					url: window.ajaxurl,
 					method: 'post',
 					data: {
@@ -215,9 +215,9 @@
 		 * Returns a value for the select control.
 		 */
 		_getSelectValue() {
-			var $select = this._conditionElement.find(".wam-cleditor__condition-value select");
+			let $select = this._conditionElement.find(".wam-cleditor__condition-value select");
 
-			var value = $select.val();
+			let value = $select.val();
 			if( !value ) {
 				value = $select.data('value');
 			}
@@ -228,7 +228,7 @@
 		 * Sets a select value.
 		 */
 		_setSelectValue(value) {
-			var $select = this._conditionElement.find(".wam-cleditor__condition-value select");
+			let $select = this._conditionElement.find(".wam-cleditor__condition-value select");
 
 			if( $select.hasClass('.wam-cleditor__fake-select') ) {
 				$select.data('value', value);
@@ -245,14 +245,14 @@
 		 * Creates a control for the input linked with the integer.
 		 */
 		_createValueAsInteger(paramOptions, isInit) {
-			var self = this;
+			let self = this;
 
-			var $operator = this._conditionElement.find(".wam-cleditor__operator-select");
+			let $operator = this._conditionElement.find(".wam-cleditor__operator-select");
 
 			$operator.on('change', function() {
-				var currentOperator = $operator.val();
+				let currentOperator = $operator.val();
 
-				var $control;
+				let $control;
 				if( 'between' === currentOperator ) {
 					$control = $("<span><input type='text' class='wam-cleditor__integer-start' /> and <input type='text' class='wam-cleditor__integer-end' /></span>");
 				} else {
@@ -272,10 +272,10 @@
 		 * Returns a value for the Integer control.
 		 */
 		_getIntegerValue() {
-			var value = {};
+			let value = {};
 
-			var $operator = this._conditionElement.find(".wam-cleditor__operator-select");
-			var currentOperator = $operator.val();
+			let $operator = this._conditionElement.find(".wam-cleditor__operator-select");
+			let currentOperator = $operator.val();
 
 			if( 'between' === currentOperator ) {
 				value.range = true;
@@ -314,7 +314,7 @@
 		 */
 		_createValueAsText(paramOptions, isInit) {
 
-			var $control = $("<input type='text' class='wam-cleditor__text' /></span>");
+			let $control = $("<input type='text' class='wam-cleditor__text' /></span>");
 			this._insertValueControl($control);
 			if( isInit && this.options.value ) {
 				this._setTextValue(this.options.value);
@@ -353,17 +353,17 @@
 		}
 
 		_setOperators(values) {
-			var $operator = this._conditionElement.find(".wam-cleditor__operator-select");
+			let $operator = this._conditionElement.find(".wam-cleditor__operator-select");
 			$operator.show().off('change');
 
 			$operator.find("option").hide();
-			for( var index in values ) {
+			for( let index in values ) {
 				if( !values.hasOwnProperty(index) ) {
 					continue;
 				}
 				$operator.find("option[value='" + values[index] + "']").show();
 			}
-			var value = $operator.find("option:not(:hidden):eq(0)").val();
+			let value = $operator.find("option:not(:hidden):eq(0)").val();
 			$operator.val(value);
 		}
 
@@ -372,7 +372,7 @@
 		}
 
 		_getParamOptions() {
-			var selectElement = this._conditionElement.find(".wam-cleditor__param-select"),
+			let selectElement = this._conditionElement.find(".wam-cleditor__param-select"),
 				optionElement = selectElement.find('option:selected');
 
 			if( !selectElement.length ) {
@@ -389,26 +389,26 @@
 		}
 
 		_createSelect(values, attrs) {
-			var $select = $("<select></select>");
+			let $select = $("<select></select>");
 			if( attrs ) {
 				$select.attr(attrs);
 			}
 
-			for( var index in values ) {
+			for( let index in values ) {
 				if( !values.hasOwnProperty(index) ) {
 					continue;
 				}
-				var item = values[index];
-				var $option = '';
+				let item = values[index];
+				let $option = '';
 
 				if( typeof index === "string" && isNaN(index) === true ) {
-					var $optgroup = $("<optgroup></optgroup>").attr('label', index);
+					let $optgroup = $("<optgroup></optgroup>").attr('label', index);
 
-					for( var subindex in item ) {
+					for( let subindex in item ) {
 						if( !item.hasOwnProperty(subindex) ) {
 							continue;
 						}
-						var subvalue = item[subindex];
+						let subvalue = item[subindex];
 						$option = $("<option></option>").attr('value', subvalue['value']).text(subvalue['title']);
 						$optgroup.append($option);
 					}
@@ -444,14 +444,18 @@
 		}
 
 		getData() {
-			var condtions = [];
+			let condtions = [];
 
-			for( var ID in this.conditions ) {
+			for( let ID in this.conditions ) {
 				if( !this.conditions.hasOwnProperty(ID) ) {
 					continue;
 				}
 
 				condtions.push(this.conditions[ID].getData());
+			}
+
+			if( !condtions.length ) {
+				return null;
 			}
 
 			return {
@@ -471,10 +475,8 @@
 		}
 
 		_createMarkup() {
-			var $group = this.editor.getTemplate('.wam-cleditor__group');
+			let $group = this.editor.getTemplate('.wam-cleditor__group');
 			this.element.find(".wam-cleditor__groups").append($group);
-
-			console.log(this._index);
 
 			if( this._index <= 1 ) {
 				$group.find('.wam-cleditor__group-type').hide();
@@ -488,7 +490,7 @@
 		}
 
 		_registerEvents() {
-			var self = this;
+			let self = this;
 
 			this.groupElement.find(".js-wam-cleditor__add-condition").click(function() {
 				self.addCondition();
@@ -527,7 +529,7 @@
 			this.groupElement.find('.wam-cleditor__condition').remove();
 
 			if( this.options.conditions ) {
-				for( var index in this.options.conditions ) {
+				for( let index in this.options.conditions ) {
 					if( !this.options.conditions.hasOwnProperty(index) ) {
 						continue;
 					}
@@ -568,8 +570,10 @@
 
 			this.options = $.extend({}, {
 				groups: null,
-				defaultGroups: null,
-				onChange: null
+				// where to get an editor template
+				templateSelector: null,
+				// where to put editor options
+				saveInputSelector: null,
 			}, options);
 
 			this.groups = {};
@@ -581,22 +585,56 @@
 		}
 
 		getData() {
-			var self = this;
-			var groups = [];
+			let self = this;
+			let groups = [];
 
-			for( var ID in self.groups ) {
+			for( let ID in self.groups ) {
 				if( !self.groups.hasOwnProperty(ID) ) {
 					continue;
 				}
 
-				groups.push(self.groups[ID].getData());
+				let groupData = self.groups[ID].getData();
+
+				if( groupData ) {
+					groups.push(self.groups[ID].getData());
+				}
+			}
+
+			if( !groups.length ) {
+				return null;
 			}
 
 			return groups;
 		}
 
+		getImportData() {
+			if( this.options.saveInputSelector ) {
+				let data = this.element.parent().find(this.options.saveInputSelector).val();
+
+				if( !data ) {
+					return null;
+				}
+
+				return JSON.parse(data);
+			}
+
+			return null;
+		}
+
+		setExportData() {
+			if( this.options.saveInputSelector && $(this.options.saveInputSelector).length ) {
+				let data = !this.getData() ? '' : JSON.stringify(this.getData());
+				this.element.parent().find(this.options.saveInputSelector).val(data);
+			} else {
+				throw new Error('[Error]: Save input is not found! Selector: ' + this.options.saveInputSelector);
+			}
+		}
+
 		getTemplate(selector) {
-			let tmpl = $($(this.options.template).html());
+			let tmpl = $($(this.options.templateSelector).html());
+			if( !tmpl.length ) {
+				throw new Error('[Error]: Editor template is not found! Selector: ' + this.options.templateSelector);
+			}
 			return tmpl.find(selector).clone();
 		}
 
@@ -615,13 +653,10 @@
 		}
 
 		_registerEvents() {
-			var self = this;
+			let self = this;
 
 			this.element.on('wam.editor-updated', function() {
-				if( self.options.onChange ) {
-					var data = self.getData();
-					self.options.onChange(self.element, data);
-				}
+				self.setExportData();
 			});
 
 			this.element.on('wam.filters-changed', function() {
@@ -635,7 +670,7 @@
 		}
 
 		_createMarkup() {
-			var $editor = $('<div></div>').addClass('wam-cleditor');
+			let $editor = $('<div></div>').addClass('wam-cleditor');
 			this.element.prepend($editor);
 
 			$editor.append(this.getTemplate('.wam-cleditor__wrap'));
@@ -645,16 +680,18 @@
 		}
 
 		_load() {
-			var groups;
+			let groups, savedOptions;
 
-			if( this.options.groups && this.options.groups.length > 0 ) {
+			savedOptions = this.getImportData();
+
+			if( savedOptions ) {
+				this.element.groups = savedOptions;
+			} else if( this.options.groups && this.options.groups.length > 0 ) {
 				groups = this.options.groups;
-			} else if( this.options.defaultGroups && this.options.defaultGroups.length > 0 ) {
-				groups = this.options.defaultGroups;
 			}
 
 			if( groups ) {
-				for( var index in groups ) {
+				for( let index in groups ) {
 					if( !groups.hasOwnProperty(index) ) {
 						continue;
 					}
@@ -665,6 +702,12 @@
 
 			this._checkIsEmpty();
 			this._registerEvents();
+
+			// If editor will create demo data, we will trigger an event
+			if( !savedOptions ) {
+				this.element.trigger('wam.editor-updated');
+			}
+
 		}
 
 		_addGroup(data) {

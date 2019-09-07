@@ -14,38 +14,98 @@
 		//var json_data = $.parseJSON($hidden.val());
 		function createConditionEditor(element) {
 			element.wamConditionsEditor({
-				template: '#wam-conditions-builder-template',
-				groups: [],
-				defaultGroups: [
+				// where to get an editor template
+				templateSelector: '#wam-conditions-builder-template',
+				// where to put editor options
+				saveInputSelector: '.wam-conditions-builder__settings',
+				groups: [
 					{
+						"type": "group",
 						"conditions": [
 							{
-								"type": "scope",
-								"conditions": [
-									{
-										"param": "location-some-page",
-										"operator": "equals",
-										"type": "select",
-										"value": "base_web"
-									}
-								]
+								"param": "location-some-page",
+								"operator": "equals",
+								"type": "select",
+								"value": "base_web"
 							}
+
 						]
 					}
 
-				],
-				onChange: function(element, data) {
-					console.log(data);
-
-					element.parent().find('.wam-conditions-builder__settings').val(JSON.stringify(data));
-				},
+				]
 			});
 		}
 
+		/**
+		 * Destroy editor and clean options field
+		 * @param {object} element
+		 */
 		function destroyCoditionEditor(element) {
 			element.find('.wam-cleditor').remove();
-			// clean field
+			element.find('.wam-conditions-builder__settings').val('');
 		}
+
+		$('.js-wam-select-plugin-load-mode').change(function() {
+			let isDisabled = false,
+				currentContentTabElement = $(this).closest('.wam-nav-plugins__tab-content--active'),
+				editorElement = currentContentTabElement.find('.js-wam-plugin-load-conditions-builder');
+
+			if( 'enable' === $(this).val() ) {
+				isDisabled = false;
+
+				$(this).removeClass('wam-select--disable').addClass('wam-select--enable');
+
+				// Enable assets table
+				currentContentTabElement.find('.wam-assets-table__plugin-settings').removeClass('wam-select--disabled_section');
+				currentContentTabElement.find('.js-wam-switch').val('enable')
+					.addClass('wam-select--enable')
+					.removeClass('wam-select--disable')
+					.prop('disabled', false);
+
+				currentContentTabElement.find('.js-wam-open-asset-settings').prop('disabled', false);
+
+				destroyCoditionEditor(editorElement);
+
+			} else if( 'disable_assets' === $(this).val() || 'disable_plugin' === $(this).val() ) {
+
+				if( !isDisabled && currentContentTabElement.find('.js-wam-switch option[value="disable"]:selected').length ) {
+					var passAction = confirm("If you want to change the plugin’s load mode, all your logical settings to disable the plugins assets will be reset. Do you really want to do this?");
+					if( !passAction ) {
+						return;
+					}
+				}
+
+				// Баг с DIsabled и бага при переключении режимов, редактор условий перезаписывается.
+
+				isDisabled = true;
+
+				$(this).removeClass('wam-select--enable')
+					.addClass('wam-select--disable');
+
+				currentContentTabElement.find(".wam-cleditor").remove();
+				currentContentTabElement.find(".wam-conditions-builder__settings")
+					.val('');
+
+				// Disable assets table
+				currentContentTabElement.find('.wam-assets-table__plugin-settings')
+					.addClass('wam-select--disabled_section');
+				currentContentTabElement.find('.wam-assets-table__asset-settings')
+					.hide();
+
+				currentContentTabElement.find('.js-wam-switch').val('disable')
+					.removeClass('wam-select--enable')
+					.addClass('wam-select--disable')
+					.prop('disabled', true);
+
+				currentContentTabElement.find('.js-wam-open-asset-settings')
+					.removeClass('.wam-openned')
+					.prop('disabled', true);
+
+				if( !editorElement.find('.wam-cleditor').length ) {
+					createConditionEditor(editorElement);
+				}
+			}
+		});
 
 		$('.js-wam-switch').change(function() {
 			var settingsButton = $(this).closest('tr').find('.js-wam-open-asset-settings'),
@@ -59,7 +119,7 @@
 				$(this).removeClass('wam-select--disable').addClass('wam-select--enable');
 				$(this).closest('tr').removeClass('wam-select--disabled_section');
 
-				destroyCoditionEditor(place.find(".wam-conditions-builder"));
+				destroyCoditionEditor(place.find(".wam-asset-conditions-builder"));
 			} else if( 'disable' === $(this).val() ) {
 				$(this).closest('tr').addClass('wam-select--disabled_section');
 				$(this).removeClass('wam-select--enable').addClass('wam-select--disable');
@@ -68,7 +128,7 @@
 				place.show();
 
 				if( !place.find('.wam-cleditor').length ) {
-					createConditionEditor(place.find(".wam-conditions-builder"));
+					createConditionEditor(place.find(".wam-asset-conditions-builder"));
 				}
 			}
 
@@ -89,21 +149,11 @@
 			place.show();
 
 			if( !place.find('.wam-cleditor').length ) {
-				createConditionEditor(place.find(".wam-conditions-builder"));
+				createConditionEditor(place.find(".wam-asset-conditions-builder"));
 			}
 
 			return false;
 		});
-
-		/*var $formPost = $("form#post");
-		// saves conditions on clicking the button Save
-		$formPost.submit(function() {
-			var data = $editor.winpConditionEditor("getData");
-			var json = JSON.stringify(data);
-			$hidden.val(json);
-
-			return true;
-		});*/
 
 		$('.wam-nav-plugins__tab').click(function() {
 			$('.wam-nav-plugins__tab').removeClass('wam-nav-plugins__tab--active');

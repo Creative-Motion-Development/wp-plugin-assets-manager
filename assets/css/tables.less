@@ -36,19 +36,12 @@
     box-shadow: none;
   }
 
-  /*th:nth-child(1),
-  td:nth-child(1),
-  th:nth-child(2),
-  td:nth-child(2) {
-    text-align: center;
-  }*/
+  td:first-child {
+    width: 20%;
+  }
 
   .wam-table__th-plugins-list {
     width: 350px;
-  }
-
-  td:first-child {
-    width: 20%;
   }
 
   .wam-table__td-plugin-settings {
@@ -64,13 +57,18 @@
       padding: 17px 10px;
     }
 
-    tr.wam-assets-table__plugin-settings {
+    /*&__tr--disabled {
+      opacity: 0.3;
+    }*/
+
+    &__plugin-settings {
       &.wam-select--disabled_section {
         background: #fbf5f4;
+        opacity: 0.7;
       }
     }
 
-    tr.wam-assets-table__asset-settings {
+    &__asset-settings {
       display: none;
       background: #f3f3f3;
       color: #7b7b7b;

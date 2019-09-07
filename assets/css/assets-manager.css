@@ -389,12 +389,6 @@ body p {
   table-layout: fixed;
   border-collapse: collapse;
   margin: 0 30px;
-  /*th:nth-child(1),
-  td:nth-child(1),
-  th:nth-child(2),
-  td:nth-child(2) {
-    text-align: center;
-  }*/
 }
 #WBCR-AM .wam-table tbody:nth-child(2n) {
   background: #f9f9f9;
@@ -417,11 +411,11 @@ body p {
   background: none;
   box-shadow: none;
 }
-#WBCR-AM .wam-table .wam-table__th-plugins-list {
-  width: 350px;
-}
 #WBCR-AM .wam-table td:first-child {
   width: 20%;
+}
+#WBCR-AM .wam-table .wam-table__th-plugins-list {
+  width: 350px;
 }
 #WBCR-AM .wam-table .wam-table__td-plugin-settings {
   width: 80%;
@@ -430,21 +424,25 @@ body p {
 }
 #WBCR-AM .wam-table .wam-assets-table {
   width: 100%;
+  /*&__tr--disabled {
+      opacity: 0.3;
+    }*/
 }
 #WBCR-AM .wam-table .wam-assets-table td {
   padding: 17px 10px;
 }
-#WBCR-AM .wam-table .wam-assets-table tr.wam-assets-table__plugin-settings.wam-select--disabled_section {
+#WBCR-AM .wam-table .wam-assets-table__plugin-settings.wam-select--disabled_section {
   background: #fbf5f4;
+  opacity: 0.7;
 }
-#WBCR-AM .wam-table .wam-assets-table tr.wam-assets-table__asset-settings {
+#WBCR-AM .wam-table .wam-assets-table__asset-settings {
   display: none;
   background: #f3f3f3;
   color: #7b7b7b;
   font-size: 13px;
   box-shadow: 0 2px 0 #d4d4d4;
 }
-#WBCR-AM .wam-table .wam-assets-table tr.wam-assets-table__asset-settings > td {
+#WBCR-AM .wam-table .wam-assets-table__asset-settings > td {
   padding: 0px 25px 15px 25px !important;
 }
 #WBCR-AM .wam-table__alternate th {

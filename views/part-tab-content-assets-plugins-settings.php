@@ -8,13 +8,16 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
  */
 ?>
 <p style="vertical-align: top">
-    <select class="wam-select">
-        <option value="enable">Load plugin and its assets</option>
-        <option value="disable">Don't load plugin assets</option>
-        <option value="disable">Don't load plugin</option>
+    <select class="wam-select wam-select--enable js-wam-select-plugin-load-mode">
+        <option value="enable"><?php _e( "Load plugin and its assets", 'gonzales' ) ?></option>
+        <option value="disable_assets"><?php _e( "Don't load plugin assets", 'gonzales' ) ?></option>
+        <option value="disable_plugin"><?php _e( "Don't load plugin", 'gonzales' ) ?></option>
     </select>
     <button class="wam-button wam-button--default wam-button__icon wam-button__icon--cogs js-wam-open-plugin-settings"></button>
 </p>
+<div class="js-wam-plugin-load-conditions-builder">
+    <input type="hidden" name="wam_filter_<?php echo esc_attr( $data['plugin_name'] ) ?>" class="wam-conditions-builder__settings" value=''>
+</div>
 <h2>Loaded resourses on current page:</h2>
 <table class="wam-assets-table" style="margin:0;">
     <tr>
@@ -66,8 +69,8 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
                             For example, if you select Page -> Equals -> All posts, then the script or style will not
                             loaded on all pages of type post.', 'gonzales' ) ?>
                         </p>
-                        <div class="wam-conditions-builder">
-                            <input type="hidden" name="wam_filter_<?php echo $type . '_' . $name ?>" class="wam-conditions-builder__settings" value=''/>
+                        <div class="wam-asset-conditions-builder">
+                            <input type="hidden" name="wam_filter_<?php echo $type . '_' . $name ?>" class="wam-conditions-builder__settings" value=''>
                         </div>
                     </td>
                 </tr>
