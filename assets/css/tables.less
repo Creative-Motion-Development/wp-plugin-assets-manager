@@ -1,5 +1,5 @@
 /**
- * Tables
+ * Tabless
 
  * @author Alex Kovalev <alex.kovalevv@gmail.com>
  * @copyright Webcraftic 26.08.2019
@@ -40,35 +40,31 @@
     width: 20%;
   }
 
-  .wam-table__th-plugins-list {
+  &__th-plugins-list {
     width: 350px;
   }
 
-  .wam-table__td-plugin-settings {
+  &__td-plugin-settings {
     width: 80%;
     padding: 15px;
     text-align: left;
   }
 
   .wam-assets-table {
+    @assetsTableClass: ~"wam-assets-table";
+
     width: 100%;
 
     td {
       padding: 17px 10px;
     }
 
-    /*&__tr--disabled {
-      opacity: 0.3;
-    }*/
-
-    &__plugin-settings {
-      &.wam-select--disabled_section {
-        background: #fbf5f4;
-        opacity: 0.7;
-      }
+    .js-@{assetsTableClass}__tr--disabled-section {
+      background: #fbf5f4;
+      opacity: 0.7;
     }
 
-    &__asset-settings {
+    &__asset-settings-conditions {
       display: none;
       background: #f3f3f3;
       color: #7b7b7b;

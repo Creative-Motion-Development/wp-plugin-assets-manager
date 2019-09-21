@@ -102,6 +102,7 @@
 
 /** ---------------- PLUGINS TABS------------------------- */
 .wam-nav-plugins {
+
   padding: 0;
   margin: 0;
   list-style: none;
@@ -142,11 +143,12 @@
 }
 
 .wam-nav-plugins__tab-content {
+  @tabContentClass: ~"wam-nav-plugins__tab-content";
   display: none;
 
-  &.wam-nav-plugins__tab-content--active {
+  &.js-@{tabContentClass}--active {
     display: block !important;
   }
 }
 
-/** ---------------- /PLUGINS TABS------------------------- */
+/** ---------------- /PLUGINS TABS------------------------ */

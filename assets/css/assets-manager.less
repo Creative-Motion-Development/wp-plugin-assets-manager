@@ -20,7 +20,7 @@ body {
   background: #FFF !important;
 
   &, p {
-    font-family: Arial, "Helvetica Neue", sans-serif !important;
+    font-family: Arial, "Helvetica Neue", sans-serif;
   }
 }
 
@@ -34,7 +34,7 @@ body {
   }
 
   /**
-  * Placeholders
+  * Placeholderss
   */
 
   input[type="text"]::-moz-placeholder {
@@ -162,6 +162,8 @@ body {
   // BUTTONS
   // --------------------------------------------------------------
   .wam-button {
+    @buttonClass: ~"wam-button";
+
     display: inline-block;
     vertical-align: bottom;
     padding: 5px 10px;
@@ -173,6 +175,10 @@ body {
     &--small {
       padding: 2px 8px;
       font-size: 13px;
+    }
+
+    &.js-@{buttonClass}--hidden {
+      display: none;
     }
 
     &:hover {
@@ -193,8 +199,12 @@ body {
       line-height: 0;
     }
 
-    &__icon--cogs {
+    &.js-@{buttonClass}__icon--cogs {
       background: url('../img/cogs.png') center no-repeat;
+    }
+
+    &.js-@{buttonClass}__icon--close {
+      background: url('../img/close.png') center no-repeat;
     }
 
     &--default {
@@ -241,18 +251,20 @@ body {
   // CONTROLS
   // --------------------------------------------------------------
   .wam-select {
+    @selectClass: ~"wam-select";
+
     display: inline-block;
     vertical-align: bottom;
     height: auto;
     padding: 4px 10px;
 
-    &--enable {
+    &.js-@{selectClass}--enable {
       background: #efffde;
       color: #4e6f28;
       border: 1px solid #8bc34a;
     }
 
-    &--disable {
+    &.js-@{selectClass}--disable {
       background: #ffdada;
       border: 1px solid #efc3c3;
       color: #774a4a;
@@ -366,6 +378,20 @@ body {
           }
         }
       }
+    }
+  }
+
+  .wam-plugin-settings {
+    @pluginSettingsClass: ~"wam-plugin-settings";
+    padding-bottom: 10px;
+
+    &__controls {
+      vertical-align: top;
+    }
+
+    .js-@{pluginSettingsClass}__conditions {
+      display: none;
+      padding: 20px;
     }
   }
 }

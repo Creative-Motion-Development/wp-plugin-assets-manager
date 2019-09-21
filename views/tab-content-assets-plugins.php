@@ -17,8 +17,8 @@ $active_plugin = reset( $data['loaded_plugins'] );
 <table class="wam-table">
     <thead>
     <tr>
-        <th class="wam-table__th-plugins-list">Plugins</th>
-        <th class="wam-table__th-plugin-settings"><?php echo $active_plugin['plugin_data']['Title']; ?></th>
+        <th class="wam-table__th-plugins-list"><?php _e( "Plugins", 'gonzales' ) ?></th>
+        <th class="wam-table__th-plugin-settings"><?php echo $active_plugin['info']['Title']; ?></th>
     </tr>
     </thead>
     <tbody>
@@ -26,11 +26,11 @@ $active_plugin = reset( $data['loaded_plugins'] );
         <td>
             <ul class="wam-nav-plugins">
 				<?php foreach ( (array) $data['loaded_plugins'] as $plugin_name => $plugin ): ?>
-                    <li class="wam-nav-plugins__tab<?php echo( $active_plugin['plugin_name'] == $plugin_name ? ' wam-nav-plugins__tab--active' : '' ) ?>">
+                    <li class="wam-nav-plugins__tab js-wam-nav-plugins__tab-switch<?php echo( $active_plugin['name'] == $plugin_name ? ' wam-nav-plugins__tab--active' : '' ) ?>">
                         <a href="#wam-<?php echo esc_attr( $plugin_name ); ?>">
-                            <strong class="wam-plugin-name"><?php echo $plugin['plugin_data']['Title']; ?></strong>
-                            <span><?php _e( 'Author', 'gonzales' ) ?>: <?php echo $plugin['plugin_data']['Author']; ?></span>
-                            <span><?php _e( 'Version', 'gonzales' ) ?>: <?php echo $plugin['plugin_data']['Version']; ?></span>
+                            <strong class="wam-plugin-name"><?php echo $plugin['info']['Title']; ?></strong>
+                            <span><?php _e( 'Author', 'gonzales' ) ?>: <?php echo $plugin['info']['Author']; ?></span>
+                            <span><?php _e( 'Version', 'gonzales' ) ?>: <?php echo $plugin['info']['Version']; ?></span>
                         </a>
                     </li>
 				<?php endforeach; ?>
@@ -38,12 +38,8 @@ $active_plugin = reset( $data['loaded_plugins'] );
         </td>
         <td class="wam-table__td-plugin-settings">
 			<?php foreach ( (array) $data['loaded_plugins'] as $plugin_name => $plugin ): ?>
-                <div id="wam-<?php echo esc_attr( $plugin_name ); ?>" class="wam-nav-plugins__tab-content<?php echo( $active_plugin['plugin_name'] == $plugin_name ? ' wam-nav-plugins__tab-content--active' : '' ) ?>">
-					<?php $this->print_template( 'part-tab-content-assets-plugins-settings', [
-						'plugin_name'             => $plugin_name,
-						'plugin_assets'           => $plugin['plugin_assets'],
-						'conditions_logic_params' => $data['conditions_logic_params'],
-					] ); ?>
+                <div id="wam-<?php echo esc_attr( $plugin_name ); ?>" class="wam-nav-plugins__tab-content<?php echo( $active_plugin['name'] == $plugin_name ? ' js-wam-nav-plugins__tab-content--active' : '' ) ?>">
+					<?php $this->print_template( 'part-tab-content-assets-plugins-settings', $plugin ); ?>
                 </div>
 			<?php endforeach; ?>
         </td>

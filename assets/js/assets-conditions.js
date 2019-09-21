@@ -685,7 +685,7 @@
 			savedOptions = this.getImportData();
 
 			if( savedOptions ) {
-				this.element.groups = savedOptions;
+				groups = savedOptions;
 			} else if( this.options.groups && this.options.groups.length > 0 ) {
 				groups = this.options.groups;
 			}

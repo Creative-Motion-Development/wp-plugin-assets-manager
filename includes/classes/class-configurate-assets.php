@@ -125,8 +125,9 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		add_filter( 'autoptimize_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
 		add_filter( 'wmac_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
 
-		//add_action( 'wp_print_scripts', [ $this, 'print_head_scripts' ] );
-		//add_action( 'admin_print_scripts', [ $this, 'print_head_scripts' ] );
+		if ( wp_doing_ajax() ) {
+			require_once WGZ_PLUGIN_DIR . '/admin/ajax/save-settings.php';
+		}
 	}
 
 	/**
@@ -223,7 +224,12 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						'assets-manager-premium/assets/css/assets-conditions.css',
 						'assets-manager-premium-premium/assets/css/assets-conditions.css',
 						// --
-						'clearfy/assets/css/admin-bar.css'
+						'clearfy/assets/css/admin-bar.css',
+						// --
+						'assets-manager/assets/css/PNotifyBrightTheme.css',
+						'assets-manager-premium/assets/css/PNotifyBrightTheme.css',
+						'assets-manager-premium-premium/assets/css/PNotifyBrightTheme.css',
+
 					];
 
 					if ( ! empty( $src ) ) {
@@ -241,12 +247,9 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			$html = preg_replace_callback( [
 				"'<\s*script.*?<\s*\/\s*script\s*>'is",
 			], function ( $matches ) {
-				if ( false !== strpos( $matches[0], 'wbcramp_data' ) ) {
+				if ( false !== strpos( $matches[0], 'wam_localize_data' ) ) {
 					return $matches[0];
 				}
-				/*if ( false !== strpos( $matches[0], 'wam-condition-logic-params' ) ) {
-					return $matches[0];
-				}*/
 				if ( false !== strpos( $matches[0], 'wam-conditions-builder-template' ) ) {
 					return $matches[0];
 				}
@@ -271,6 +274,9 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 						'assets-manager-premium/assets/js/assets-conditions.js',
 						'assets-manager-premium-premium/assets/js/assets-conditions.js',
 						// --
+						'assets-manager/assets/js/PNotify.js',
+						'assets-manager-premium/assets/js/PNotify.js',
+						'assets-manager-premium-premium/assets/js/PNotify.js',
 
 					];
 
@@ -365,7 +371,8 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 			'loaded_plugins'          => $this->get_loaded_plugins(),
 			'theme_assets'            => $this->get_collected_assets( 'theme' ),
 			'misc_assets'             => $this->get_collected_assets( 'misc' ),
-			'conditions_logic_params' => $this->get_conditions_login_params( true )
+			'conditions_logic_params' => $this->get_conditions_login_params( true ),
+			'settings'                => $this->plugin->getOption( 'settings', [] )
 		] );
 
 		return;
@@ -747,7 +754,7 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= '</td>';
 
 		// Enable
-		$class_name = 'wbcr-assets-manager-enable';
+		$class_name = 'wam-assets-manager-enable';
 		if ( 'plugins' == $type_name ) {
 			$class_name = apply_filters( 'wbcr_gnz_control_classname', 'wbcr-gnz' );
 		}
@@ -776,7 +783,7 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html    .= '</select>';
 
 		// Everywhere
-		$html .= "<div class='wbcr-assets-manager everywhere'";
+		$html .= "<div class='wam-assets-manager everywhere'";
 		if ( ! $is_disabled || empty( $disabled['everywhere'] ) ) {
 			$html .= " style='display: none;'";
 		}
@@ -861,7 +868,7 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		$html .= '</div>';
 
 		// Custom URL
-		$control_html = '<div class="wam-table__field wbcr-assets-manager custom"';
+		$control_html = '<div class="wam-table__field wam-assets-manager custom"';
 		if ( ! $is_disabled || empty( $disabled['custom'] ) ) {
 			$control_html .= ' style="display: none;"';
 		}
@@ -874,7 +881,7 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		//$control_html .= '<em>Пример: http://yoursite.test/profile/*</em>';
 		$control_html .= '</div>';
 		// Regex
-		$control_html .= "<div class='wam-table__field wbcr-assets-manager regex'";
+		$control_html .= "<div class='wam-table__field wam-assets-manager regex'";
 		if ( ! $is_disabled || empty( $disabled['regex'] ) ) {
 			$control_html .= " style='display: none;'";
 		}
@@ -909,183 +916,49 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	}
 
 	public function formSave() {
-		if ( isset( $_GET['wbcr_assets_manager'] ) && isset( $_POST['wbcr_assets_manager_save'] ) ) {
+		if ( isset( $_GET['wbcr_assets_manager'] ) && isset( $_POST['wam_save_settings'] ) ) {
 
-			if ( ! $this->isUserCan() || ! wp_verify_nonce( filter_input( INPUT_POST, 'wbcr_assets_manager_save' ), 'wbcr_assets_manager_nonce' ) ) {
+			/*if ( ! $this->isUserCan() || ! wp_verify_nonce( filter_input( INPUT_POST, 'wbcr_assets_manager_save' ), 'wbcr_assets_manager_nonce' ) ) {
 				wp_die( __( 'You don\'t have enough capability to edit this information.', 'gonzales' ), 403 );
 
 				return;
 			}
 
 			// If mu  plugin does not exist, install it.
-			wbcr_gnz_deploy_mu_plugin();
+			wbcr_gnz_deploy_mu_plugin();*/
 
-			// todo: вынести в метод
-			if ( is_multisite() && is_network_admin() ) {
-				$options = $this->getNetworkOption( 'assets_manager_options', [] );
-			} else {
-				$options = $this->getOption( 'assets_manager_options', [] );
+			$settings = $this->getOption( 'settings', [] );
+
+			if ( ! is_array( $settings ) ) {
+				$settings = [];
 			}
 
-			$current_url = esc_url( $this->getCurrentUrl() );
-
-			if ( isset( $_POST['disabled'] ) && ! empty( $_POST['disabled'] ) ) {
-				foreach ( $_POST['disabled'] as $type => $assets ) {
-					if ( ! empty( $assets ) ) {
-						foreach ( $assets as $handle => $where ) {
-							$handle = sanitize_text_field( $handle );
-							$where  = sanitize_text_field( $where['state'] );
-
-							if ( ! isset( $options['disabled'][ $type ][ $handle ] ) ) {
-								$options                                 = is_array( $options ) ? $options : [];
-								$options['disabled'][ $type ][ $handle ] = [];
-							}
-							$disabled = &$options['disabled'][ $type ][ $handle ];
-
-							if ( ! empty( $where ) && 'disable' == $where ) {
-								$action = isset( $_POST['wgz_action'][ $type ][ $handle ] ) ? $_POST['wgz_action'][ $type ][ $handle ] : '';
-
-								if ( "everywhere" == $action ) {
-									$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, $action );
-
-									$disabled['everywhere'] = 1;
-								} else if ( "current" == $action ) {
-									$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, $action );
-
-									if ( ! isset( $disabled['current'] ) || ! is_array( $disabled['current'] ) ) {
-										$disabled['current'] = [];
-									}
-
-									if ( ! in_array( $current_url, $disabled['current'] ) ) {
-										array_push( $disabled['current'], $current_url );
-									}
-								} else {
-									$post_value = isset( $_POST['disabled'][ $type ][ $handle ] ) ? $_POST['disabled'][ $type ][ $handle ] : null;
-									$disabled   = apply_filters( 'wbcr_gnz_pre_save_disabled', $disabled, $action, $post_value );
-								}
-							} else {
-								$disabled = apply_filters( 'wbcr_gnz_unset_disabled', $disabled, 'current' );
-
-								if ( isset( $disabled['current'] ) ) {
-									$current_key = array_search( $current_url, $disabled['current'] );
-
-									if ( ! empty( $current_key ) || $current_key === 0 ) {
-										unset( $disabled['current'][ $current_key ] );
-										if ( empty( $disabled['current'] ) ) {
-											unset( $disabled['current'] );
-										}
+			if ( ! empty( $_POST['wam_plugin'] ) ) {
+				foreach ( (array) $_POST['wam_plugin'] as $plugin_name => $plugin_group ) {
+					if ( ! empty( $plugin_group['load_mode'] ) ) {
+						if ( 'enable' == $plugin_group['load_mode'] ) {
+							$plugin_group['visability'] = "";
+						} else {
+							foreach ( [ 'js', 'css' ] as $assets_type ) {
+								if ( ! empty( $plugin_group[ $assets_type ] ) ) {
+									foreach ( $plugin_group[ $assets_type ] as $resource_handle => $resource_params ) {
+										$plugin_group[ $assets_type ][ $resource_handle ]['load_mode']  = "disable";
+										$plugin_group[ $assets_type ][ $resource_handle ]['visability'] = "";
 									}
 								}
 							}
-
-							if ( empty( $disabled ) ) {
-								unset( $options['disabled'][ $type ][ $handle ] );
-								if ( empty( $options['disabled'][ $type ] ) ) {
-									unset( $options['disabled'][ $type ] );
-									if ( empty( $options['disabled'] ) ) {
-										unset( $options['disabled'] );
-									}
-								}
-							}
+							$plugin_group['visability'] = "";
 						}
 					}
+
+					$settings['plugins'][ $plugin_name ] = $plugin_group;
 				}
 			}
 
-			if ( isset( $_POST['enabled'] ) && ! empty( $_POST['enabled'] ) ) {
-				foreach ( $_POST['enabled'] as $type => $assets ) {
-					if ( ! empty( $assets ) ) {
-						foreach ( $assets as $handle => $where ) {
+			$this->updateOption( 'settings', $settings );
 
-							if ( ! isset( $options['enabled'][ $type ][ $handle ] ) ) {
-								$options                                = is_array( $options ) ? $options : [];
-								$options['enabled'][ $type ][ $handle ] = [];
-							}
-							$enabled = &$options['enabled'][ $type ][ $handle ];
-
-							$action = isset( $_POST['wgz_action'][ $type ][ $handle ] ) ? $_POST['wgz_action'][ $type ][ $handle ] : '';
-
-							if ( "everywhere" == $action && ( ! empty( $where['current'] ) || $where['current'] === "0" ) ) {
-								if ( ! isset( $enabled['current'] ) || ! is_array( $enabled['current'] ) ) {
-									$enabled['current'] = [];
-								}
-								if ( ! in_array( $where['current'], $enabled['current'] ) ) {
-									array_push( $enabled['current'], $where['current'] );
-								}
-							} else {
-								if ( isset( $enabled['current'] ) ) {
-									$current_key = array_search( $current_url, $enabled['current'] );
-									if ( ! empty( $current_key ) || $current_key === 0 ) {
-										unset( $enabled['current'][ $current_key ] );
-										if ( empty( $enabled['current'] ) ) {
-											unset( $options['enabled'][ $type ][ $handle ]['current'] );
-										}
-									}
-								}
-							}
-
-							if ( "everywhere" == $action && ! empty( $where['post_types'] ) ) {
-								$enabled['post_types'] = [];
-								foreach ( $where['post_types'] as $key => $post_type ) {
-									if ( isset( $enabled['post_types'] ) ) {
-										if ( ! in_array( $post_type, $enabled['post_types'] ) ) {
-											array_push( $enabled['post_types'], $post_type );
-										}
-									}
-								}
-							} else {
-								unset( $enabled['post_types'] );
-							}
-
-							if ( "everywhere" == $action && ! empty( $where['taxonomies'] ) ) {
-								$enabled['taxonomies'] = [];
-								foreach ( $where['taxonomies'] as $key => $taxonomy ) {
-									if ( isset( $enabled['taxonomies'] ) ) {
-										if ( ! in_array( $taxonomy, $enabled['taxonomies'] ) ) {
-											array_push( $enabled['taxonomies'], $taxonomy );
-										}
-									}
-								}
-							} else {
-								unset( $enabled['taxonomies'] );
-							}
-
-							if ( "everywhere" == $action && ! empty( $where['categories'] ) ) {
-								$enabled['categories'] = [];
-								foreach ( $where['categories'] as $key => $category ) {
-									if ( isset( $enabled['categories'] ) ) {
-										if ( ! in_array( $category, $enabled['categories'] ) ) {
-											array_push( $enabled['categories'], $category );
-										}
-									}
-								}
-							} else {
-								unset( $enabled['categories'] );
-							}
-
-							if ( empty( $enabled ) ) {
-								unset( $options['enabled'][ $type ][ $handle ] );
-								if ( empty( $options['enabled'][ $type ] ) ) {
-									unset( $options['enabled'][ $type ] );
-									if ( empty( $options['enabled'] ) ) {
-										unset( $options['enabled'] );
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-
-			do_action( 'wbcr_gnz_form_save' );
-
-			if ( is_multisite() && is_network_admin() ) {
-				$this->updateNetworkOption( 'assets_manager_options', $options );
-			} else {
-				$this->updateOption( 'assets_manager_options', $options );
-			}
-
-			WbcrFactoryClearfy000_Helpers::flushPageCache();
+			///$a = $settings;
+			//WbcrFactoryClearfy000_Helpers::flushPageCache();
 		}
 	}
 
@@ -1231,11 +1104,11 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		}
 
 		$denied = [
-			'js'  => [ 'wbcr-assets-manager', 'wam-assets-conditions', 'admin-bar' ],
+			'js'  => [ 'wam-assets-manager', 'wam-assets-conditions', 'admin-bar' ],
 			'css' => [
 				'wbcr-clearfy-adminbar-styles',
 				'wam-assets-conditions',
-				'wbcr-assets-manager',
+				'wam-assets-manager',
 				'admin-bar',
 				'dashicons'
 			],
@@ -1317,34 +1190,23 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 */
 	public function appendAsset() {
 		if ( $this->isUserCan() && isset( $_GET['wbcr_assets_manager'] ) ) {
-			wp_enqueue_style( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', [], $this->plugin->getPluginVersion() );
-			wp_enqueue_style( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/css/assets-conditions.css', [], $this->plugin->getPluginVersion() );
 
-			wp_enqueue_script( 'wbcr-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [
+			wp_enqueue_style( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', [], $this->plugin->getPluginVersion() );
+			wp_enqueue_style( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/css/assets-conditions.css', [], $this->plugin->getPluginVersion() );
+			wp_enqueue_style( 'wam-pnotify', WGZ_PLUGIN_URL . '/assets/css/PNotifyBrightTheme.css', [], $this->plugin->getPluginVersion() );
+
+			wp_enqueue_script( 'wbcr-pnotify', WGZ_PLUGIN_URL . '/assets/js/PNotify.js', [], $this->plugin->getPluginVersion(), true );
+			wp_enqueue_script( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [
 				'jquery',
 				'wam-assets-conditions'
 			], $this->plugin->getPluginVersion(), true );
 			wp_enqueue_script( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js', [ 'jquery' ], $this->plugin->getPluginVersion(), true );
+
+			wp_localize_script( 'wam-assets-manager', 'wam_localize_data', [
+				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' )
+			] );
 		}
 	}
-
-	/**
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.1
-	 * @return void
-	 */
-	/*public function print_head_scripts() {
-		if ( ! $this->isUserCan() || ! isset( $_GET['wbcr_assets_manager'] ) ) {
-			return;
-		}
-		?>
-        <script id="wam-condition-logic-params">
-			window.wam_assets_manager = window.wam_assets_manager || {};
-			window.wam_assets_manager.filter_params = <?php echo json_encode( $this->get_conditions_login_params() ) ?>;
-			//window.winp.templates = <?php echo json_encode( [] ) ?>;
-        </script>
-		<?php
-	}*/
 
 	/**
 	 * Exception for address starting from "//example.com" instead of
@@ -1443,6 +1305,16 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		return $assets;
 	}
 
+	/**
+	 * Позволяет получить список плагинов, которые загружаются на странице
+	 *
+	 * Каждый элемент списка имеет собственные настройки, которые будут
+	 * переданы в шаблон для печати.
+	 *
+	 * @since  2.0.0
+	 * @return array
+	 * @throws \Exception
+	 */
 	private function get_loaded_plugins() {
 		$plugins = [];
 
@@ -1453,14 +1325,127 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		foreach ( (array) $this->collection as $resource_type => $resources ) {
 			foreach ( $resources as $resource_name => $types ) {
 				if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
-					$plugins[ $resource_name ]['plugin_name']   = $resource_name;
-					$plugins[ $resource_name ]['plugin_data']   = $this->get_plugin_data( $resource_name );
-					$plugins[ $resource_name ]['plugin_assets'] = $types;
+					$plugins[ $resource_name ]['name']                    = $resource_name;
+					$plugins[ $resource_name ]['info']                    = $this->get_plugin_data( $resource_name );
+					$plugins[ $resource_name ]['assets']                  = $this->get_parsed_asset_settings( $types, $resource_name );
+					$plugins[ $resource_name ]['load_mode']               = $this->get_parsed_plugin_settings( $resource_name, 'load_mode' );
+					$plugins[ $resource_name ]['visability']              = $this->get_parsed_plugin_settings( $resource_name, 'visability' );
+					$plugins[ $resource_name ]['select_control_classes']  = $this->get_parsed_plugin_settings( $resource_name, 'select_control_classes' );
+					$plugins[ $resource_name ]['settings_button_classes'] = $this->get_parsed_plugin_settings( $resource_name, 'settings_button_classes' );
 				}
 			}
 		}
 
 		return $plugins;
+	}
+
+	/**
+	 * Подготовка настроек плагина к выводу в шаблоне
+	 *
+	 * Устанавливаем ключи и значения по умолчанию или берем сохраненные
+	 * значения из базы данных. Тем самым мы гарантируем, что в шаблоне
+	 * всегда будет существовать используемый элемент массива из настроек
+	 * плагина.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param string $plugin_name
+	 * @param null   $setting_name
+	 *
+	 * @return array|mixed
+	 * @throws \Exception
+	 */
+	private function get_parsed_plugin_settings( $plugin_name, $setting_name = null ) {
+		$settings         = $this->plugin->getOption( 'settings', [] );
+		$default_settings = [
+			'load_mode'               => 'enable',
+			'visability'              => "",
+			'js'                      => [],
+			'css'                     => [],
+			'select_control_classes'  => " js-wam-select--enable",
+			'settings_button_classes' => " js-wam-button--hidden",
+		];
+
+		$settings_formated = $default_settings;
+
+		if ( ! empty( $settings['plugins'] ) && isset( $settings['plugins'][ $plugin_name ] ) ) {
+			$plugin_settings                 = $settings['plugins'][ $plugin_name ];
+			$settings_formated['load_mode']  = ! empty( $plugin_settings['load_mode'] ) ? $plugin_settings['load_mode'] : "enable";
+			$settings_formated['visability'] = ! empty( $plugin_settings['visability'] ) ? stripslashes( $plugin_settings['visability'] ) : "";
+			$settings_formated['js']         = ! empty( $plugin_settings['js'] ) ? $plugin_settings['js'] : "";
+			$settings_formated['css']        = ! empty( $plugin_settings['css'] ) ? $plugin_settings['css'] : "";
+
+			if ( "enable" === $settings_formated['load_mode'] ) {
+				$settings_formated['select_control_classes']  = " js-wam-select--enable";
+				$settings_formated['settings_button_classes'] = " js-wam-button--hidden";
+			} else {
+				$settings_formated['select_control_classes']  = " js-wam-select--disable";
+				$settings_formated['settings_button_classes'] = "";
+			}
+		}
+
+		if ( $setting_name && isset( $settings_formated[ $setting_name ] ) ) {
+			return $settings_formated[ $setting_name ];
+		}
+
+		return $settings_formated;
+	}
+
+	private function get_parsed_asset_settings( $assets, $plugin_name = null ) {
+		$plugin_group      = false;
+		$settings_formated = [];
+		$settings          = $this->plugin->getOption( 'settings', [] );
+
+		if ( is_array( $assets ) && ( isset( $assets['js'] ) || isset( $assets['css'] ) ) ) {
+			if ( ! isset( $assets['js'] ) ) {
+				$assets['js'] = [];
+			}
+			if ( ! isset( $assets['css'] ) ) {
+				$assets['css'] = [];
+			}
+
+			if ( ! empty( $plugin_name ) && ! empty( $settings['plugins'] ) && isset( $settings['plugins'][ $plugin_name ] ) ) {
+				$settings     = $settings['plugins'][ $plugin_name ];
+				$plugin_group = true;
+			}
+
+			foreach ( (array) $assets as $type => $resources ) {
+				$settings_formated[ $type ] = [];
+
+				foreach ( (array) $resources as $name => $attrs ) {
+					$s = &$settings_formated[ $type ][ $name ];
+
+					if ( isset( $settings[ $type ] ) && isset( $settings[ $type ][ $name ] ) && ! empty( $settings[ $type ][ $name ]['visability'] ) ) {
+						$s['load_mode']  = "disable";
+						$s['visability'] = stripslashes( $settings[ $type ][ $name ]['visability'] );
+					} else {
+						if ( $plugin_group ) {
+							$plugin_load_mode = ! empty( $settings['load_mode'] ) ? $settings['load_mode'] : 'enable';
+
+							$s['load_mode'] = "enable" === $plugin_load_mode ? 'enable' : 'disable';
+						} else {
+							$s['load_mode'] = "enable";
+						}
+						$s['visability'] = "";
+					}
+
+					if ( 'disable' === $s['load_mode'] ) {
+						$s['row_classes']             = " js-wam-assets-table__tr--disabled-section";
+						$s['select_control_classes']  = " js-wam-select--disable";
+						$s['settings_button_classes'] = "";
+					} else {
+						$s['select_control_classes']  = " js-wam-select--enable";
+						$s['settings_button_classes'] = " js-wam-button--hidden";
+					}
+
+					$s = array_merge( $s, $attrs );
+				}
+			}
+
+			return $settings_formated;
+		}
+
+		return $assets;
 	}
 
 	/**

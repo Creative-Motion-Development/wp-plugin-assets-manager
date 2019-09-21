@@ -4,15 +4,411 @@
  * @copyright (c) 13.11.2017, Webcraftic
  * @version 1.0
  */
+// [{"type":"group","conditions":[{"param":"location-some-page","operator":"equals","type":"select","value":"base_web"}]}]
+// [{"type":"group","conditions":[{"param":"location-some-page","operator":"equals","type":"select","value":"base_web"}]}]
 
 (function($) {
 	'use strict';
 
-	$(function() {
+	class AssetsManager {
+		constructor() {
+			var tabHash = window.location.hash.replace('#', '');
 
-		//var $hidden = $("#winp_visibility_groups");
-		//var json_data = $.parseJSON($hidden.val());
-		function createConditionEditor(element) {
+			if( tabHash ) {
+				$('.js-wam-assets-type-tabs__button[data-type="' + tabHash + '"]').click();
+			}
+
+			this.initEvents();
+			this.updateStat();
+		}
+
+		initEvents() {
+			var self = this;
+
+			$('.js-wam-assets-type-tabs__button').click(function() {
+				self.switchCategoryTab($(this));
+				return false;
+			});
+
+			$('.js-wam-nav-plugins__tab-switch').click(function() {
+				self.switchPluginTab($(this));
+				return false;
+			});
+
+			$('.js-wam-top-panel__save-button').click(function() {
+				self.saveSettings();
+				return false;
+			});
+
+			$('.js-wam-select-plugin-load-mode').change(function() {
+				if( 'enable' === $(this).val() ) {
+					self.enablePlugin($(this));
+				} else if( 'disable_assets' === $(this).val() || 'disable_plugin' === $(this).val() ) {
+					self.disablePlugin($(this));
+				}
+
+				return false;
+			});
+
+			$('.js-wam-open-plugin-settings').click(function() {
+				if( $(this).hasClass('js-wam-button--opened') ) {
+					self.closePluginSettings($(this));
+					return false;
+				}
+
+				self.openPluginSettings($(this));
+
+				return false;
+			});
+
+			$('.js-wam-select-asset-load-mode').change(function() {
+				let selectElement = $(this);
+
+				if( 'enable' === selectElement.val() ) {
+					self.enableAsset(selectElement);
+					return false;
+				}
+				self.disableAsset(selectElement);
+				return false;
+			});
+
+			$('.js-wam-open-asset-settings').click(function() {
+				if( $(this).hasClass('js-wam-button--opened') ) {
+					self.closeAssetSettings($(this));
+					return false;
+				}
+
+				self.openAssetSettings($(this));
+				return false;
+			});
+		}
+
+		switchCategoryTab(element) {
+			window.location.hash = '#' + element.data('type');
+
+			$('.js-wam-assets-type-tabs__button').removeClass('wam-assets-type-tab__active');
+			element.addClass('wam-assets-type-tab__active');
+
+			$('.wam-assets-type-tab-content').removeClass('wam-assets-type-tab-content__active');
+			$('#wam-assets-type-tab-content__' + element.data('type')).addClass('wam-assets-type-tab-content__active');
+		}
+
+		switchPluginTab(element) {
+			$('.js-wam-nav-plugins__tab-switch').removeClass('wam-nav-plugins__tab--active');
+			element.addClass('wam-nav-plugins__tab--active');
+
+			$('.wam-nav-plugins__tab-content').removeClass('js-wam-nav-plugins__tab-content--active');
+			$(element.find('a').attr('href')).addClass('js-wam-nav-plugins__tab-content--active');
+
+			$('.wam-table__th-plugin-settings').text(element.find('.wam-plugin-name').text());
+
+		}
+
+		setSettingsButtonOpenState(buttonElement) {
+			buttonElement.removeClass('js-wam-button--opened');
+			buttonElement.addClass('js-wam-button__icon--cogs').removeClass('js-wam-button__icon--close');
+		}
+
+		setSettingsButtonCloseState(buttonElement) {
+			buttonElement.addClass('js-wam-button--opened');
+			buttonElement.removeClass('js-wam-button__icon--cogs').addClass('js-wam-button__icon--close');
+		}
+
+		disablePlugin(selectElement) {
+			let activeContainerElement = selectElement.closest('.js-wam-nav-plugins__tab-content--active'),
+				settingsButtonElement = selectElement.closest('.wam-plugin-settings__controls').find('.js-wam-open-plugin-settings');
+
+			/*if( currentContentTabElement.find('.js-wam-select-asset-load-mode option[value="disable"]:selected').length ) {
+				var passAction = confirm("If you want to change the plugin’s load mode, all your logical settings to disable the plugins assets will be reset. Do you really want to do this?");
+				if( !passAction ) {
+					return;
+				}
+			}*/
+
+			/*var notice = PNotify.notice({
+  title: 'Confirmation Needed',
+  text: 'Are you sure?',
+  icon: 'fas fa-question-circle',
+  hide: false,
+  stack: {
+    'dir1': 'down',
+    'modal': true,
+    'firstpos1': 25
+  },
+  modules: {
+    Confirm: {
+      confirm: true
+    },
+    Buttons: {
+      closer: false,
+      sticker: false
+    },
+    History: {
+      history: false
+    },
+  }
+});
+notice.on('pnotify.confirm', function() {
+  alert('Ok, cool.');
+});
+notice.on('pnotify.cancel', function() {
+  alert('Oh ok. Chicken, I see.');
+});*/
+
+			settingsButtonElement.removeClass('js-wam-button--hidden');
+
+			selectElement.removeClass('js-wam-select--enable')
+				.addClass('js-wam-select--disable');
+
+			// Disable assets table
+			let assetSettingsContainer = activeContainerElement.find('.wam-assets-table__asset-settings');
+			assetSettingsContainer.addClass('js-wam-assets-table__tr--disabled-section');
+			//assetSettingsContainer.hide();
+
+			let assetConditionsContainer = activeContainerElement.find('.wam-assets-table__asset-settings-conditions');
+			assetConditionsContainer.hide();
+			assetConditionsContainer.find(".wam-cleditor").remove();
+			assetConditionsContainer.find(".wam-conditions-builder__settings").val('');
+
+			activeContainerElement.find('.js-wam-select-asset-load-mode').val('disable')
+				.removeClass('js-wam-select--enable')
+				.addClass('js-wam-select--disable')
+				.prop('disabled', true);
+
+			activeContainerElement.find('.js-wam-open-asset-settings')
+				.removeClass('js-wam-button--opened')
+				.addClass('js-wam-button--hidden');
+
+			this.openPluginSettings(settingsButtonElement);
+			this.updateStat();
+		}
+
+		enablePlugin(selectElement) {
+			let activeContainerElement = selectElement.closest('.js-wam-nav-plugins__tab-content--active'),
+				settingsButtonElement = selectElement.closest('.wam-plugin-settings__controls').find('.js-wam-open-plugin-settings');
+
+			settingsButtonElement.addClass('js-wam-button--hidden');
+
+			selectElement.removeClass('js-wam-select--disable')
+				.addClass('js-wam-select--enable');
+
+			// Enable assets table
+			activeContainerElement.find('.wam-assets-table__asset-settings').removeClass('js-wam-assets-table__tr--disabled-section');
+			activeContainerElement.find('.js-wam-select-asset-load-mode').val('enable')
+				.addClass('js-wam-select--enable')
+				.removeClass('js-wam-select--disable')
+				.prop('disabled', false);
+
+			activeContainerElement.find('.js-wam-open-asset-settings')
+				.addClass('js-wam-button--hidden');
+
+			this.closePluginSettings(settingsButtonElement, true);
+			this.updateStat();
+
+		}
+
+		openPluginSettings(buttonElement) {
+			let containerElement = buttonElement.closest('.wam-plugin-settings'),
+				editorContainerElement = containerElement.find('.js-wam-plugin-settings__conditions');
+
+			this.setSettingsButtonCloseState(buttonElement);
+			editorContainerElement.show();
+
+			if( !editorContainerElement.find('.wam-cleditor').length ) {
+				console.log('createConditionsEditor');
+				this.createConditionsEditor(editorContainerElement);
+			}
+		}
+
+		closePluginSettings(buttonElement, destroyEditor = false) {
+			let containerElement = buttonElement.closest('.wam-plugin-settings'),
+				editorContainerElement = containerElement.find('.js-wam-plugin-settings__conditions');
+
+			this.setSettingsButtonOpenState(buttonElement);
+			editorContainerElement.hide();
+
+			if( destroyEditor ) {
+				this.destroyCoditionEditor(editorContainerElement);
+			}
+		}
+
+		disableAsset(selectElement) {
+			let containerElement = selectElement.closest('tr'),
+				settingsButtonElement = containerElement.find('.js-wam-open-asset-settings');
+
+			settingsButtonElement.removeClass('js-wam-button--hidden');
+			containerElement.addClass('js-wam-assets-table__tr--disabled-section');
+			selectElement.removeClass('js-wam-select--enable').addClass('js-wam-select--disable');
+
+			this.openAssetSettings(settingsButtonElement);
+			this.updateStat();
+		}
+
+		enableAsset(selectElement) {
+			let containerElement = selectElement.closest('tr'),
+				settingsButtonElement = containerElement.find('.js-wam-open-asset-settings');
+
+			settingsButtonElement.addClass('js-wam-button--hidden');
+			selectElement.removeClass('js-wam-select--disable').addClass('js-wam-select--enable');
+			containerElement.removeClass('js-wam-assets-table__tr--disabled-section');
+
+			this.closeAssetSettings(settingsButtonElement, true);
+			this.updateStat();
+		}
+
+		/**
+		 * Toggle Asset Settings
+		 * @param buttonElement Object settings button
+		 * @returns {boolean}
+		 */
+		openAssetSettings(buttonElement) {
+			var placeID = buttonElement.closest('tr').attr('id'),
+				place = $('#' + placeID + '-conditions');
+
+			if( buttonElement.hasClass('js-wam-button--opened') ) {
+				return false;
+			}
+
+			this.setSettingsButtonCloseState(buttonElement);
+			place.show();
+
+			if( !place.find('.wam-cleditor').length ) {
+				this.createConditionsEditor(place.find(".wam-asset-conditions-builder"));
+			}
+
+			return true;
+		}
+
+		closeAssetSettings(buttonElement, destroyEditor = false) {
+			var placeID = buttonElement.closest('tr').attr('id'),
+				place = $('#' + placeID + '-conditions');
+
+			if( !buttonElement.hasClass('js-wam-button--opened') ) {
+				return false;
+			}
+
+			this.setSettingsButtonOpenState(buttonElement);
+			place.hide();
+
+			if( destroyEditor ) {
+				this.destroyCoditionEditor(place.find(".wam-asset-conditions-builder"));
+			}
+
+			return true;
+		}
+
+		saveSettings() {
+			var settings = {};
+			$('.wam-nav-plugins__tab-content').each(function() {
+				let pluginGroupVisabilityConditionsElement = $(this).find('.js-wam-plugin-settings__conditions').find('.wam-conditions-builder__settings'),
+					pluginName = pluginGroupVisabilityConditionsElement.data('plugin-name'),
+					pluginGroupVisabilityConditionsVal = pluginGroupVisabilityConditionsElement.val(),
+					pluginGroupLoadMode = $('.js-wam-select-plugin-load-mode', $(this)).val();
+
+				if( pluginName ) {
+					if( !settings[pluginName] ) {
+						settings[pluginName] = {};
+					}
+					settings[pluginName]['load_mode'] = pluginGroupLoadMode;
+					settings[pluginName]['visability'] = pluginGroupVisabilityConditionsVal;
+				}
+
+				$('.wam-assets-table__asset-settings-conditions', $(this)).each(function() {
+					let resourceVisabilityConditionsElement = $(this).find('.wam-conditions-builder__settings'),
+						resourceVisabilityConditionsVal = resourceVisabilityConditionsElement.val(),
+						resourceType = resourceVisabilityConditionsElement.data('resource-type'),
+						resourceHandle = resourceVisabilityConditionsElement.data('resource-handle');
+
+					if( settings[pluginName] ) {
+						if( !settings[pluginName][resourceType] ) {
+							settings[pluginName][resourceType] = {};
+						}
+
+						if( 'enable' !== pluginGroupLoadMode ) {
+							resourceVisabilityConditionsVal = "";
+						}
+
+						settings[pluginName][resourceType][resourceHandle] = {
+							'visability': resourceVisabilityConditionsVal
+						};
+					}
+				});
+
+				if( undefined === typeof window.wam_localize_data || !wam_localize_data.ajaxurl ) {
+					throw new Error("Undefined wam_localize_data, please check the var in source!");
+				}
+				console.log(settings);
+			});
+
+			let stackBottomRight = {
+				'dir1': 'up',
+				'dir2': 'left',
+				'firstpos1': 25,
+				'firstpos2': 25
+			};
+
+			PNotify.closeAll();
+			PNotify.alert({
+				title: 'Saving settings!',
+				text: 'Please wait, saving settings ...',
+				stack: stackBottomRight,
+				hide: false
+			});
+
+			$.ajax(wam_localize_data.ajaxurl, {
+				type: 'post',
+				dataType: 'json',
+				data: {
+					action: 'wam-save-settings',
+					settings: settings,
+					_wpnonce: $('#wam-save-button').data('nonce')
+				},
+				success: function(response) {
+					PNotify.closeAll();
+
+					if( !response || !response.success ) {
+						if( response.data ) {
+							console.log(response.data.error);
+							PNotify.alert({
+								title: response.data.error_message_title,
+								text: response.data.error_message_content,
+								stack: stackBottomRight,
+								type: 'success',
+								//hide: false
+							});
+						} else {
+							console.log(response);
+						}
+						return;
+					}
+					if( response.data ) {
+						PNotify.alert({
+							title: response.data.save_massage_title,
+							text: response.data.save_message_content,
+							stack: stackBottomRight,
+							type: 'success',
+							//hide: false
+						});
+					}
+				},
+				error: function(xhr, ajaxOptions, thrownError) {
+					PNotify.alert({
+						title: 'Unknown error',
+						text: thrownError,
+						stack: {
+							'dir1': 'up',
+							'dir2': 'left',
+							'firstpos1': 25,
+							'firstpos2': 25
+						},
+						type: 'success',
+						//hide: false
+					});
+				}
+			});
+		}
+
+		createConditionsEditor(element) {
 			element.wamConditionsEditor({
 				// where to get an editor template
 				templateSelector: '#wam-conditions-builder-template',
@@ -36,250 +432,50 @@
 			});
 		}
 
-		/**
-		 * Destroy editor and clean options field
-		 * @param {object} element
-		 */
-		function destroyCoditionEditor(element) {
+		destroyCoditionEditor(element) {
 			element.find('.wam-cleditor').remove();
 			element.find('.wam-conditions-builder__settings').val('');
 		}
 
-		$('.js-wam-select-plugin-load-mode').change(function() {
-			let isDisabled = false,
-				currentContentTabElement = $(this).closest('.wam-nav-plugins__tab-content--active'),
-				editorElement = currentContentTabElement.find('.js-wam-plugin-load-conditions-builder');
+		updateStat() {
+			let total_requests = 0,
+				total_size = 0,
+				optimized_size = 0,
+				disabled_js = 0,
+				disabled_css = 0;
 
-			if( 'enable' === $(this).val() ) {
-				isDisabled = false;
+			$('.js-wam-asset').each(function() {
+				let size = $(this).data('size');
 
-				$(this).removeClass('wam-select--disable').addClass('wam-select--enable');
+				if( !$.isNumeric(size) ) {
+					return;
+				}
 
-				// Enable assets table
-				currentContentTabElement.find('.wam-assets-table__plugin-settings').removeClass('wam-select--disabled_section');
-				currentContentTabElement.find('.js-wam-switch').val('enable')
-					.addClass('wam-select--enable')
-					.removeClass('wam-select--disable')
-					.prop('disabled', false);
+				total_requests++;
+				total_size = total_size + size;
 
-				currentContentTabElement.find('.js-wam-open-asset-settings').prop('disabled', false);
-
-				destroyCoditionEditor(editorElement);
-
-			} else if( 'disable_assets' === $(this).val() || 'disable_plugin' === $(this).val() ) {
-
-				if( !isDisabled && currentContentTabElement.find('.js-wam-switch option[value="disable"]:selected').length ) {
-					var passAction = confirm("If you want to change the plugin’s load mode, all your logical settings to disable the plugins assets will be reset. Do you really want to do this?");
-					if( !passAction ) {
-						return;
+				if( !$(this).hasClass('js-wam-assets-table__tr--disabled-section') ) {
+					optimized_size = optimized_size + size;
+				} else {
+					if( $(this).hasClass('js-wam-js-asset') ) {
+						disabled_js++;
+					}
+					if( $(this).hasClass('js-wam-css-asset') ) {
+						disabled_css++;
 					}
 				}
-
-				// Баг с DIsabled и бага при переключении режимов, редактор условий перезаписывается.
-
-				isDisabled = true;
-
-				$(this).removeClass('wam-select--enable')
-					.addClass('wam-select--disable');
-
-				currentContentTabElement.find(".wam-cleditor").remove();
-				currentContentTabElement.find(".wam-conditions-builder__settings")
-					.val('');
-
-				// Disable assets table
-				currentContentTabElement.find('.wam-assets-table__plugin-settings')
-					.addClass('wam-select--disabled_section');
-				currentContentTabElement.find('.wam-assets-table__asset-settings')
-					.hide();
-
-				currentContentTabElement.find('.js-wam-switch').val('disable')
-					.removeClass('wam-select--enable')
-					.addClass('wam-select--disable')
-					.prop('disabled', true);
-
-				currentContentTabElement.find('.js-wam-open-asset-settings')
-					.removeClass('.wam-openned')
-					.prop('disabled', true);
-
-				if( !editorElement.find('.wam-cleditor').length ) {
-					createConditionEditor(editorElement);
-				}
-			}
-		});
-
-		$('.js-wam-switch').change(function() {
-			var settingsButton = $(this).closest('tr').find('.js-wam-open-asset-settings'),
-				placeID = $(this).closest('tr').attr('id'),
-				place = $('#' + placeID + '-conditions');
-
-			if( 'enable' === $(this).val() ) {
-				settingsButton.removeClass('wam-openned');
-				place.hide();
-				place.find('.wam-cleditor').remove();
-				$(this).removeClass('wam-select--disable').addClass('wam-select--enable');
-				$(this).closest('tr').removeClass('wam-select--disabled_section');
-
-				destroyCoditionEditor(place.find(".wam-asset-conditions-builder"));
-			} else if( 'disable' === $(this).val() ) {
-				$(this).closest('tr').addClass('wam-select--disabled_section');
-				$(this).removeClass('wam-select--enable').addClass('wam-select--disable');
-
-				$(this).next().addClass('wam-openned');
-				place.show();
-
-				if( !place.find('.wam-cleditor').length ) {
-					createConditionEditor(place.find(".wam-asset-conditions-builder"));
-				}
-			}
-
-			return false;
-		})
-
-		$('.js-wam-open-asset-settings').click(function() {
-			var placeID = $(this).closest('tr').attr('id'),
-				place = $('#' + placeID + '-conditions');
-
-			if( $(this).hasClass('wam-openned') ) {
-				$(this).removeClass('wam-openned');
-				place.hide();
-				return false;
-			}
-
-			$(this).addClass('wam-openned');
-			place.show();
-
-			if( !place.find('.wam-cleditor').length ) {
-				createConditionEditor(place.find(".wam-asset-conditions-builder"));
-			}
-
-			return false;
-		});
-
-		$('.wam-nav-plugins__tab').click(function() {
-			$('.wam-nav-plugins__tab').removeClass('wam-nav-plugins__tab--active');
-			$(this).addClass('wam-nav-plugins__tab--active');
-
-			$('.wam-nav-plugins__tab-content').removeClass('wam-nav-plugins__tab-content--active');
-			$($(this).find('a').attr('href')).addClass('wam-nav-plugins__tab-content--active');
-
-			$('.wam-table__th-plugin-settings').text($(this).find('.wam-plugin-name').text());
-
-			return false;
-		});
-
-		/*$('.wbcr-gnz-disable').on('change', function(ev) {
-			var class_name = 'wam-table__loaded-super-no';
-			var handle = $(this).data('handle');
-			if( handle != undefined ) {
-				class_name = 'wam-table__loaded-no';
-			}
-
-			if( $(this).prop('checked') == true ) {
-				$(this).closest('label').find('input[type="hidden"]').val('disable');
-				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').hide();
-				$(this).closest('tr').find('.wbcr-assets-manager-enable').show();
-				$(this).closest('tr').find('.wbcr-state').removeClass('wam-table__loaded-yes');
-				$(this).closest('tr').find('.wbcr-state').addClass(class_name).trigger('cssClassChanged');
-
-				if( typeof wbcrChangeHandleState == 'function' ) {
-					wbcrChangeHandleState(this, 1);
-				}
-			} else {
-				$(this).closest('label').find('input[type="hidden"]').val('');
-				$(this).closest('tr').find('.wbcr-assets-manager-enable').hide();
-				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').show();
-				$(this).closest('tr').find('.wbcr-state').removeClass(class_name);
-				$(this).closest('tr').find('.wbcr-state').addClass('wam-table__loaded-yes').trigger('cssClassChanged');
-
-				if( typeof wbcrChangeHandleState == 'function' ) {
-					wbcrChangeHandleState(this, 0);
-				}
-			}
-		});*/
-
-		/*$('.wbcr-gnz-action-select').on('change', function(ev) {
-			var selectElement = $(this).children(':selected');
-			$(this).closest('.wbcr-assets-manager-enable').find('.wbcr-assets-manager').hide();
-
-			if( selectElement.val() != 'current' ) {
-				$(this).closest('.wbcr-assets-manager-enable').find('.wbcr-assets-manager.' + selectElement.val()).show();
-			}
-		});
-
-		$('.wbcr-gnz-sided-disable').on('change', function(ev) {
-			$(this).closest('label').find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
-
-			var handle = $(this).data('handle');
-			if( handle != undefined ) {
-				$('.wbcr-gnz-sided-' + handle)
-					.prop('checked', $(this).prop('checked'))
-					.closest('label')
-					.find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
-			}
-		});
-
-		$('.wbcr-reset-button').on('click', function() {
-			$('.wbcr-gnz-disable').each(function() {
-				$(this).prop('checked', false).trigger('change');
-				$(this).closest('input').val('');
 			});
-			$('.wbcr-gnz-sided-disable').each(function() {
-				$(this).prop('checked', false).trigger('change');
-				$(this).closest('input').val(1);
-			});
-		});
 
-		$('.wbcr-state').bind('cssClassChanged', function() {
-			var el = $(this).parent('td').parent('tr').find('.wbcr-info-data');
-			if( $(this).hasClass('wam-table__loaded-no') || $(this).hasClass('wam-table__loaded-super-no') ) {
-				if( el.length > 0 ) {
-					el.data('off', 1);
-				}
-			} else {
-				if( el.length > 0 ) {
-					el.data('off', 0);
-				}
-			}
-
-			if( typeof wbcrCalculateInformation == 'function' ) {
-				wbcrCalculateInformation();
-			}
-		});
-
-		if( typeof wbcrCalculateInformation == 'function' ) {
-			wbcrCalculateInformation();
-		}*/
-
-		$('.wam-assets-type-tabs__button').click(function() {
-			window.location.hash = '#' + $(this).data('type');
-
-			$('.wam-assets-type-tabs__button').removeClass('wam-assets-type-tab__active');
-			$(this).addClass('wam-assets-type-tab__active');
-
-			$('.wam-assets-type-tab-content').removeClass('wam-assets-type-tab-content__active');
-			$('#wam-assets-type-tab-content__' + $(this).data('type')).addClass('wam-assets-type-tab-content__active');
-
-			return false;
-		});
-
-		var tabHash = window.location.hash.replace('#', '');
-		console.log(tabHash);
-		if( tabHash ) {
-			$('.wam-assets-type-tabs__button[data-type="' + tabHash + '"]').click();
+			$('.wbcr-gnz-panel__data-item.__info-query').find('.wbcr-gnz-panel__item_value').html(total_requests);
+			$('.wbcr-gnz-panel__data-item.__info-all-weight').find('.wbcr-gnz-panel__color-1').html(Math.round(total_size) + ' KB');
+			$('.wbcr-gnz-panel__data-item.__info-opt-weight').find('.wbcr-gnz-panel__color-2').html(Math.round(optimized_size) + ' KB');
+			$('.wbcr-gnz-panel__data-item.__info-off-js').find('.wbcr-gnz-panel__item_value').html(disabled_js);
+			$('.wbcr-gnz-panel__data-item.__info-off-css').find('.wbcr-gnz-panel__item_value').html(disabled_css);
 		}
+	}
 
-		/*if ($('#wpadminbar').length > 0) {
-		 var h = $('#wpadminbar').height();
-		 if (h > 0) {
-		 $('#wbcr-gnz header.wbcr-gnz-panel').css('top', h + 'px');
-		 var top = $('#wbcr-gnz ul.wbcr-gnz-tabs').css('top');
-		 $('#wbcr-gnz ul.wbcr-gnz-tabs').css('top', top.replace('px', '') * 1 + h + 'px');
-		 }
-		 }*/
-
-		$('.wbcr-close-button').on('click', function() {
-			document.location.href = $(this).data('href');
-		});
+	$(function() {
+		new AssetsManager();
 	});
 
 })(jQuery);

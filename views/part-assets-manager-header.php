@@ -31,17 +31,12 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
                 <b class="wbcr-gnz-panel__item_value">-- </b>
             </li>
         </ul>
-        <div class="wbcr-gnz-panel__premium">
-            <div class="wam-tooltip wam-tooltip--bottom" data-tooltip="<?php _e( 'This is the general statistics to see the optimization result. Available in the paid version only.', 'gonzales' ) ?>.">
-                PRO
-            </div>
-        </div>
     </div>
     <div class="wbcr-gnz-panel__right">
         <button class="wbcr-gnz-panel__reset wbcr-reset-button" type="button">
 			<?php _e( 'Reset', 'gonzales' ) ?>
         </button>
-        <input class="wbcr-gnz-panel__save" type="submit" value="<?php _e( 'Save', 'gonzales' ) ?>">
+        <button id="wam-save-button" class="wbcr-gnz-panel__save js-wam-top-panel__save-button" data-nonce="<?php echo wp_create_nonce( 'wam_save_settigns' ); ?>"><?php _e( 'Save', 'gonzales' ) ?></button>
         <label class="wbcr-gnz-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="<?php _e( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) ?>.">
             <input class="wbcr-gnz-panel__checkbox-input visually-hidden" type="checkbox" disabled="disabled" checked/><span class="wbcr-gnz-panel__checkbox-text-premium"><?php _e( 'Safe mode <b>PRO</b>', 'gonzales' ) ?></span>
         </label>
