@@ -13,40 +13,64 @@ if ( empty( $data['assets'] ) ) {
 	return;
 }
 ?>
-<table class="wam-table" style="margin:0;">
+<table class="wam-table">
     <tr>
-        <th style="width: 200px">Actions</th>
-        <th style="width: 100px">Type</th>
-        <th>Handle/Source</th>
-        <th>Version</th>
-        <th>Size</th>
+        <th class="wam-table__th-actions"><?php _e( 'Actions', 'gonzales' ) ?></th>
+        <th class="wam-table__th-type"><?php _e( 'Type', 'gonzales' ) ?></th>
+        <th class="wam-table__th-handle"><?php _e( 'Handle/Source', 'gonzales' ) ?></th>
+        <th class="wam-table__th-version"><?php _e( 'Version', 'gonzales' ) ?></th>
+        <th class="wam-table__th-size"><?php _e( 'Size', 'gonzales' ) ?></th>
     </tr>
 	<?php if ( ! empty( $data['assets'] ) ): ?>
-		<?php foreach ( (array) $data['assets'] as $type => $assets ): ?>
-			<?php foreach ( (array) $assets as $name => $item ): ?>
-                <tr>
-                    <td>
-                        <select class="wam-select" name="" id="" style="display:inline-block;">
-                            <option value="enable">Загружать</option>
-                            <option value="disable">Не загружать</option>
+		<?php foreach ( (array) $data['assets'] as $resource_type => $assets ): ?>
+			<?php foreach ( (array) $assets as $resource_handle => $item ): ?>
+                <tr data-size="<?php echo esc_attr( $item['size'] ); ?>" class="js-wam-asset js-wam-<?php echo esc_attr( $resource_type ); ?>-asset wam-table__asset-settings<?php echo $item['row_classes']; ?>" id="wam-table__loaded-resourse-<?php echo md5( $resource_handle . $resource_type . $item['url_full'] ); ?>">
+                    <td class="wam-table__td-actions">
+                        <select class="wam-select<?php echo $item['select_control_classes']; ?> js-wam-select-asset-load-mode">
+                            <option value="enable"<?php selected( 'enable', $item['load_mode'] ) ?>>
+								<?php _e( 'Enable', 'gonzales' ) ?>
+                            </option>
+                            <option value="disable"<?php selected( 'disable', $item['load_mode'] ) ?>>
+								<?php _e( 'Disable', 'gonzales' ) ?>
+                            </option>
                         </select>
-                        <a href="#" class="wam-open-conditions-button">
-                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABtElEQVQ4jZWTMWsUURSFv7MMgwRZRMRCxEKIbCWxCTY22jmTIcVikT8gksoqhUVIYSFbRAjYioVNMAiTmSZBbQT/QIotUkXQYBFCCClkyLF4M8Mmo6K3ejzu/d49594nY85HmmR9mxnJF0Djosz3Okl19P5wPwDegjaBhQlwJ19NB2mS3bJ5LvkD6BRYs4nB6xIj0BKwB4yKMt9vAFFzsL0iaWhrHkAikgAYAvO2Y0nYVMBSR4KkbaAKhW7BoB4oDjD/kPzpjAdpkvXTJJsN3TSG6iNwD5gGvwQfgwCOgTh5mF1vATYzwAawBmpeXi7K/HNR5ru2RjY7tgHdBF6DH6dJFgH0wqi4GgxrozVJ4hA4UW2IzSVJVxr5EWgMLEu+A3pU1y2mSfYCOAKGkgb1/YGkdfB7UHV+jLeBL8BU0MwO6ISwE9eCPxoDD4oy/9aZAvgpeKpu/KKtuzb3QzGAsBkwMcIzAFv79QIdAruSqWUfAGPbSPwEvk8C2nlLrNpEQYYrSW9s9yW9A1aAZ8BX4NUkQL//THM3QE+Ay8BGUeZbnaS/AQIki+vFqopy8/S/Af8avwCRfKU+1FZmLAAAAABJRU5ErkJggg==" alt="">
-                        </a>
+                        <button class="wam-button wam-button--default wam-button__icon js-wam-button__icon--cogs js-wam-open-asset-settings<?php echo esc_attr( $item['settings_button_classes'] ); ?>"></button>
                     </td>
-                    <td>
-                        <span class="wam-asset-type wam-asset-type--<?php echo esc_attr( $type ); ?>">
-                            <?php echo $type; ?>
+                    <td class="wam-table__td-type">
+                        <span class="wam-asset-type wam-asset-type--<?php echo esc_attr( $resource_type ); ?>">
+                            <?php echo esc_attr( $resource_type ); ?>
                         </span>
                     </td>
-                    <td>
-						<?php echo esc_html( $name ); ?><br>
+                    <td class="wam-table__td-handle">
+						<?php echo esc_html( $resource_handle ); ?><br>
                         <a href="<?php echo esc_url( $item['url_full'] ); ?>">
-							<?php echo $item['url_short']; ?>
+							<?php echo esc_html( $item['url_short'] ); ?>
                         </a>
                     </td>
-                    <td><?php echo $item['ver']; ?></td>
-                    <td><?php echo $item['size']; ?> KB</td>
+                    <td class="wam-assets__table-td-version"><?php echo esc_html( $item['ver'] ); ?></td>
+                    <td class="wam-assets__table-td-size"><?php echo esc_html( $item['size'] ); ?> KB</td>
+                </tr>
+                <tr id="wam-table__loaded-resourse-<?php echo md5( $resource_handle . $resource_type . $item['url_full'] ); ?>-conditions" class="wam-table__asset-settings-conditions">
+                    <td colspan="5">
+                        <p>
+                            <input type="checkbox" class="wam-checkbox wam-table__checkbox">
+							<?php _e( 'Don\'t optimize file', 'gonzales' ) ?>
+                            <i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip=""></i>
+                        </p>
+                        <p>
+                            <input type="checkbox" class="wam-checkbox wam-table__checkbox">
+							<?php _e( 'Don\'t remove query string (version)', 'gonzales' ) ?>
+                            <i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip=""></i>
+                        </p>
+                        <p>
+							<?php _e( '<strong> You must set rules to disable the resource.</strong>
+                            For example, if you select Page -> Equals -> All posts, then the script or style will not
+                            loaded on all pages of type post.', 'gonzales' ) ?>
+                        </p>
+                        <div class="wam-asset-conditions-builder">
+                            <input type="hidden" data-group-type="<?php echo esc_attr( $data['type'] ) ?>" data-resource-type="<?php echo esc_attr( $resource_type ) ?>" data-resource-handle="<?php echo esc_attr( $resource_handle ) ?>" class="wam-conditions-builder__settings" value="<?php echo esc_attr( $item['visability'] ) ?>">
+                        </div>
+                    </td>
                 </tr>
 			<?php endforeach; ?>
 		<?php endforeach; ?>

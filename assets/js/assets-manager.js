@@ -298,7 +298,12 @@ notice.on('pnotify.cancel', function() {
 		}
 
 		saveSettings() {
-			var settings = {};
+			var settings = {
+				plugins: {},
+				theme: {},
+				misc: {}
+			};
+
 			$('.wam-nav-plugins__tab-content').each(function() {
 				let pluginGroupVisabilityConditionsElement = $(this).find('.js-wam-plugin-settings__conditions').find('.wam-conditions-builder__settings'),
 					pluginName = pluginGroupVisabilityConditionsElement.data('plugin-name'),
@@ -306,30 +311,30 @@ notice.on('pnotify.cancel', function() {
 					pluginGroupLoadMode = $('.js-wam-select-plugin-load-mode', $(this)).val();
 
 				if( pluginName ) {
-					if( !settings[pluginName] ) {
-						settings[pluginName] = {};
+					if( !settings['plugins'][pluginName] ) {
+						settings['plugins'][pluginName] = {};
 					}
-					settings[pluginName]['load_mode'] = pluginGroupLoadMode;
-					settings[pluginName]['visability'] = pluginGroupVisabilityConditionsVal;
+					settings['plugins'][pluginName]['load_mode'] = pluginGroupLoadMode;
+					settings['plugins'][pluginName]['visability'] = pluginGroupVisabilityConditionsVal;
 				}
 
-				$('.wam-assets-table__asset-settings-conditions', $(this)).each(function() {
+				$('.wam-table__asset-settings-conditions', $(this)).each(function() {
 					let resourceVisabilityConditionsElement = $(this).find('.wam-conditions-builder__settings'),
 						resourceVisabilityConditionsVal = resourceVisabilityConditionsElement.val(),
 						resourceType = resourceVisabilityConditionsElement.data('resource-type'),
 						resourceHandle = resourceVisabilityConditionsElement.data('resource-handle');
 
-					if( settings[pluginName] ) {
-						if( !settings[pluginName][resourceType] ) {
-							settings[pluginName][resourceType] = {};
+					if( settings['plugins'][pluginName] ) {
+						if( !settings['plugins'][pluginName][resourceType] ) {
+							settings['plugins'][pluginName][resourceType] = {};
 						}
 
 						if( 'enable' !== pluginGroupLoadMode ) {
 							resourceVisabilityConditionsVal = "";
 						}
 
-						settings[pluginName][resourceType][resourceHandle] = {
-							'visability': resourceVisabilityConditionsVal
+						settings['plugins'][pluginName][resourceType][resourceHandle] = {
+							visability: resourceVisabilityConditionsVal
 						};
 					}
 				});
@@ -337,8 +342,24 @@ notice.on('pnotify.cancel', function() {
 				if( undefined === typeof window.wam_localize_data || !wam_localize_data.ajaxurl ) {
 					throw new Error("Undefined wam_localize_data, please check the var in source!");
 				}
-				console.log(settings);
 			});
+
+			$('.wam-conditions-builder__settings', '#wam-assets-type-tab-content__theme,#wam-assets-type-tab-content__misc').each(function() {
+				let groupType = $(this).data('group-type'),
+					recourceType = $(this).data("resource-type"),
+					resourceHandle = $(this).data("resource-handle");
+
+				if( !settings[groupType][recourceType] ) {
+					settings[groupType][recourceType] = {};
+				}
+
+				settings[groupType][recourceType][resourceHandle] = {
+					visability: $(this).val()
+				}
+
+			});
+
+			console.log(settings);
 
 			let stackBottomRight = {
 				'dir1': 'up',
@@ -368,12 +389,12 @@ notice.on('pnotify.cancel', function() {
 
 					if( !response || !response.success ) {
 						if( response.data ) {
-							console.log(response.data.error);
+							console.log(response.data.error_message_content);
 							PNotify.alert({
 								title: response.data.error_message_title,
 								text: response.data.error_message_content,
 								stack: stackBottomRight,
-								type: 'success',
+								type: 'error',
 								//hide: false
 							});
 						} else {
@@ -401,7 +422,7 @@ notice.on('pnotify.cancel', function() {
 							'firstpos1': 25,
 							'firstpos2': 25
 						},
-						type: 'success',
+						type: 'error',
 						//hide: false
 					});
 				}

@@ -15,11 +15,13 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 		<?php //$this->print_template( 'part-assets-manager-info-bar' ); ?>
         <div id="wam-assets-type-tab-content__theme" class="wam-assets-type-tab-content">
 			<?php $this->print_template( 'tab-content-assets', [
+				'type'   => 'theme',
 				'assets' => $data['theme_assets']
 			] ); ?>
         </div>
         <div id="wam-assets-type-tab-content__misc" class="wam-assets-type-tab-content">
 			<?php $this->print_template( 'tab-content-assets', [
+				'type'   => 'misc',
 				'assets' => $data['misc_assets']
 			] ); ?>
         </div>

@@ -37,22 +37,32 @@ function wam_save_settings_action() {
 			$settings = [];
 		}
 
-		foreach ( (array) $raw_updated_settings as $plugin_name => $plugin_group ) {
-			if ( ! empty( $plugin_group['load_mode'] ) ) {
-				if ( 'enable' == $plugin_group['load_mode'] ) {
-					$plugin_group['visability'] = "";
-				} else {
-					foreach ( [ 'js', 'css' ] as $assets_type ) {
-						if ( ! empty( $plugin_group[ $assets_type ] ) ) {
-							foreach ( $plugin_group[ $assets_type ] as $resource_handle => $resource_params ) {
-								$plugin_group[ $assets_type ][ $resource_handle ]['visability'] = "";
+		if ( ! empty( $raw_updated_settings['plugins'] ) ) {
+			foreach ( (array) $raw_updated_settings['plugins'] as $plugin_name => $plugin_group ) {
+				if ( ! empty( $plugin_group['load_mode'] ) ) {
+					if ( 'enable' == $plugin_group['load_mode'] ) {
+						$plugin_group['visability'] = "";
+					} else {
+						foreach ( [ 'js', 'css' ] as $assets_type ) {
+							if ( ! empty( $plugin_group[ $assets_type ] ) ) {
+								foreach ( $plugin_group[ $assets_type ] as $resource_handle => $resource_params ) {
+									$plugin_group[ $assets_type ][ $resource_handle ]['visability'] = "";
+								}
 							}
 						}
 					}
 				}
-			}
 
-			$settings['plugins'][ $plugin_name ] = $plugin_group;
+				$settings['plugins'][ $plugin_name ] = $plugin_group;
+			}
+		}
+
+		if ( ! empty( $raw_updated_settings['theme'] ) ) {
+			$settings['theme'] = $raw_updated_settings['theme'];
+		}
+
+		if ( ! empty( $raw_updated_settings['misc'] ) ) {
+			$settings['misc'] = $raw_updated_settings['misc'];
 		}
 
 		WGZ_Plugin::app()->updateOption( 'settings', $settings );

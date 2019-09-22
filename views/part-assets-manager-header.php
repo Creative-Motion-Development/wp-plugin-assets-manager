@@ -37,9 +37,15 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 			<?php _e( 'Reset', 'gonzales' ) ?>
         </button>
         <button id="wam-save-button" class="wbcr-gnz-panel__save js-wam-top-panel__save-button" data-nonce="<?php echo wp_create_nonce( 'wam_save_settigns' ); ?>"><?php _e( 'Save', 'gonzales' ) ?></button>
+
         <label class="wbcr-gnz-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="<?php _e( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) ?>.">
-            <input class="wbcr-gnz-panel__checkbox-input visually-hidden" type="checkbox" disabled="disabled" checked/><span class="wbcr-gnz-panel__checkbox-text-premium"><?php _e( 'Safe mode <b>PRO</b>', 'gonzales' ) ?></span>
+            <input class="wbcr-gnz-panel__checkbox-input visually-hidden" type="checkbox">
+            <span class="wbcr-gnz-panel__checkbox-text"><?php _e( 'Safe mode', 'gonzales' ) ?></span>
         </label>
+        <!--<label class="wbcr-gnz-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="<?php _e( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) ?>.">
+            <input class="wbcr-gnz-panel__checkbox-input visually-hidden" type="checkbox">
+            <span class="wbcr-gnz-panel__checkbox-text-premium"><?php _e( 'Safe mode <b>PRO</b>', 'gonzales' ) ?></span>
+        </label>-->
         <button class="wbcr-gnz-panel__close wbcr-close-button" type="button" aria-label="<?php _e( 'Close', 'gonzales' ) ?>" data-href="' . remove_query_arg( 'wbcr_assets_manager' ) ?>"></button>
     </div>
 </header>

@@ -1297,7 +1297,7 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		foreach ( (array) $this->collection as $resource_type => $resources ) {
 			if ( $type == $resource_type ) {
 				foreach ( $resources as $resource_name => $types ) {
-					$assets = $types;
+					$assets = $this->get_parsed_asset_settings( $types, $resource_type );
 				}
 			}
 		}
@@ -1327,7 +1327,7 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 				if ( 'plugins' == $resource_type && ! empty( $resource_name ) ) {
 					$plugins[ $resource_name ]['name']                    = $resource_name;
 					$plugins[ $resource_name ]['info']                    = $this->get_plugin_data( $resource_name );
-					$plugins[ $resource_name ]['assets']                  = $this->get_parsed_asset_settings( $types, $resource_name );
+					$plugins[ $resource_name ]['assets']                  = $this->get_parsed_asset_settings( $types, 'plugins', $resource_name );
 					$plugins[ $resource_name ]['load_mode']               = $this->get_parsed_plugin_settings( $resource_name, 'load_mode' );
 					$plugins[ $resource_name ]['visability']              = $this->get_parsed_plugin_settings( $resource_name, 'visability' );
 					$plugins[ $resource_name ]['select_control_classes']  = $this->get_parsed_plugin_settings( $resource_name, 'select_control_classes' );
@@ -1347,10 +1347,12 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 	 * всегда будет существовать используемый элемент массива из настроек
 	 * плагина.
 	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
 	 *
-	 * @param string $plugin_name
-	 * @param null   $setting_name
+	 * @param string $plugin_name    Имя плагина, для которого подготавливаются настройки
+	 * @param null   $setting_name   Имя настройки, заполняется, если нужно извлечь только
+	 *                               1 конкретную настройку
 	 *
 	 * @return array|mixed
 	 * @throws \Exception
@@ -1391,61 +1393,84 @@ class WGZ_ConfigAssetsManager extends Wbcr_FactoryClearfy000_Configurate {
 		return $settings_formated;
 	}
 
-	private function get_parsed_asset_settings( $assets, $plugin_name = null ) {
+	/**
+	 * Подготовка настроек ресурсов к выводу в шаблоне
+	 *
+	 * Устанавливаем ключи и значения по умолчанию или берем сохраненные
+	 * значения из базы данных. Тем самым мы гарантируем, что в шаблоне
+	 * всегда будет существовать используемый элемент массива из настроек
+	 * ресурсов.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 *
+	 * @param array  $assets        Массив с загружаемыми ресурсами, к которому будут
+	 *                              добавлены настройки по умолчанию и сохраненные настройки
+	 * @param string $plugin_name   Имя плагина, если нужно сфокусироваться на группе ресурсов,
+	 *                              которые относятся к определенному плагину
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	private function get_parsed_asset_settings( array $assets, $group_name, $plugin_name = null ) {
 		$plugin_group      = false;
 		$settings_formated = [];
 		$settings          = $this->plugin->getOption( 'settings', [] );
 
-		if ( is_array( $assets ) && ( isset( $assets['js'] ) || isset( $assets['css'] ) ) ) {
-			if ( ! isset( $assets['js'] ) ) {
-				$assets['js'] = [];
-			}
-			if ( ! isset( $assets['css'] ) ) {
-				$assets['css'] = [];
-			}
-
-			if ( ! empty( $plugin_name ) && ! empty( $settings['plugins'] ) && isset( $settings['plugins'][ $plugin_name ] ) ) {
-				$settings     = $settings['plugins'][ $plugin_name ];
-				$plugin_group = true;
-			}
-
-			foreach ( (array) $assets as $type => $resources ) {
-				$settings_formated[ $type ] = [];
-
-				foreach ( (array) $resources as $name => $attrs ) {
-					$s = &$settings_formated[ $type ][ $name ];
-
-					if ( isset( $settings[ $type ] ) && isset( $settings[ $type ][ $name ] ) && ! empty( $settings[ $type ][ $name ]['visability'] ) ) {
-						$s['load_mode']  = "disable";
-						$s['visability'] = stripslashes( $settings[ $type ][ $name ]['visability'] );
-					} else {
-						if ( $plugin_group ) {
-							$plugin_load_mode = ! empty( $settings['load_mode'] ) ? $settings['load_mode'] : 'enable';
-
-							$s['load_mode'] = "enable" === $plugin_load_mode ? 'enable' : 'disable';
-						} else {
-							$s['load_mode'] = "enable";
-						}
-						$s['visability'] = "";
-					}
-
-					if ( 'disable' === $s['load_mode'] ) {
-						$s['row_classes']             = " js-wam-assets-table__tr--disabled-section";
-						$s['select_control_classes']  = " js-wam-select--disable";
-						$s['settings_button_classes'] = "";
-					} else {
-						$s['select_control_classes']  = " js-wam-select--enable";
-						$s['settings_button_classes'] = " js-wam-button--hidden";
-					}
-
-					$s = array_merge( $s, $attrs );
-				}
-			}
-
-			return $settings_formated;
+		if ( ! isset( $assets['js'] ) ) {
+			$assets['js'] = [];
+		}
+		if ( ! isset( $assets['css'] ) ) {
+			$assets['css'] = [];
 		}
 
-		return $assets;
+		if ( ! empty( $settings[ $group_name ] ) ) {
+			if ( ! empty( $plugin_name ) ) {
+				$settings     = isset( $settings[ $group_name ][ $plugin_name ] ) ? $settings[ $group_name ][ $plugin_name ] : [];
+				$plugin_group = true;
+			} else if ( 'plugins' !== $group_name ) {
+				$settings = $settings[ $group_name ];
+			}
+		}
+
+		foreach ( (array) $assets as $type => $resources ) {
+			$settings_formated[ $type ] = [];
+
+			foreach ( (array) $resources as $name => $attrs ) {
+				$s = &$settings_formated[ $type ][ $name ];
+
+				if ( isset( $settings[ $type ] ) && isset( $settings[ $type ][ $name ] ) && ! empty( $settings[ $type ][ $name ]['visability'] ) ) {
+					$s['load_mode']  = "disable";
+					$s['visability'] = stripslashes( $settings[ $type ][ $name ]['visability'] );
+				} else {
+					if ( $plugin_group ) {
+						$plugin_load_mode = ! empty( $settings['load_mode'] ) ? $settings['load_mode'] : 'enable';
+
+						$s['load_mode'] = "enable" === $plugin_load_mode ? 'enable' : 'disable';
+					} else {
+						$s['load_mode'] = "enable";
+					}
+					$s['visability'] = "";
+				}
+
+				if ( 'disable' === $s['load_mode'] ) {
+					$s['row_classes']             = " js-wam-assets-table__tr--disabled-section";
+					$s['select_control_classes']  = " js-wam-select--disable";
+					$s['settings_button_classes'] = "";
+
+					if ( $plugin_load_mode && 'enable' !== $plugin_load_mode ) {
+						$s['settings_button_classes'] = " js-wam-button--hidden";
+					}
+				} else {
+					$s['select_control_classes']  = " js-wam-select--enable";
+					$s['settings_button_classes'] = " js-wam-button--hidden";
+				}
+
+				$s = array_merge( $s, $attrs );
+			}
+		}
+
+		return $settings_formated;
 	}
 
 	/**

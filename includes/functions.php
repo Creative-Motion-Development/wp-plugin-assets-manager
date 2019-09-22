@@ -41,15 +41,3 @@ function wbcr_gnz_remove_mu_plugin() {
 		@unlink( WPMU_PLUGIN_DIR . '/assets-manager.php' );
 	}
 }
-
-function wam_extract_plugin_settings($settings) {
-
-}
-
-function wam_extract_plugin_asset_settings() {
-
-}
-
-function wam_extract_asset_settings() {
-
-}
