@@ -95,6 +95,6 @@ class WGZ_Plugin extends Wbcr_Factory000_Plugin {
 		require_once( WGZ_PLUGIN_DIR . '/includes/classes/class-views.php' );
 		require_once WGZ_PLUGIN_DIR . '/includes/classes/class-configurate-assets.php';
 
-		new WGZ_ConfigAssetsManager( self::$app );
+		new WGZ_Assets_Manager_Public( self::$app );
 	}
 }

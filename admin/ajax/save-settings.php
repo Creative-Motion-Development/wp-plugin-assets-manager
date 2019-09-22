@@ -13,8 +13,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Ajax действие для сохранения настроек менеджера скриптов
+ *
  * @author Alexander Kovalev <alex.kovalevv@gmail.com>
- * @since  1.0
+ * @since  2.0.0
  */
 function wam_save_settings_action() {
 	check_ajax_referer( 'wam_save_settigns' );

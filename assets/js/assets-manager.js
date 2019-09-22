@@ -359,8 +359,6 @@ notice.on('pnotify.cancel', function() {
 
 			});
 
-			console.log(settings);
-
 			let stackBottomRight = {
 				'dir1': 'up',
 				'dir2': 'left',
@@ -487,11 +485,11 @@ notice.on('pnotify.cancel', function() {
 				}
 			});
 
-			$('.wbcr-gnz-panel__data-item.__info-query').find('.wbcr-gnz-panel__item_value').html(total_requests);
-			$('.wbcr-gnz-panel__data-item.__info-all-weight').find('.wbcr-gnz-panel__color-1').html(Math.round(total_size) + ' KB');
-			$('.wbcr-gnz-panel__data-item.__info-opt-weight').find('.wbcr-gnz-panel__color-2').html(Math.round(optimized_size) + ' KB');
-			$('.wbcr-gnz-panel__data-item.__info-off-js').find('.wbcr-gnz-panel__item_value').html(disabled_js);
-			$('.wbcr-gnz-panel__data-item.__info-off-css').find('.wbcr-gnz-panel__item_value').html(disabled_css);
+			$('.wam-float-panel__data-item.__info-request').find('.wam-float-panel__item_value').html(total_requests);
+			$('.wam-float-panel__data-item.__info-total-size').find('.wam-float-panel__item_value').html(Math.round(total_size) + ' KB');
+			$('.wam-float-panel__data-item.__info-reduced-total-size').find('.wam-float-panel__item_value').html(Math.round(optimized_size) + ' KB');
+			$('.wam-float-panel__data-item.__info-disabled-js').find('.wam-float-panel__item_value').html(disabled_js);
+			$('.wam-float-panel__data-item.__info-disabled-css').find('.wam-float-panel__item_value').html(disabled_css);
 		}
 	}
 
