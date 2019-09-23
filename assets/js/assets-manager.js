@@ -161,11 +161,11 @@ notice.on('pnotify.cancel', function() {
 				.addClass('js-wam-select--disable');
 
 			// Disable assets table
-			let assetSettingsContainer = activeContainerElement.find('.wam-assets-table__asset-settings');
-			assetSettingsContainer.addClass('js-wam-assets-table__tr--disabled-section');
+			let assetSettingsContainer = activeContainerElement.find('.wam-table__asset-settings');
+			assetSettingsContainer.addClass('js-wam-table__tr--disabled-section');
 			//assetSettingsContainer.hide();
 
-			let assetConditionsContainer = activeContainerElement.find('.wam-assets-table__asset-settings-conditions');
+			let assetConditionsContainer = activeContainerElement.find('.wam-table__asset-settings-conditions');
 			assetConditionsContainer.hide();
 			assetConditionsContainer.find(".wam-cleditor").remove();
 			assetConditionsContainer.find(".wam-conditions-builder__settings").val('');
@@ -193,7 +193,7 @@ notice.on('pnotify.cancel', function() {
 				.addClass('js-wam-select--enable');
 
 			// Enable assets table
-			activeContainerElement.find('.wam-assets-table__asset-settings').removeClass('js-wam-assets-table__tr--disabled-section');
+			activeContainerElement.find('.wam-table__asset-settings').removeClass('js-wam-table__tr--disabled-section');
 			activeContainerElement.find('.js-wam-select-asset-load-mode').val('enable')
 				.addClass('js-wam-select--enable')
 				.removeClass('js-wam-select--disable')
@@ -240,7 +240,7 @@ notice.on('pnotify.cancel', function() {
 				settingsButtonElement = containerElement.find('.js-wam-open-asset-settings');
 
 			settingsButtonElement.removeClass('js-wam-button--hidden');
-			containerElement.addClass('js-wam-assets-table__tr--disabled-section');
+			containerElement.addClass('js-wam-table__tr--disabled-section');
 			selectElement.removeClass('js-wam-select--enable').addClass('js-wam-select--disable');
 
 			this.openAssetSettings(settingsButtonElement);
@@ -253,7 +253,7 @@ notice.on('pnotify.cancel', function() {
 
 			settingsButtonElement.addClass('js-wam-button--hidden');
 			selectElement.removeClass('js-wam-select--disable').addClass('js-wam-select--enable');
-			containerElement.removeClass('js-wam-assets-table__tr--disabled-section');
+			containerElement.removeClass('js-wam-table__tr--disabled-section');
 
 			this.closeAssetSettings(settingsButtonElement, true);
 			this.updateStat();
@@ -476,7 +476,7 @@ notice.on('pnotify.cancel', function() {
 				total_requests++;
 				total_size = total_size + size;
 
-				if( !$(this).hasClass('js-wam-assets-table__tr--disabled-section') ) {
+				if( !$(this).hasClass('js-wam-table__tr--disabled-section') ) {
 					optimized_size = optimized_size + size;
 				} else {
 					if( $(this).hasClass('js-wam-js-asset') ) {

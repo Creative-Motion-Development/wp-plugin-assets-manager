@@ -494,8 +494,9 @@ class WGZ_Assets_Manager_Public {
 		}
 
 		$denied = [
-			'js'  => [ 'wam-assets-manager', 'wam-assets-conditions', 'admin-bar' ],
+			'js'  => [ 'wam-assets-manager', 'wam-assets-conditions', 'admin-bar', 'wam-pnotify' ],
 			'css' => [
+				'wam-pnotify',
 				'wbcr-clearfy-adminbar-styles',
 				'wam-assets-conditions',
 				'wam-assets-manager',
@@ -601,7 +602,7 @@ class WGZ_Assets_Manager_Public {
 				wp_enqueue_script( 'wam-jquery-migrate', "/wp-includes/js/jquery/jquery-migrate$suffix.js", [], '1.4.1' );
 			}
 
-			wp_enqueue_script( 'wbcr-pnotify', WGZ_PLUGIN_URL . '/assets/js/PNotify.js', [], $plugin_ver, true );
+			wp_enqueue_script( 'wam-pnotify', WGZ_PLUGIN_URL . '/assets/js/PNotify.js', [], $plugin_ver, true );
 			wp_enqueue_script( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js', [ $jquery_handle ], $plugin_ver, true );
 			wp_enqueue_script( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [
 				$jquery_handle,
@@ -782,7 +783,7 @@ class WGZ_Assets_Manager_Public {
 				}
 
 				if ( 'disable' === $s['load_mode'] ) {
-					$s['row_classes']             = " js-wam-assets-table__tr--disabled-section";
+					$s['row_classes']             = " js-wam-table__tr--disabled-section";
 					$s['select_control_classes']  = " js-wam-select--disable";
 					$s['settings_button_classes'] = "";
 
