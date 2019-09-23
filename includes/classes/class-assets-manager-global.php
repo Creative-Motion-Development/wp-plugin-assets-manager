@@ -330,15 +330,26 @@ class WGZ_Assets_Manager_Public {
 			return;
 		}
 
+		// Reset settings
+		if ( isset( $_GET['wam_reset_settings'] ) ) {
+			check_admin_referer( 'wam_reset_settings' );
+			$this->plugin->updateOption( 'settings', [] );
+			wp_redirect( untrailingslashit( $this->get_current_url() ) . '?wbcr_assets_manager' );
+			die();
+		}
+
+		$settings = $this->plugin->getOption( 'settings', [] );
+
 		$views = new WGZ_Views( WGZ_PLUGIN_DIR );
 		$views->print_template( 'assets-manager', [
 			'current_url'             => esc_url( $this->get_current_url() ),
+			'save_mode'               => isset( $settings['save_mode'] ) ? (bool) $settings['save_mode'] : false,
 			'collection'              => $this->collection,
 			'loaded_plugins'          => $this->get_loaded_plugins(),
 			'theme_assets'            => $this->get_collected_assets( 'theme' ),
 			'misc_assets'             => $this->get_collected_assets( 'misc' ),
 			'conditions_logic_params' => $this->get_conditions_login_params( true ),
-			'settings'                => $this->plugin->getOption( 'settings', [] )
+			'settings'                => $settings
 		] );
 	}
 
@@ -352,8 +363,44 @@ class WGZ_Assets_Manager_Public {
 	 * @return mixed
 	 */
 	function filter_load_assets( $src, $handle ) {
-		if ( isset( $_GET['wbcr_assets_manager'] ) ) {
+		$settings = $this->plugin->getOption( 'settings', [] );
+
+		if ( isset( $_GET['wbcr_assets_manager'] ) || empty( $settings ) || ( true === $settings['save_mode'] && ! $this->is_user_can() ) ) {
 			return $src;
+		}
+
+		require_once WGZ_PLUGIN_DIR . '/includes/classes/class-check-conditions.php';
+
+		$resource_type       = ( current_filter() == 'script_loader_src' ) ? 'js' : 'css';
+		$resource_visability = "";
+
+		if ( ! empty( $settings['plugins'] ) ) {
+			foreach ( (array) $settings['plugins'] as $plugin_name => $plugin ) {
+				if ( ! empty( $plugin[ $resource_type ] ) && isset( $plugin[ $resource_type ][ $handle ] ) ) {
+					if ( 'disable_assets' === $plugin['load_mode'] ) {
+						$resource_visability = $plugin['visability'];
+					} else if ( 'disable_plugin' === $plugin['load_mode'] ) {
+						return $src;
+					} else {
+						$resource_visability = $plugin[ $resource_type ][ $handle ]['visability'];
+					}
+					break;
+				}
+			}
+		}
+
+		foreach ( [ 'theme', 'misc' ] as $group_name ) {
+			if ( ! empty( $settings[ $group_name ] ) && ! empty( $settings[ $group_name ][ $resource_type ] ) && isset( $settings[ $group_name ][ $resource_type ][ $handle ] ) ) {
+				$resource_visability = $settings[ $group_name ][ $resource_type ][ $handle ]['visability'];
+				break;
+			}
+		}
+
+		if ( ! empty( $resource_visability ) ) {
+			$condition = new WGZ_Check_Conditions( $resource_visability );
+			if ( $condition->validate() ) {
+				return false;
+			}
 		}
 
 		/*if ( apply_filters( 'wbcr_gnz_check_unload_assets', false ) ) {
@@ -539,7 +586,7 @@ class WGZ_Assets_Manager_Public {
 	public function enqueue_plugin_scripts() {
 		if ( $this->is_user_can() && isset( $_GET['wbcr_assets_manager'] ) ) {
 			$jquery_handle = 'jquery';
-			$plugin_ver = $this->plugin->getPluginVersion();
+			$plugin_ver    = $this->plugin->getPluginVersion();
 
 			wp_enqueue_style( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', [], $plugin_ver );
 			wp_enqueue_style( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/css/assets-conditions.css', [], $plugin_ver );
@@ -565,66 +612,6 @@ class WGZ_Assets_Manager_Public {
 				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' )
 			] );
 		}
-	}
-
-	/**
-	 * Exception for address starting from "//example.com" instead of
-	 * "http://example.com". WooCommerce likes such a format
-	 *
-	 * @param string $url   Incorrect URL.
-	 *
-	 * @return string      Correct URL.
-	 */
-	private function prepare_url( $url ) {
-		if ( isset( $url[0] ) && isset( $url[1] ) && '/' == $url[0] && '/' == $url[1] ) {
-			$out = ( is_ssl() ? 'https:' : 'http:' ) . $url;
-		} else {
-			$out = $url;
-		}
-
-		return $out;
-	}
-
-	/**
-	 * Get current URL
-	 *
-	 * @return string
-	 */
-	private function get_current_url() {
-		$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
-		if ( strlen( $url[0] ) > 1 ) {
-			$out = rtrim( $url[0], '/' );
-		} else {
-			$out = $url[0];
-		}
-
-		return $out;
-	}
-
-	/**
-	 * Checks how heavy is file
-	 *
-	 * @param string $src   URL.
-	 *
-	 * @return int    Size in KB.
-	 */
-	private function get_asset_size( $src ) {
-		$weight = 0;
-
-		$home = get_theme_root() . '/../..';
-		$src  = explode( '?', $src );
-
-		if ( ! filter_var( $src[0], FILTER_VALIDATE_URL ) === false && strpos( $src[0], get_home_url() ) === false ) {
-			return 0;
-		}
-
-		$src_relative = $home . str_replace( get_home_url(), '', $this->prepare_url( $src[0] ) );
-
-		if ( file_exists( $src_relative ) ) {
-			$weight = round( filesize( $src_relative ) / 1024, 1 );
-		}
-
-		return $weight;
 	}
 
 
@@ -844,6 +831,66 @@ class WGZ_Assets_Manager_Public {
 		return $data;
 	}
 
+	/**
+	 * Exception for address starting from "//example.com" instead of
+	 * "http://example.com". WooCommerce likes such a format
+	 *
+	 * @param string $url   Incorrect URL.
+	 *
+	 * @return string      Correct URL.
+	 */
+	private function prepare_url( $url ) {
+		if ( isset( $url[0] ) && isset( $url[1] ) && '/' == $url[0] && '/' == $url[1] ) {
+			$out = ( is_ssl() ? 'https:' : 'http:' ) . $url;
+		} else {
+			$out = $url;
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Get current URL
+	 *
+	 * @return string
+	 */
+	private function get_current_url() {
+		$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
+		if ( strlen( $url[0] ) > 1 ) {
+			$out = rtrim( $url[0], '/' );
+		} else {
+			$out = $url[0];
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Checks how heavy is file
+	 *
+	 * @param string $src   URL.
+	 *
+	 * @return int    Size in KB.
+	 */
+	private function get_asset_size( $src ) {
+		$weight = 0;
+
+		$home = get_theme_root() . '/../..';
+		$src  = explode( '?', $src );
+
+		if ( ! filter_var( $src[0], FILTER_VALIDATE_URL ) === false && strpos( $src[0], get_home_url() ) === false ) {
+			return 0;
+		}
+
+		$src_relative = $home . str_replace( get_home_url(), '', $this->prepare_url( $src[0] ) );
+
+		if ( file_exists( $src_relative ) ) {
+			$weight = round( filesize( $src_relative ) / 1024, 1 );
+		}
+
+		return $weight;
+	}
+
 	private function get_conditions_login_params( $group = false ) {
 		global $wp_roles;
 
@@ -936,11 +983,9 @@ class WGZ_Assets_Manager_Public {
 					[
 						'id'          => 'current-url',
 						'title'       => __( 'Current URL', 'gonzales' ),
-						'type'        => 'select',
-						'params'      => [
-							[ 'value' => 'yes', 'title' => __( 'Yes', 'gonzales' ) ],
-							[ 'value' => 'no', 'title' => __( 'No', 'gonzales' ) ]
-						],
+						'type'        => 'text',
+						//'values'      => 'fsdfsd',
+						'params'      => 'fsdfsd',
 						'description' => __( 'Current Url', 'gonzales' )
 					],
 					[

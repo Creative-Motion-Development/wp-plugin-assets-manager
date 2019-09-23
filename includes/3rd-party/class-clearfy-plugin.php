@@ -94,7 +94,7 @@ class WGZ_Plugin {
 	private function global_scripts() {
 		require_once WGZ_PLUGIN_DIR . '/includes/functions.php';
 		require_once( WGZ_PLUGIN_DIR . '/includes/classes/class-views.php' );
-		require_once WGZ_PLUGIN_DIR . '/includes/classes/class-configurate-assets.php';
+		require_once WGZ_PLUGIN_DIR . '/includes/classes/class-assets-manager-global.php';
 
 		new WGZ_Assets_Manager_Public( self::$app );
 	}

@@ -36,7 +36,13 @@ function wam_save_settings_action() {
 		$settings = WGZ_Plugin::app()->getOption( 'settings', [] );
 
 		if ( ! is_array( $settings ) ) {
-			$settings = [];
+			$settings = [
+				'save_mode' => false
+			];
+		}
+
+		if ( ! empty( $raw_updated_settings['save_mode'] ) ) {
+			$settings['save_mode'] = "true" === $raw_updated_settings['save_mode'] ? true : false;
 		}
 
 		if ( ! empty( $raw_updated_settings['plugins'] ) ) {

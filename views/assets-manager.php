@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 
 ?>
 <div id="WBCR-AM" class="wam-wrapper" style="display: block;">
-	<?php $this->print_template( 'part-assets-manager-header' ); ?>
+	<?php $this->print_template( 'part-assets-manager-header', $data ); ?>
     <main class="wam-content">
 		<?php $this->print_template( 'part-assets-manager-tabs-menu' ); ?>
 		<?php //$this->print_template( 'part-assets-manager-info-bar' ); ?>

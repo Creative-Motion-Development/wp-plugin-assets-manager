@@ -316,6 +316,7 @@
 
 			let $control = $("<input type='text' class='wam-cleditor__text' /></span>");
 			this._insertValueControl($control);
+
 			if( isInit && this.options.value ) {
 				this._setTextValue(this.options.value);
 			}
@@ -459,7 +460,7 @@
 			}
 
 			return {
-				type: 'group',
+				type: 'OR',
 				conditions: condtions
 			};
 		}
@@ -543,7 +544,7 @@
 
 		addCondition(data) {
 			if( !data ) {
-				data = {type: 'condition'};
+				data = {type: 'AND'};
 			}
 
 			this._conditionsCounter = this._conditionsCounter + 1;
@@ -712,7 +713,7 @@
 
 		_addGroup(data) {
 			if( !data ) {
-				data = {type: 'group'};
+				data = {type: 'OR'};
 			}
 
 			this.groupsCounter = this.groupsCounter + 1;

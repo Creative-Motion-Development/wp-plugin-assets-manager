@@ -100,7 +100,7 @@
 			$('.wam-nav-plugins__tab-content').removeClass('js-wam-nav-plugins__tab-content--active');
 			$(element.find('a').attr('href')).addClass('js-wam-nav-plugins__tab-content--active');
 
-			$('.wam-table__th-plugin-settings').text(element.find('.wam-plugin-name').text());
+			$('.wam-table__th-plugins-settings').text(element.find('.wam-plugin-name').text());
 
 		}
 
@@ -215,7 +215,6 @@ notice.on('pnotify.cancel', function() {
 			editorContainerElement.show();
 
 			if( !editorContainerElement.find('.wam-cleditor').length ) {
-				console.log('createConditionsEditor');
 				this.createConditionsEditor(editorContainerElement);
 			}
 		}
@@ -224,12 +223,16 @@ notice.on('pnotify.cancel', function() {
 			let containerElement = buttonElement.closest('.wam-plugin-settings'),
 				editorContainerElement = containerElement.find('.js-wam-plugin-settings__conditions');
 
-			this.setSettingsButtonOpenState(buttonElement);
-			editorContainerElement.hide();
-
 			if( destroyEditor ) {
 				this.destroyCoditionEditor(editorContainerElement);
 			}
+
+			if( !buttonElement.hasClass('js-wam-button--opened') ) {
+				return false;
+			}
+
+			this.setSettingsButtonOpenState(buttonElement);
+			editorContainerElement.hide();
 		}
 
 		disableAsset(selectElement) {
@@ -283,6 +286,10 @@ notice.on('pnotify.cancel', function() {
 			var placeID = buttonElement.closest('tr').attr('id'),
 				place = $('#' + placeID + '-conditions');
 
+			if( destroyEditor ) {
+				this.destroyCoditionEditor(place.find(".wam-asset-conditions-builder"));
+			}
+
 			if( !buttonElement.hasClass('js-wam-button--opened') ) {
 				return false;
 			}
@@ -290,15 +297,12 @@ notice.on('pnotify.cancel', function() {
 			this.setSettingsButtonOpenState(buttonElement);
 			place.hide();
 
-			if( destroyEditor ) {
-				this.destroyCoditionEditor(place.find(".wam-asset-conditions-builder"));
-			}
-
 			return true;
 		}
 
 		saveSettings() {
 			var settings = {
+				save_mode: $('#js-wam-save-mode-checkbox').prop("checked"),
 				plugins: {},
 				theme: {},
 				misc: {}
@@ -356,7 +360,6 @@ notice.on('pnotify.cancel', function() {
 				settings[groupType][recourceType][resourceHandle] = {
 					visability: $(this).val()
 				}
-
 			});
 
 			let stackBottomRight = {

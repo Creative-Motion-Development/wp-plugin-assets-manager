@@ -1,5 +1,4 @@
 <?php
-
 defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 
 /**
@@ -19,7 +18,8 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 				<?php _e( 'Total size', 'gonzales' ) ?>:
                 <b class="wam-float-panel__item_value">--</b>
             </li>
-            <li class="wam-float-panel__data-item __info-reduced-total-size"><?php _e( 'Optimized size', 'gonzales' ) ?>:
+            <li class="wam-float-panel__data-item __info-reduced-total-size"><?php _e( 'Optimized size', 'gonzales' ) ?>
+                :
                 <b class="wam-float-panel__item_value">--</b>
             </li>
             <li class="wam-float-panel__data-item __info-disabled-js"><?php _e( 'Disabled js', 'gonzales' ) ?>:
@@ -31,12 +31,12 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
         </ul>
     </div>
     <div class="wam-float-panel__right">
-        <a class="wam-float-panel__reset wbcr-reset-button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'wam-reset-settings' => 1 ] ) ) ); ?>">
+        <a class="wam-float-panel__reset wbcr-reset-button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'wam_reset_settings' => 1 ] ), 'wam_reset_settings' ) ); ?>">
 			<?php _e( 'Reset', 'gonzales' ) ?>
         </a>
         <button id="wam-save-button" class="wam-float-panel__save js-wam-top-panel__save-button" data-nonce="<?php echo wp_create_nonce( 'wam_save_settigns' ); ?>"><?php _e( 'Save', 'gonzales' ) ?></button>
         <label class="wam-float-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="<?php _e( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) ?>.">
-            <input class="wam-float-panel__checkbox-input visually-hidden" type="checkbox">
+            <input id="js-wam-save-mode-checkbox" class="wam-float-panel__checkbox-input visually-hidden" type="checkbox"<?php checked( $data['save_mode'] ) ?>>
             <span class="wam-float-panel__checkbox-text"><?php _e( 'Safe mode', 'gonzales' ) ?></span>
         </label>
         <!--<label class="wam-float-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="<?php _e( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) ?>.">
