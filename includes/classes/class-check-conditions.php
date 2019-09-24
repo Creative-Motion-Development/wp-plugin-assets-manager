@@ -200,7 +200,19 @@ class WGZ_Check_Conditions {
 	 */
 	protected function user_role( $operator, $value ) {
 		if ( ! function_exists( 'is_user_logged_in' ) ) {
-			require_once ABSPATH . 'wp-includes/pluggable.php';
+			if ( @count( @preg_grep( '/^wordpress_logged_in/', @array_keys( $_COOKIE ) ) ) > 0 ) {
+				if ( isset( $_COOKIE['wam_assigned_roles'] ) && is_array( $_COOKIE['wam_assigned_roles'] ) ) {
+					$assigned_roles = $_COOKIE['wam_assigned_roles'];
+				} else {
+					$assigned_roles = [];
+				}
+
+				if ( in_array( $value, $assigned_roles ) ) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		if ( ! is_user_logged_in() ) {

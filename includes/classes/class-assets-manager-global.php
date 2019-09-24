@@ -89,6 +89,12 @@ class WGZ_Assets_Manager_Public {
 			}
 		}
 
+		if ( ! ( $on_frontend && $on_backend ) ) {
+			##Login/Logout
+			add_action( 'wp_login', [ $this, 'user_logged_in' ], 99, 2 );
+			add_action( 'wp_logout', [ $this, 'user_logged_out' ] );
+		}
+
 		// Stop optimizing scripts and caching the asset manager page.
 		add_action( 'wp', [ $this, 'stop_caching_and_script_optimize' ] );
 		// Disable autoptimize on Assets manager page
@@ -97,6 +103,24 @@ class WGZ_Assets_Manager_Public {
 
 		if ( wp_doing_ajax() ) {
 			require_once WGZ_PLUGIN_DIR . '/admin/ajax/save-settings.php';
+		}
+	}
+
+	public function user_logged_in( $login, $user = null ) {
+		if ( is_null( $user ) ) {
+			$user = wp_get_current_user();
+		}
+
+		foreach ( $user->roles as $key => $role ) {
+			setcookie( 'wam_assigned_roles[' . $key . ']', $role, 0, "/" );
+		}
+	}
+
+	public function user_logged_out() {
+		if ( isset( $_COOKIE['wam_assigned_roles'] ) && is_array( $_COOKIE['wam_assigned_roles'] ) ) {
+			foreach ( $_COOKIE['wam_assigned_roles'] as $key => $cookie_val ) {
+				setcookie( 'wam_assigned_roles[' . $key . ']', '', time() - 999999, "/" );
+			}
 		}
 	}
 
