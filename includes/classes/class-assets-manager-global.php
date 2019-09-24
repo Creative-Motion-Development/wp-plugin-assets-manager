@@ -106,6 +106,18 @@ class WGZ_Assets_Manager_Public {
 		}
 	}
 
+	/**
+	 * Записываем cookie с ролями пользователя
+	 *
+	 * Это нужно для идентификации в MU плагине, так как мы не можем использовать
+	 * большинство функций wordpress.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 *
+	 * @param string $login
+	 * @param string $user
+	 */
 	public function user_logged_in( $login, $user = null ) {
 		if ( is_null( $user ) ) {
 			$user = wp_get_current_user();
@@ -116,6 +128,12 @@ class WGZ_Assets_Manager_Public {
 		}
 	}
 
+	/**
+	 * Удаляем cookie с ролями
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 */
 	public function user_logged_out() {
 		if ( isset( $_COOKIE['wam_assigned_roles'] ) && is_array( $_COOKIE['wam_assigned_roles'] ) ) {
 			foreach ( $_COOKIE['wam_assigned_roles'] as $key => $cookie_val ) {
