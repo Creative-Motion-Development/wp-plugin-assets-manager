@@ -9,6 +9,9 @@
   top: 0;
   padding: 4px;
 }
+#WBCR-AM .wam-cleditor .wam-cleditor__text {
+  width: 300px;
+}
 #WBCR-AM .wam-cleditor .wam-cleditor__box {
   padding: 25px 15px 15px 15px;
   border-left: 1px solid #ddd;

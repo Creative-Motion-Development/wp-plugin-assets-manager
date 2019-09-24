@@ -48,6 +48,15 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 	                        <?php
 	                        $option_attrs   = [];
 	                        $option_attrs[] = 'data-type="' . esc_attr( $param['type'] ) . '"';
+
+	                        if ( isset( $param['default_value'] ) ) {
+		                        $option_attrs[] = 'data-default-value="' . esc_attr( $param['default_value'] ) . '"';
+	                        }
+
+	                        if ( isset( $param['placeholder'] ) ) {
+		                        $option_attrs[] = 'data-placeholder="' . esc_attr( $param['placeholder'] ) . '"';
+	                        }
+
 	                        $option_attrs[] = 'data-params="' . esc_attr( @json_encode( $param['params'], JSON_UNESCAPED_UNICODE, JSON_HEX_QUOT ) ) . '"';
 
 	                        if ( isset( $param['only_equals'] ) ) {

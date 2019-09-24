@@ -2,17 +2,15 @@
 /*
   Plugin Name: Webcraftic AM plugin load filter
   Description: Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
-  Version: 1.0.2
+  Version: 1.0.3
   Plugin URI: https://wordpress.org/plugins/gonzales/
   Author: Webcraftic <alex.kovalevv@gmail.com>
   Author URI: https://clearfy.pro/assets-manager
   Framework Version: FACTORY_000_VERSION
 */
-
-// TODO: the plugin does not support backend
+// TODO: The plugin does not support backend
 // todo: проверить, как работает кеширование
 // todo: замерить, скорость работы этого решения
-// todo: поддержка php 5.3
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,82 +19,6 @@ if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || is_admin() ||
 }
 
 // @formatter:off
-//-------------------------------------------------------------------------------------------
-// pluggable.php defined function overwrite
-// pluggable.php read before the query_posts() is processed by the current user undetermined
-//-------------------------------------------------------------------------------------------
-if ( ! function_exists( 'wp_get_current_user' ) ) :
-	/**
-	 * Retrieve the current user object.
-	 *
-	 * @return WP_User Current user WP_User object
-	 */
-	function wp_get_current_user() {
-		if ( ! function_exists( 'wp_set_current_user' ) ) {
-			return 0;
-		} else {
-			return _wp_get_current_user();
-		}
-	}
-endif;
-
-if ( ! function_exists( 'get_userdata' ) ) :
-	/**
-	 * Retrieve user info by user ID.
-	 *
-	 * @param int $user_id   User ID
-	 *
-	 * @return WP_User|bool WP_User object on success, false on failure.
-	 */
-	function get_userdata( $user_id ) {
-		return get_user_by( 'id', $user_id );
-	}
-endif;
-
-if ( ! function_exists( 'get_user_by' ) ) :
-	/**
-	 * Retrieve user info by a given field
-	 *
-	 * @param string     $field   The field to retrieve the user with. id | slug | email | login
-	 * @param int|string $value   A value for $field. A user ID, slug, email address, or login name.
-	 *
-	 * @return WP_User|bool WP_User object on success, false on failure.
-	 */
-	function get_user_by( $field, $value ) {
-		$userdata = WP_User::get_data_by( $field, $value );
-
-		if ( ! $userdata ) {
-			return false;
-		}
-
-		$user = new WP_User;
-		$user->init( $userdata );
-
-		return $user;
-	}
-endif;
-
-if ( ! function_exists( 'is_user_logged_in' ) ) :
-	/**
-	 * Checks if the current visitor is a logged in user.
-	 *
-	 * @return bool True if user is logged in, false if not logged in.
-	 */
-	function is_user_logged_in() {
-		if ( ! function_exists( 'wp_set_current_user' ) ) {
-			return false;
-		}
-
-		$user = wp_get_current_user();
-
-		if ( ! $user->exists() ) {
-			return false;
-		}
-
-		return true;
-	}
-endif;
-
 //-------------------------------------------------------------------------------------------
 // Plugins load filter
 //-------------------------------------------------------------------------------------------

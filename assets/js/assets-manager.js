@@ -179,7 +179,7 @@ notice.on('pnotify.cancel', function() {
 				.removeClass('js-wam-button--opened')
 				.addClass('js-wam-button--hidden');
 
-			this.openPluginSettings(settingsButtonElement);
+			this.openPluginSettings(settingsButtonElement, "disable_plugin" === selectElement.val());
 			this.updateStat();
 		}
 
@@ -213,9 +213,28 @@ notice.on('pnotify.cancel', function() {
 
 			this.setSettingsButtonCloseState(buttonElement);
 			editorContainerElement.show();
-
 			if( !editorContainerElement.find('.wam-cleditor').length ) {
-				this.createConditionsEditor(editorContainerElement);
+
+				this.createConditionsEditor(editorContainerElement, function(e) {
+					function a() {
+						let params = ['location-some-page', 'location-taxonomy', 'location-post-type'],
+							loadMode = containerElement.find('.js-wam-select-plugin-load-mode').val();
+
+						if( "disable_plugin" === loadMode ) {
+							for( let i = 0; i < params.length; i++ ) {
+								e.element.find('.wam-cleditor__param-select').find('option[value="' + params[i] + '"]').hide();
+							}
+						} else {
+							e.element.find('.wam-cleditor__param-select').find('option').show();
+						}
+					}
+
+					containerElement.find('.js-wam-select-plugin-load-mode').change(function() {
+						a();
+					});
+
+					a();
+				});
 			}
 		}
 
@@ -430,7 +449,7 @@ notice.on('pnotify.cancel', function() {
 			});
 		}
 
-		createConditionsEditor(element) {
+		createConditionsEditor(element, callback = null) {
 			element.wamConditionsEditor({
 				// where to get an editor template
 				templateSelector: '#wam-conditions-builder-template',
@@ -441,16 +460,17 @@ notice.on('pnotify.cancel', function() {
 						"type": "group",
 						"conditions": [
 							{
-								"param": "location-some-page",
+								"param": "current-url",
 								"operator": "equals",
-								"type": "select",
-								"value": "base_web"
+								"type": "default",
+								"value": $(location).attr('pathname')
 							}
 
 						]
 					}
 
-				]
+				],
+				callback: callback
 			});
 		}
 
@@ -494,6 +514,7 @@ notice.on('pnotify.cancel', function() {
 			$('.wam-float-panel__data-item.__info-disabled-js').find('.wam-float-panel__item_value').html(disabled_js);
 			$('.wam-float-panel__data-item.__info-disabled-css').find('.wam-float-panel__item_value').html(disabled_css);
 		}
+
 	}
 
 	$(function() {

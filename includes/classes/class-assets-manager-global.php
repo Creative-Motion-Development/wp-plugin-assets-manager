@@ -403,83 +403,6 @@ class WGZ_Assets_Manager_Public {
 			}
 		}
 
-		/*if ( apply_filters( 'wbcr_gnz_check_unload_assets', false ) ) {
-			return $src;
-		}
-
-		$type = ( current_filter() == 'script_loader_src' ) ? 'js' : 'css';
-
-		$current_url = esc_url( $this->get_current_url() );
-
-		$disabled = $this->getDisabledFromOptions( $type, $handle );
-		$enabled  = $this->getEnabledFromOptions( $type, $handle );
-
-		$is_everywhere = isset( $disabled['everywhere'] ) && $disabled['everywhere'] == 1;
-		$is_custom     = isset( $disabled['custom'] ) && is_array( $disabled['custom'] ) && ! empty( $disabled['custom'] );
-		$is_current    = isset( $disabled['current'] ) && is_array( $disabled['current'] ) && in_array( $current_url, $disabled['current'] );
-		$is_regex      = isset( $disabled['regex'] ) && ! empty( $disabled['regex'] );
-
-		if ( $is_everywhere || $is_current || ( $is_custom || $is_regex ) ) {
-
-			if ( isset( $enabled['current'] ) && is_array( $enabled['current'] ) && in_array( $current_url, $enabled['current'] ) ) {
-				return $src;
-			}
-
-			if ( $is_custom ) {
-				$found_match = false;
-
-				foreach ( $disabled['custom'] as $url ) {
-					// Убираем базовый url
-					$free_url = str_replace( site_url(), '', $url );
-					// Если есть *
-					if ( strpos( $free_url, '*' ) ) {
-						// Получаем строку до *
-						$free_url = strstr( $free_url, '*', true );
-						// Если это был не пустой url (типа http://site/*) и есть вхождение с начала
-						if ( untrailingslashit( $free_url ) && strpos( untrailingslashit( $current_url ), $free_url ) === 0 ) {
-							$found_match = true;
-							break;
-						}
-						// Если url'ы идентичны
-					} else if ( untrailingslashit( esc_url( $free_url ) ) === untrailingslashit( $current_url ) ) {
-						$found_match = true;
-						break;
-					}
-				}
-
-				if ( ! $found_match ) {
-					return $src;
-				}
-			}
-
-			if ( $is_regex ) {
-				$check_url = ltrim( $current_url, '/\\' );
-				$regexp    = trim( str_replace( '\\\\', '\\', $disabled['regex'] ), '/' );
-
-				if ( ! @preg_match( "/{$regexp}/", $check_url ) ) {
-					return $src;
-				}
-			}
-
-			if ( isset( $enabled['post_types'] ) && is_singular() && in_array( get_post_type(), $enabled['post_types'] ) ) {
-				return $src;
-			}
-
-			if ( isset( $enabled['taxonomies'] ) ) {
-				$query = get_queried_object();
-
-				if ( ! empty( $query ) && isset( $query->taxonomy ) && in_array( $query->taxonomy, $enabled['taxonomies'] ) ) {
-					return $src;
-				}
-			}
-
-			if ( isset( $enabled['categories'] ) && in_array( get_query_var( 'cat' ), $enabled['categories'] ) ) {
-				return $src;
-			}
-
-			return false;
-		}*/
-
 		return $src;
 	}
 
@@ -893,7 +816,7 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	private function get_conditions_login_params( $group = false ) {
-		global $wp_roles;
+		global $wp_roles, $wp;
 
 		# Add User Roles
 		#---------------------------------------------------------------
@@ -982,12 +905,11 @@ class WGZ_Assets_Manager_Public {
 				'title' => __( 'Location', 'gonzales' ),
 				'items' => [
 					[
-						'id'          => 'current-url',
-						'title'       => __( 'Current URL', 'gonzales' ),
-						'type'        => 'text',
-						//'values'      => 'fsdfsd',
-						'params'      => 'fsdfsd',
-						'description' => __( 'Current Url', 'gonzales' )
+						'id'            => 'current-url',
+						'title'         => __( 'Current URL', 'gonzales' ),
+						'type'          => 'default',
+						'default_value' => ( "/" === $this->get_current_url() ? "/" : trailingslashit( $this->get_current_url() ) ),
+						'description'   => __( 'Current Url', 'gonzales' )
 					],
 					[
 						'id'          => 'location-page',
@@ -998,7 +920,8 @@ class WGZ_Assets_Manager_Public {
 					[
 						'id'          => 'regular-expression',
 						'title'       => __( 'Regular Expression', 'gonzales' ),
-						'type'        => 'text',
+						'type'        => 'regexp',
+						'placeholder' => '^(about-page-[0-9]+|contacts-[0-9]{,2})',
 						'description' => __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' )
 					],
 					[

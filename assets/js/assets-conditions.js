@@ -106,6 +106,10 @@
 				operators = ['between'];
 			} else if( 'integer' === paramOptions['type'] ) {
 				operators = ['equals', 'notequal', 'less', 'greater', 'between'];
+			} else if( 'regexp' === paramOptions['type'] ) {
+				operators = ['equals'];
+			} else if( 'default' === paramOptions['type'] ) {
+				operators = ['equals', 'notequal'];
 			} else {
 				operators = ['equals', 'notequal', 'contains', 'notcontain'];
 			}
@@ -313,12 +317,18 @@
 		 * Creates a control for the input linked with the integer.
 		 */
 		_createValueAsText(paramOptions, isInit) {
-
 			let $control = $("<input type='text' class='wam-cleditor__text' /></span>");
+
+			if( paramOptions['placeholder'] ) {
+				$control.attr('placeholder', paramOptions['placeholder']);
+			}
+
 			this._insertValueControl($control);
 
-			if( isInit && this.options.value ) {
+			if( isInit && this.options.value && "" !== this.options.value ) {
 				this._setTextValue(this.options.value);
+			} else if( paramOptions['default_value'] ) {
+				this._setTextValue(paramOptions['default_value'])
 			}
 		}
 
@@ -380,13 +390,22 @@
 				return false;
 			}
 
-			return {
-				id: selectElement.val(),
-				title: optionElement.text().trim(),
-				type: optionElement.data('type'),
-				values: optionElement.data('params'),
-				description: optionElement.data('hint').trim()
-			};
+			let type = optionElement.data('type'),
+				data = {
+					id: selectElement.val(),
+					title: optionElement.text().trim(),
+					type: optionElement.data('type'),
+					default_value: optionElement.data('default-value'),
+					values: optionElement.data('params'),
+					description: optionElement.data('hint').trim()
+				};
+
+			if( "text" === type || "default" === type || "regexp" === type ) {
+				data['placeholder'] = optionElement.data('placeholder');
+				delete data['values'];
+			}
+
+			return data;
 		}
 
 		_createSelect(values, attrs) {
@@ -575,6 +594,7 @@
 				templateSelector: null,
 				// where to put editor options
 				saveInputSelector: null,
+				callback: null
 			}, options);
 
 			this.groups = {};
@@ -583,7 +603,23 @@
 			this.element = this._createMarkup();
 
 			this._load();
+
+			if( this.options.callback ) {
+				this.options.callback(this);
+			}
 		}
+
+		/*showParams() {
+			this.element.find('.wam-cleditor__param-select').find('options').show();
+		}
+
+		hideParams(params) {
+			if( params.length ) {
+				for( let i = 0; i < params.length; i++ ) {
+					this.element.find('.wam-cleditor__param-select').find('option[value="' + params[i] + '"]').hide();
+				}
+			}
+		}*/
 
 		getData() {
 			let self = this;
@@ -633,9 +669,11 @@
 
 		getTemplate(selector) {
 			let tmpl = $($(this.options.templateSelector).html());
+
 			if( !tmpl.length ) {
 				throw new Error('[Error]: Editor template is not found! Selector: ' + this.options.templateSelector);
 			}
+
 			return tmpl.find(selector).clone();
 		}
 

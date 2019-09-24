@@ -60,7 +60,7 @@ class WGZ_Check_Conditions {
 			'between'
 		] );
 
-		$allow_types = in_array( $condition->type, [ 'select', 'text' ] );
+		$allow_types = in_array( $condition->type, [ 'select', 'text', 'default', 'regexp' ] );
 
 		return $isset_attrs && $allow_params && $allow_operators && $allow_types;
 	}
@@ -95,24 +95,6 @@ class WGZ_Check_Conditions {
 		}
 
 		return is_null( $or ) ? false : $or;
-	}
-
-	/**
-	 * Get property value
-	 *
-	 * @param $value
-	 * @param $property
-	 *
-	 * @return null
-	 */
-	protected function getPropertyValue( $value, $property ) {
-		if ( is_object( $value ) ) {
-			return $value->$property;
-		} else if ( isset( $value[ $property ] ) ) {
-			return $value[ $property ];
-		}
-
-		return null;
 	}
 
 	/**
@@ -153,14 +135,10 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return string
 	 */
-	protected function get_current_url() {
-		$out = "";
+	protected function get_current_url_path() {
 		$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
-		if ( isset( $url[0] ) ) {
-			$out = trim( $url[0], '/' );
-		}
 
-		return $out ? urldecode( $out ) : '/';
+		return ! empty( $url[0] ) ? trailingslashit( $url[0] ) : '/';
 	}
 
 	/**
@@ -221,6 +199,10 @@ class WGZ_Check_Conditions {
 	 * @return boolean
 	 */
 	protected function user_role( $operator, $value ) {
+		if ( ! function_exists( 'is_user_logged_in' ) ) {
+			require_once ABSPATH . 'wp-includes/pluggable.php';
+		}
+
 		if ( ! is_user_logged_in() ) {
 			return $this->apply_operator( $operator, $value, 'guest' );
 		} else {
@@ -287,7 +269,7 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return boolean
 	 */
-	protected function user_registered( $operator, $value ) {
+	/*protected function user_registered( $operator, $value ) {
 		if ( ! is_user_logged_in() ) {
 			return false;
 		} else {
@@ -310,7 +292,7 @@ class WGZ_Check_Conditions {
 				return $this->apply_operator( $operator, $timestamp, $registered );
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * Check the user views your website from mobile device or not
@@ -413,34 +395,41 @@ class WGZ_Check_Conditions {
 	}
 
 	/**
+	 * Проверяет текущий URL страницы.
+	 *
+	 * Если url в условии и url текущей страницы совпадают,
+	 * условие будет выполнено успешно.
+	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
 	 *
-	 * @param $operator
-	 * @param $value
+	 * @param string $operator
+	 * @param string $value
 	 */
-	protected function current_url($operator, $value) {
-
+	protected function current_url( $operator, $value ) {
+		return $this->apply_operator( $operator, $value, $this->get_current_url_path() );
 	}
 
 	/**
+	 * Проверяет пользовательское регулярное выражение
+	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
 	 *
-	 * @param $operator
-	 * @param $value
+	 * @param string $operator
+	 * @param string $value
 	 */
-	protected function regular_expression($operator, $value) {
-		/*$check_url = ltrim( $current_url, '/\\' );
-		$regexp    = trim( str_replace( '\\\\', '\\', $disabled['regex'] ), '/' );
+	protected function regular_expression( $operator, $value ) {
+		$current_url_path = $this->get_current_url_path();
 
-		if ( ! @preg_match( "/{$regexp}/", $check_url ) ) {
-			return $src;
-		}*/
+		$check_url = ltrim( $current_url_path, '/\\' );
+		$regexp    = trim( str_replace( '\\\\', '\\', $value ), '/' );
+
+		return @preg_match( "/{$regexp}/", $check_url );
 	}
 
 	/**
-	 * An URL of the current page where a user who views your website is located
+	 * Проверяет проивольный url с маской
 	 *
 	 * @param $operator
 	 * @param $value
@@ -448,26 +437,21 @@ class WGZ_Check_Conditions {
 	 * @return boolean
 	 */
 	protected function location_page( $operator, $value ) {
-		$url = $this->get_current_url();
+		$first_url_path  = str_replace( site_url(), '', $value );
+		$second_url_path = $this->get_current_url_path();
 
-		// Убираем базовый url
-		/*$free_url = str_replace( site_url(), '', $url );
-		// Если есть *
-		if ( strpos( $free_url, '*' ) ) {
-			// Получаем строку до *
-			$free_url = strstr( $free_url, '*', true );
-			// Если это был не пустой url (типа http://site/*) и есть вхождение с начала
-			if ( untrailingslashit( $free_url ) && strpos( untrailingslashit( $current_url ), $free_url ) === 0 ) {
-				$found_match = true;
-				break;
-			}
-			// Если url'ы идентичны
-		} else if ( untrailingslashit( esc_url( $free_url ) ) === untrailingslashit( $current_url ) ) {
-			$found_match = true;
-			break;
-		}*/
+		if ( ! strpos( $first_url_path, '*' ) ) {
+			return $this->apply_operator( $operator, $second_url_path, $first_url_path );
+		}
 
-		return $url ? $this->apply_operator( $operator, trim( $url, '/' ), trim( $value, '/' ) ) : false;
+		// Получаем строку до *
+		$first_url_path = strstr( $first_url_path, '*', true );
+		// Если это был не пустой url (типа http://site/*) и есть вхождение с начала
+		if ( untrailingslashit( $first_url_path ) && strpos( untrailingslashit( $second_url_path ), $first_url_path ) === 0 ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
