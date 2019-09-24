@@ -89,12 +89,10 @@ class WGZ_Assets_Manager_Public {
 			}
 		}
 
-		if ( ! ( $on_frontend && $on_backend ) ) {
-			##Login/Logout
-			add_action( 'wp_login', [ $this, 'user_logged_in' ], 99, 2 );
-			add_action( 'wp_logout', [ $this, 'user_logged_out' ] );
-		}
-
+		##Login/Logout
+		add_action( 'wp_login', [ $this, 'user_logged_in' ], 99, 2 );
+		add_action( 'wp_logout', [ $this, 'user_logged_out' ] );
+		
 		// Stop optimizing scripts and caching the asset manager page.
 		add_action( 'wp', [ $this, 'stop_caching_and_script_optimize' ] );
 		// Disable autoptimize on Assets manager page
