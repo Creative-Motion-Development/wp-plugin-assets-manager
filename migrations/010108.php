@@ -7,8 +7,6 @@
 class WGZUpdate010108 extends Wbcr_Factory000_Update {
 
 	public function install() {
-		global $wpdb;
-
 		wbcr_gnz_deploy_mu_plugin();
 
 		if ( is_multisite() && is_network_admin() ) {
@@ -19,8 +17,7 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 			$save_mode          = (int) get_option( $this->plugin->getPrefix() . 'for_admin_only', 0 );
 		}
 
-		// =============================================================
-		$settings = [];//WGZ_Plugin::app()->getOption( 'assets_states', [] );
+		$settings = WGZ_Plugin::app()->getOption( 'assets_states', [] );
 
 		if ( empty( $settings ) ) {
 			$settings['save_mode'] = (bool) $save_mode;

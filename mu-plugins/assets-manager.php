@@ -28,14 +28,14 @@ class WGNZ_Plugins_Loader {
 	protected $prefix = 'wbcr_gnz_';
 	protected $parent_plugin_dir;
 	protected $settings;
-	protected $active_plugins = [];
+	protected $active_plugins = array();
 
 	public function __construct() {
 		# We must always load the plugin if it is an ajax request, a cron
 		# task or a rest api request. Otherwise, the user may have problems
 		# with the work of plugins.
 		if ( $this->doing_ajax() || $this->doing_cron() || $this->doing_rest_api() ) {
-			return;
+			return false;
 		}
 
 		$is_assets_manager_active = false;
@@ -47,9 +47,9 @@ class WGNZ_Plugins_Loader {
 			$this->prefix = 'wbcr_clearfy_';
 
 			if ( is_multisite() ) {
-				$deactivate_components = get_site_option( $this->prefix . 'deactive_preinstall_components', [] );
+				$deactivate_components = get_site_option( $this->prefix . 'deactive_preinstall_components', array() );
 			} else {
-				$deactivate_components = get_option( $this->prefix . 'deactive_preinstall_components', [] );
+				$deactivate_components = get_option( $this->prefix . 'deactive_preinstall_components', array() );
 			}
 
 			if ( empty( $deactivate_components ) || ! in_array( 'assets_manager', $deactivate_components ) ) {
@@ -72,16 +72,16 @@ class WGNZ_Plugins_Loader {
 
 		# Disable plugins only if Asset Manager and Clearfy are activated
 		if ( $is_clearfy_active || $is_assets_manager_active ) {
-			$this->settings = get_option( $this->prefix . 'settings', [] );
+			$this->settings = get_option( $this->prefix . 'settings', array() );
 
 			if ( ! empty( $this->settings ) ) {
 				if ( is_multisite() ) {
-					add_filter( 'site_option_active_sitewide_plugins', [ $this, 'disable_network_plugins' ], 1 );
+					add_filter( 'site_option_active_sitewide_plugins', array($this, 'disable_network_plugins' ), 1 );
 				}
 
-				add_filter( 'option_active_plugins', [ $this, 'disable_plugins' ], 1 );
-				add_filter( 'option_hack_file', [ $this, 'hack_file_filter' ], 1 );
-				add_action( 'plugins_loaded', [ $this, 'remove_plugin_filters' ], 1 );
+				add_filter( 'option_active_plugins', array( $this, 'disable_plugins' ), 1 );
+				add_filter( 'option_hack_file', array( $this, 'hack_file_filter' ), 1 );
+				add_action( 'plugins_loaded', array( $this, 'remove_plugin_filters' ), 1 );
 			}
 		}
 	}
@@ -105,7 +105,7 @@ class WGNZ_Plugins_Loader {
 	 * @since  1.0.0
 	 */
 	public function remove_plugin_filters() {
-		remove_action( 'option_active_plugins', [ $this, 'disable_plugins' ], 1 );
+		remove_action( 'option_active_plugins', array( $this, 'disable_plugins' ), 1 );
 	}
 
 	/**
@@ -121,7 +121,7 @@ class WGNZ_Plugins_Loader {
 			$temp_plugin_list = array_keys( $plugins_list );
 			$temp_plugin_list = $this->disable_plugins( $temp_plugin_list );
 
-			$new_plugin_list = [];
+			$new_plugin_list = array();
 			foreach ( (array) $temp_plugin_list as $plugin_file ) {
 				$new_plugin_list[ $plugin_file ] = $plugins_list[ $plugin_file ];
 			}
@@ -183,13 +183,13 @@ class WGNZ_Plugins_Loader {
 	 */
 	private function is_disabled_plugin( $plugin_base ) {
 
-		$white_plgins_list = [
+		$white_plgins_list = array(
 			'clearfy', // prod
 			'wp-plugin-clearfy', // dev
 			'gonzales', // prod
 			'wp-plugin-gonzales', // dev
 			'clearfy_package' // premium package
-		];
+		);
 
 		$plugin_base_part = explode( '/', $plugin_base );
 
@@ -253,7 +253,7 @@ class WGNZ_Plugins_Loader {
 
 		// (#3)
 		$rest_url    = wp_parse_url( site_url( $prefix ) );
-		$current_url = wp_parse_url( add_query_arg( [] ) );
+		$current_url = wp_parse_url( add_query_arg( array() ) );
 
 		return strpos( $current_url['path'], $rest_url['path'], 0 ) === 0;
 	}
