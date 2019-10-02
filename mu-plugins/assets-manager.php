@@ -66,6 +66,10 @@ class WGNZ_Plugins_Loader {
 			$this->parent_plugin_dir  = WP_PLUGIN_DIR . '/gonzales/';
 		}
 
+		if( !file_exists($this->parent_plugin_dir) ) {
+			return false;
+		}
+
 		# Disable plugins only if Asset Manager and Clearfy are activated
 		if ( $is_clearfy_active || $is_assets_manager_active ) {
 			$this->settings = get_option( $this->prefix . 'settings', [] );

@@ -33,7 +33,7 @@ function wam_save_settings_action() {
 	$raw_updated_settings = WGZ_Plugin::app()->request->post( 'settings' );
 
 	if ( ! empty( $raw_updated_settings ) ) {
-		$settings = WGZ_Plugin::app()->getOption( 'settings', [] );
+		$settings = WGZ_Plugin::app()->getOption( 'assets_states', [] );
 
 		if ( ! is_array( $settings ) ) {
 			$settings = [
@@ -73,7 +73,7 @@ function wam_save_settings_action() {
 			$settings['misc'] = $raw_updated_settings['misc'];
 		}
 
-		WGZ_Plugin::app()->updateOption( 'settings', $settings );
+		WGZ_Plugin::app()->updateOption( 'assets_states', $settings );
 
 		// If mu  plugin does not exist, install it.
 		wbcr_gnz_deploy_mu_plugin();

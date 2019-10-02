@@ -92,7 +92,7 @@ class WGZ_Assets_Manager_Public {
 		##Login/Logout
 		add_action( 'wp_login', [ $this, 'user_logged_in' ], 99, 2 );
 		add_action( 'wp_logout', [ $this, 'user_logged_out' ] );
-		
+
 		// Stop optimizing scripts and caching the asset manager page.
 		add_action( 'wp', [ $this, 'stop_caching_and_script_optimize' ] );
 		// Disable autoptimize on Assets manager page
@@ -373,12 +373,12 @@ class WGZ_Assets_Manager_Public {
 		// Reset settings
 		if ( isset( $_GET['wam_reset_settings'] ) ) {
 			check_admin_referer( 'wam_reset_settings' );
-			$this->plugin->updateOption( 'settings', [] );
+			$this->plugin->updateOption( 'assets_states', [] );
 			wp_redirect( untrailingslashit( $this->get_current_url() ) . '?wbcr_assets_manager' );
 			die();
 		}
 
-		$settings = $this->plugin->getOption( 'settings', [] );
+		$settings = $this->plugin->getOption( 'assets_states', [] );
 
 		$views = new WGZ_Views( WGZ_PLUGIN_DIR );
 		$views->print_template( 'assets-manager', [
@@ -403,7 +403,7 @@ class WGZ_Assets_Manager_Public {
 	 * @return mixed
 	 */
 	function filter_load_assets( $src, $handle ) {
-		$settings = $this->plugin->getOption( 'settings', [] );
+		$settings = $this->plugin->getOption( 'assets_states', [] );
 
 		if ( isset( $_GET['wbcr_assets_manager'] ) || empty( $settings ) || ( true === $settings['save_mode'] && ! $this->is_user_can() ) ) {
 			return $src;
@@ -650,7 +650,7 @@ class WGZ_Assets_Manager_Public {
 	 * @throws \Exception
 	 */
 	private function get_parsed_plugin_settings( $plugin_name, $setting_name = null ) {
-		$settings         = $this->plugin->getOption( 'settings', [] );
+		$settings         = $this->plugin->getOption( 'assets_states', [] );
 		$default_settings = [
 			'load_mode'               => 'enable',
 			'visability'              => "",
@@ -707,7 +707,7 @@ class WGZ_Assets_Manager_Public {
 	private function get_parsed_asset_settings( array $assets, $group_name, $plugin_name = null ) {
 		$plugin_group      = false;
 		$settings_formated = [];
-		$settings          = $this->plugin->getOption( 'settings', [] );
+		$settings          = $this->plugin->getOption( 'assets_states', [] );
 
 		if ( ! isset( $assets['js'] ) ) {
 			$assets['js'] = [];

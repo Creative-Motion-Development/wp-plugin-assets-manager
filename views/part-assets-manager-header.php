@@ -43,6 +43,6 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
             <input class="wam-float-panel__checkbox-input visually-hidden" type="checkbox">
             <span class="wam-float-panel__checkbox-text-premium"><?php _e( 'Safe mode <b>PRO</b>', 'gonzales' ) ?></span>
         </label>-->
-        <button class="wam-float-panel__close wbcr-close-button" type="button" aria-label="<?php _e( 'Close', 'gonzales' ) ?>" data-href="' . remove_query_arg( 'wbcr_assets_manager' ) ?>"></button>
+        <a class="wam-float-panel__close wbcr-close-button" href="<?php echo remove_query_arg( 'wbcr_assets_manager' ); ?>" aria-label="<?php _e( 'Close', 'gonzales' ) ?>"></a>
     </div>
 </header>

@@ -511,10 +511,10 @@ class WGZ_Check_Conditions {
 		$term_id = null;
 
 		if ( is_tax() || is_tag() || is_category() ) {
-			$term_id = get_queried_object()->term_id;
+			$term_name = get_queried_object()->name;
 
-			if ( $term_id ) {
-				return $this->apply_operator( $operator, intval( $value ), $term_id );
+			if ( $term_name === $value ) {
+				return true;
 			}
 		}
 
