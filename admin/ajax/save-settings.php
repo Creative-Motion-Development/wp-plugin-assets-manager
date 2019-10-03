@@ -35,16 +35,6 @@ function wam_save_settings_action() {
 	if ( ! empty( $raw_updated_settings ) ) {
 		$settings = WGZ_Plugin::app()->getOption( 'assets_states', [] );
 
-		if ( ! is_array( $settings ) ) {
-			$settings = [
-				'save_mode' => false
-			];
-		}
-
-		if ( ! empty( $raw_updated_settings['save_mode'] ) ) {
-			$settings['save_mode'] = "true" === $raw_updated_settings['save_mode'] ? true : false;
-		}
-
 		if ( ! empty( $raw_updated_settings['plugins'] ) ) {
 			foreach ( (array) $raw_updated_settings['plugins'] as $plugin_name => $plugin_group ) {
 				if ( ! empty( $plugin_group['load_mode'] ) ) {
@@ -72,6 +62,8 @@ function wam_save_settings_action() {
 		if ( ! empty( $raw_updated_settings['misc'] ) ) {
 			$settings['misc'] = $raw_updated_settings['misc'];
 		}
+
+		$settings = apply_filters( 'wam/before_save_settings', $settings, $raw_updated_settings );
 
 		WGZ_Plugin::app()->updateOption( 'assets_states', $settings );
 

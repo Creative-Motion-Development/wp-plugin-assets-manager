@@ -68,6 +68,8 @@ class WGZ_Assets_Manager_Public {
 				add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_plugin_scripts' ], - 100001 );
 				add_action( 'admin_footer', [ $this, 'assets_manager_render_template' ], 100001 );
 			}
+
+			add_action( 'wam/views/safe_mode_checkbox', [ $this, 'print_save_mode_fake_checkbox' ] );
 		}
 
 		if ( ! is_admin() && ! $on_frontend ) {
@@ -102,6 +104,18 @@ class WGZ_Assets_Manager_Public {
 		if ( wp_doing_ajax() ) {
 			require_once WGZ_PLUGIN_DIR . '/admin/ajax/save-settings.php';
 		}
+	}
+
+	public function print_save_mode_fake_checkbox( $data ) {
+		if ( defined( 'WGZP_PLUGIN_ACTIVE' ) ) {
+			return;
+		}
+		?>
+        <label class="wam-float-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="<?php _e( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) ?>.">
+            <input class="wam-float-panel__checkbox-input visually-hidden" type="checkbox">
+            <span class="wam-float-panel__checkbox-text-premium"><?php _e( 'Safe mode <b>PRO</b>', 'gonzales' ) ?></span>
+        </label>
+		<?php
 	}
 
 	/**
@@ -903,6 +917,8 @@ class WGZ_Assets_Manager_Public {
 			}
 		}
 
+		$pro_label = ! defined( 'WGZP_PLUGIN_ACTIVE' ) ? ' (Pro)' : '';
+
 		$grouped_filter_params = [
 			[
 				'id'    => 'user',
@@ -910,10 +926,11 @@ class WGZ_Assets_Manager_Public {
 				'items' => [
 					[
 						'id'          => 'user-role',
-						'title'       => __( 'Role', 'gonzales' ),
+						'title'       => __( 'Role', 'gonzales' ) . $pro_label,
 						'type'        => 'select',
 						'params'      => $roles_param_values,
-						'description' => __( 'A role of the user who views your website. The role "guest" is applied to unregistered users.', 'gonzales' )
+						'description' => __( 'A role of the user who views your website. The role "guest" is applied to unregistered users.', 'gonzales' ),
+						'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
 					],
 					/*[
 						'id'          => 'user-registered',
@@ -923,20 +940,22 @@ class WGZ_Assets_Manager_Public {
 					],*/
 					[
 						'id'          => 'user-mobile',
-						'title'       => __( 'Mobile Device', 'gonzales' ),
+						'title'       => __( 'Mobile Device', 'gonzales' ) . $pro_label,
 						'type'        => 'select',
 						'params'      => [
 							[ 'value' => 'yes', 'title' => __( 'Yes', 'gonzales' ) ],
 							[ 'value' => 'no', 'title' => __( 'No', 'gonzales' ) ]
 						],
-						'description' => __( 'Determines whether the user views your website from mobile device or not.', 'gonzales' )
+						'description' => __( 'Determines whether the user views your website from mobile device or not.', 'gonzales' ),
+						'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
 					],
 					[
 						'id'          => 'user-cookie-name',
-						'title'       => __( 'Cookie Name', 'gonzales' ),
+						'title'       => __( 'Cookie Name', 'gonzales' ) . $pro_label,
 						'type'        => 'text',
 						'only_equals' => true,
-						'description' => __( 'Determines whether the user\'s browser has a cookie with a given name.', 'gonzales' )
+						'description' => __( 'Determines whether the user\'s browser has a cookie with a given name.', 'gonzales' ),
+						'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
 					]
 				]
 			],
@@ -953,16 +972,18 @@ class WGZ_Assets_Manager_Public {
 					],
 					[
 						'id'          => 'location-page',
-						'title'       => __( 'Custom URL', 'gonzales' ),
+						'title'       => __( 'Custom URL', 'gonzales' ) . $pro_label,
 						'type'        => 'text',
-						'description' => __( 'An URL of the current page where a user who views your website is located.', 'gonzales' )
+						'description' => __( 'An URL of the current page where a user who views your website is located.', 'gonzales' ),
+						'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
 					],
 					[
 						'id'          => 'regular-expression',
-						'title'       => __( 'Regular Expression', 'gonzales' ),
+						'title'       => __( 'Regular Expression', 'gonzales' ) . $pro_label,
 						'type'        => 'regexp',
 						'placeholder' => '^(about-page-[0-9]+|contacts-[0-9]{,2})',
-						'description' => __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' )
+						'description' => __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' ),
+						'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
 					],
 					[
 						'id'          => 'location-some-page',
@@ -986,80 +1007,74 @@ class WGZ_Assets_Manager_Public {
 							'Special Pages' => [
 								[
 									'value' => 'spec_404',
-									'title' => __( '404 Page', 'insert-php' ),
+									'title' => __( '404 Page', 'insert-php' )
 								],
 								[
 									'value' => 'spec_search',
-									'title' => __( 'Search Page', 'insert-php' ),
+									'title' => __( 'Search Page', 'insert-php' )
 								],
 								[
 									'value' => 'spec_blog',
-									'title' => __( 'Blog / Posts Page', 'insert-php' ),
+									'title' => __( 'Blog / Posts Page', 'insert-php' )
 								],
 								[
 									'value' => 'spec_front',
-									'title' => __( 'Front Page', 'insert-php' ),
+									'title' => __( 'Front Page', 'insert-php' )
 								],
 								[
 									'value' => 'spec_date',
-									'title' => __( 'Date Archive', 'insert-php' ),
+									'title' => __( 'Date Archive', 'insert-php' )
 								],
 								[
 									'value' => 'spec_auth',
-									'title' => __( 'Author Archive', 'insert-php' ),
+									'title' => __( 'Author Archive', 'insert-php' )
 								],
 							],
 							'Posts'         => [
 								[
 									'value' => 'post_all',
-									'title' => __( 'All Posts', 'insert-php' ),
+									'title' => __( 'All Posts', 'insert-php' )
 								],
 								[
 									'value' => 'post_arch',
-									'title' => __( 'All Posts Archive', 'insert-php' ),
+									'title' => __( 'All Posts Archive', 'insert-php' )
 								],
 								[
 									'value' => 'post_cat',
-									'title' => __( 'All Categories Archive', 'insert-php' ),
+									'title' => __( 'All Categories Archive', 'insert-php' )
 								],
 								[
 									'value' => 'post_tag',
-									'title' => __( 'All Tags Archive', 'insert-php' ),
+									'title' => __( 'All Tags Archive', 'insert-php' )
 								],
 							],
 							'Pages'         => [
 								[
 									'value' => 'page_all',
-									'title' => __( 'All Pages', 'insert-php' ),
+									'title' => __( 'All Pages', 'insert-php' )
 								],
 								[
 									'value' => 'page_arch',
-									'title' => __( 'All Pages Archive', 'insert-php' ),
+									'title' => __( 'All Pages Archive', 'insert-php' )
 								],
 							],
 
 						],
 						'description' => __( 'List of specific pages.', 'gonzales' )
 					],
-					/*[
-						'id'          => 'location-referrer',
-						'title'       => __( 'Current Referrer', 'gonzales' ),
-						'type'        => 'text',
-						'description' => __( 'A referrer URL which has brought a user to the current page.', 'gonzales' )
-					],*/
 					[
 						'id'          => 'location-post-type',
 						'title'       => __( 'Post type', 'gonzales' ),
 						'type'        => 'select',
 						'params'      => $post_types_param_values,
-						'description' => __( 'A post type of the current page.', 'gonzales' )
+						'description' => __( 'A post type of the current page.', 'gonzales' ),
 					],
 					[
 						'id'          => 'location-taxonomy',
 						'title'       => __( 'Taxonomy', 'gonzales' ),
 						'type'        => 'select',
 						'params'      => $taxonomies_param_values,
-						'description' => __( 'A taxonomy of the current page.', 'gonzales' )
+						'description' => __( 'A taxonomy of the current page.', 'gonzales' ),
 					]
 				]
 			]

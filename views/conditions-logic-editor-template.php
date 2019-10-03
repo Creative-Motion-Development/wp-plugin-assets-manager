@@ -66,7 +66,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 		                        $option_attrs[] = 'data-hint="' . esc_attr( $param['description'] ) . '"';
 	                        }
 	                        ?>
-                            <option<?php echo ' ' . implode( ' ', $option_attrs ) ?> value="<?php echo esc_attr( $param['id'] ) ?>"<?php echo 'disabled' == $param['type'] ? ' disabled' : '' ?>>
+                            <option<?php echo ' ' . implode( ' ', $option_attrs ) ?> value="<?php echo esc_attr( $param['id'] ) ?>"<?php disabled( $param['disabled'] ) ?>>
                                 <?php echo $param['title'] ?>
                             </option>
                         <?php } ?>
