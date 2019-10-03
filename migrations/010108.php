@@ -6,6 +6,10 @@
  */
 class WGZUpdate010108 extends Wbcr_Factory000_Update {
 
+	/**
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 */
 	public function install() {
 		wbcr_gnz_deploy_mu_plugin();
 
@@ -35,7 +39,7 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 					}
 				}
 
-				$active_plugins = get_option( 'active_plugins' );
+				$active_plugins = $this->get_active_plugins();
 
 				if ( ! empty( $active_plugins ) ) {
 					foreach ( (array) $active_plugins as $plugin_base ) {
@@ -66,6 +70,33 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 		update_option( $this->plugin->getPrefix() . 'assets_states', $settings );
 	}
 
+	/**
+	 * Get a list of active plugins.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 * @return array
+	 */
+	private function get_active_plugins() {
+		if ( is_multisite() ) {
+			$active_network_plugins = (array) get_site_option( 'active_sitewide_plugins' );
+			$active_network_plugins = array_keys( $active_network_plugins );
+			$active_blog_plugins    = (array) get_option( 'active_plugins' );
+
+			return array_unique( array_merge( $active_network_plugins, $active_blog_plugins ) );
+		}
+
+		return (array) get_option( 'active_plugins' );
+	}
+
+	/**
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 *
+	 * @param $where
+	 * @param $settings
+	 * @param $exclude
+	 */
 	private function where_to_condition( $where, &$settings, $exclude ) {
 		if ( ! empty( $where['current'] ) ) {
 			foreach ( (array) $where['current'] as $current_url ) {
