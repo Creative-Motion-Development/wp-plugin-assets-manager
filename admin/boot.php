@@ -19,7 +19,7 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	 *
 	 * @param array $notices
 	 */
-	add_filter( 'wbcr/factory/admin_notices', function ( $notices ) {
+	/*add_filter( 'wbcr/factory/admin_notices', function ( $notices ) {
 
 		if ( is_multisite() && is_network_admin() ) {
 			$am_options = get_site_option( 'wbcr_gnz_assets_manager_options' );
@@ -51,14 +51,14 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 		}
 
 		return $notices;
-	}, 10, 2 );
+	}, 10, 2 );*/
 
 	/**
 	 * Импорт опций из плагина Assets manager в плагин Clearfy.
 	 * При попытке использовать премиум версию, у многих пользователей уже настроен бесплатный плагин и
 	 * на ручной перенос настроек уходит очень много времени. Этот кусок кода решает проблему переноса настроек между плагинами.
 	 */
-	add_action( 'admin_init', function () {
+	/*add_action( 'admin_init', function () {
 		if ( isset( $_GET['wbcr_assets_manager_transfer'] ) ) {
 			global $wpdb;
 
@@ -101,7 +101,7 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 				die();
 			}
 		}
-	} );
+	} );*/
 
 	function wbcr_gnz_group_options( $options ) {
 		$options[] = [

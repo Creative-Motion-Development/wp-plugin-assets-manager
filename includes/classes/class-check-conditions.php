@@ -322,6 +322,8 @@ class WGZ_Check_Conditions {
 	 * @param string $value
 	 */
 	protected function current_url( $operator, $value ) {
+		$value = trailingslashit( $value );
+
 		return $this->apply_operator( $operator, $value, $this->get_current_url_path() );
 	}
 
@@ -353,17 +355,13 @@ class WGZ_Check_Conditions {
 	 * @return boolean
 	 */
 	protected function location_taxonomy( $operator, $value ) {
-		$term_id = null;
+		$term_name = null;
 
 		if ( is_tax() || is_tag() || is_category() ) {
 			$term_name = get_queried_object()->name;
-
-			if ( $term_name === $value ) {
-				return true;
-			}
 		}
 
-		return false;
+		return $this->apply_operator( $operator, $term_name, $value );
 	}
 
 

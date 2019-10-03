@@ -365,7 +365,7 @@
 
 		_setOperators(values) {
 			let $operator = this._conditionElement.find(".wam-cleditor__operator-select");
-			$operator.show().off('change');
+			$operator.show();//.off('change');
 
 			$operator.find("option").hide();
 			for( let index in values ) {

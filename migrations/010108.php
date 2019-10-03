@@ -131,7 +131,7 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 			if ( ! empty( $exclude ) ) {
 				foreach ( (array) $exclude as $group_name => $group ) {
 					foreach ( (array) $group as $item_id ) {
-						if ( ! in_array( $group_name, [ 'post_type', 'taxonomies', 'categories' ] ) ) {
+						if ( ! in_array( $group_name, [ 'post_type', 'taxonomies', 'current' ] ) ) {
 							continue;
 						}
 
@@ -142,6 +142,10 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 								break;
 							case 'taxonomies':
 								$condition_param = 'location-taxonomy';
+								$value           = $item_id;
+								break;
+							case 'current':
+								$condition_param = 'current-url';
 								$value           = $item_id;
 								break;
 							/*case 'categories':
