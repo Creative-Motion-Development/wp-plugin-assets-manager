@@ -69,7 +69,7 @@ $plugin_name = $data['name'];
                     </tr>
                     <tr id="wam-table__loaded-resourse-<?php echo md5( $resource_handle . $resource_type . $item['url_full'] ); ?>-conditions" class="wam-table__asset-settings-conditions">
                         <td colspan="5">
-                            <p>
+                            <!--<p>
                                 <input type="checkbox" class="wam-checkbox wam-table__checkbox">
 								<?php _e( 'Don\'t optimize file', 'gonzales' ) ?>
                                 <i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip="<?php _e( 'You’ve enabled the &#34;Optimize js scripts?&#34; and &#34;Optimize CSS options&#34; in the &#34;Minify & Combine plugin&#34;. These settings exclude scripts and styles that you don’t want to optimize. Press No to add a file to the excluded list.', 'gonzales' ) ?>"></i>
@@ -78,7 +78,7 @@ $plugin_name = $data['name'];
                                 <input type="checkbox" class="wam-checkbox wam-table__checkbox">
 								<?php _e( 'Don\'t remove query string (version)', 'gonzales' ) ?>
                                 <i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip="<?php _e( 'You’ve enabled &#34;Remove query strings&#34; from static resources in the &#34;Clearfy&#34; plugin. This list of settings helps you to exclude the necessary scripts and styles with remaining query strings. Press No to add a file to the excluded list.', 'gonzales' ) ?>"></i>
-                            </p>
+                            </p>-->
                             <p>
 								<?php _e( '<strong> You must set rules to disable the resource.</strong>
                             For example, if you select Page -> Equals -> All posts, then the script or style will not

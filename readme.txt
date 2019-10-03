@@ -59,6 +59,13 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.0.0 (03.10.2019) =
+* The interface has become more compact and friendly.
+* The speed and productivity of the editor is increased, it loads faster and does not freeze, as it was before.
+* Extended conditional logic has been added, now you can create complex conditions for disabling assets.
+* An additional mode has appeared to completely disable the plugin (you can disable not only scripts, but also stop executing plugin scripts).
+* Known bugs in the previous version are fixed.
+
 = 1.1.0 =
 * Added: Compatibility with Wordpress 4.2 - 5.x
 * Added: Multisite support
