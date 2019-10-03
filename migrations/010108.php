@@ -9,15 +9,10 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 	public function install() {
 		wbcr_gnz_deploy_mu_plugin();
 
-		if ( is_multisite() && is_network_admin() ) {
-			$old_plugin_options = get_site_option( $this->plugin->getPrefix() . 'assets_manager_options', [] );
-			$save_mode          = (int) get_site_option( $this->plugin->getPrefix() . 'for_admin_only', 0 );
-		} else {
-			$old_plugin_options = get_option( $this->plugin->getPrefix() . 'assets_manager_options', [] );
-			$save_mode          = (int) get_option( $this->plugin->getPrefix() . 'for_admin_only', 0 );
-		}
+		$old_plugin_options = get_option( $this->plugin->getPrefix() . 'assets_manager_options', [] );
+		$save_mode          = (int) get_option( $this->plugin->getPrefix() . 'for_admin_only', 0 );
 
-		$settings = WGZ_Plugin::app()->getOption( 'assets_states', [] );
+		$settings = get_option( $this->plugin->getPrefix() . 'assets_states', [] );
 
 		if ( empty( $settings ) ) {
 			$settings['save_mode'] = (bool) $save_mode;
@@ -68,7 +63,7 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 			}
 		}
 
-		WGZ_Plugin::app()->updateOption( 'assets_states', $settings );
+		update_option( $this->plugin->getPrefix() . 'assets_states', $settings );
 	}
 
 	private function where_to_condition( $where, &$settings, $exclude ) {

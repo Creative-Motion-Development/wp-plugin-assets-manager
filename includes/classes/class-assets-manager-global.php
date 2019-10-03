@@ -336,6 +336,11 @@ class WGZ_Assets_Manager_Public {
 	 * @return mixed
 	 */
 	function clearfy_admin_bar_menu_filter( $menu_items ) {
+		//todo: Закрыть функциональность для админки
+		if ( is_admin() ) {
+			return $menu_items;
+		}
+
 		$current_url = add_query_arg( [ 'wbcr_assets_manager' => 1 ] );
 
 		$menu_items['assets_manager_render_template'] = [
@@ -355,7 +360,8 @@ class WGZ_Assets_Manager_Public {
 	 * @param WP_Admin_Bar $wp_admin_bar
 	 */
 	function assets_manager_add_admin_bar_menu( $wp_admin_bar ) {
-		if ( ! $this->is_user_can() ) {
+		//todo: Закрыть функциональность для админки
+		if ( ! $this->is_user_can() || is_admin() ) {
 			return;
 		}
 
