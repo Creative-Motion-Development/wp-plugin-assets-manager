@@ -11,12 +11,15 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 	 * @since  2.0.0
 	 */
 	public function install() {
-		wbcr_gnz_deploy_mu_plugin();
 
 		$old_plugin_options = get_option( $this->plugin->getPrefix() . 'assets_manager_options', [] );
 		$save_mode          = (int) get_option( $this->plugin->getPrefix() . 'for_admin_only', 0 );
 
 		$settings = get_option( $this->plugin->getPrefix() . 'assets_states', [] );
+
+		if ( ! empty( $old_plugin_options ) ) {
+			wbcr_gnz_deploy_mu_plugin();
+		}
 
 		if ( empty( $settings ) ) {
 			$settings['save_mode'] = (bool) $save_mode;

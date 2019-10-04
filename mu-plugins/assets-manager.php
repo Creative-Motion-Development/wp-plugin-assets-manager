@@ -72,7 +72,7 @@ class WGNZ_Plugins_Loader {
 
 		# Disable plugins only if Asset Manager and Clearfy are activated
 		if ( $is_clearfy_active || $is_assets_manager_active ) {
-			$this->settings = get_option( $this->prefix . 'settings', array() );
+			$this->settings = get_option( $this->prefix . 'assets_states', array() );
 
 			if ( ! empty( $this->settings ) ) {
 				if ( is_multisite() ) {
