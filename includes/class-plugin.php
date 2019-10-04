@@ -91,7 +91,6 @@ class WGZ_Plugin extends Wbcr_Factory000_Plugin {
 	}
 
 	private function global_scripts() {
-		require_once WGZ_PLUGIN_DIR . '/includes/functions.php';
 		require_once( WGZ_PLUGIN_DIR . '/includes/classes/class-views.php' );
 		require_once WGZ_PLUGIN_DIR . '/includes/classes/class-assets-manager-global.php';
 

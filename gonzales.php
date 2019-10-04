@@ -197,8 +197,10 @@ require_once( WGZ_PLUGIN_DIR . '/libs/onepress/compiler/boot.php' );
  * -----------------------------------------------------------------------------
  */
 
-require_once( WGZ_PLUGIN_DIR . '/libs/factory/core/boot.php' );
-require_once( WGZ_PLUGIN_DIR . '/includes/class-plugin.php' );
+require_once ( WGZ_PLUGIN_DIR . '/libs/factory/core/boot.php' );
+require_once ( WGZ_PLUGIN_DIR . '/includes/functions.php' );
+require_once ( WGZ_PLUGIN_DIR . '/includes/class-plugin.php' );
+
 
 try {
 	new WGZ_Plugin( __FILE__, array_merge( $wgnz_plugin_info, array(

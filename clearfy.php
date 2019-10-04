@@ -35,7 +35,9 @@ if ( ! defined( 'WGZ_PLUGIN_ACTIVE' ) ) {
 
 	try {
 		// Global scripts
+		require_once( WGZ_PLUGIN_DIR . '/includes/functions.php' );
 		require_once( WGZ_PLUGIN_DIR . '/includes/3rd-party/class-clearfy-plugin.php' );
+
 		new WGZ_Plugin();
 	} catch( Exception $e ) {
 		$wgnz_plugin_error_func = function () use ( $e ) {

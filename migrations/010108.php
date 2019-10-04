@@ -18,6 +18,10 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 		$settings = get_option( $this->plugin->getPrefix() . 'assets_states', [] );
 
 		if ( ! empty( $old_plugin_options ) ) {
+			if ( ! function_exists( 'wbcr_gnz_deploy_mu_plugin' ) ) {
+				require_once WGZ_PLUGIN_DIR . '/includes/functions.php';
+			}
+
 			wbcr_gnz_deploy_mu_plugin();
 		}
 
@@ -56,17 +60,23 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 								$settings['plugins'][ $plugin_name ]['visability'] = '';
 							}
 
-							$settings['plugins'][ $plugin_name ]['js']  = $settings['js'];
-							$settings['plugins'][ $plugin_name ]['css'] = $settings['css'];
+							if ( ! empty( $settings['js'] ) ) {
+								$settings['plugins'][ $plugin_name ]['js'] = $settings['js'];
+							}
+							if ( ! empty( $settings['css'] ) ) {
+								$settings['plugins'][ $plugin_name ]['css'] = $settings['css'];
+							}
 						}
 					}
 				}
-
-				$settings['theme']['js']  = $settings['misc']['js'] = $settings['js'];
-				$settings['theme']['css'] = $settings['misc']['css'] = $settings['css'];
-
-				unset( $settings['js'] );
-				unset( $settings['css'] );
+				if ( ! empty( $settings['js'] ) ) {
+					$settings['theme']['js'] = $settings['misc']['js'] = $settings['js'];
+					unset( $settings['js'] );
+				}
+				if ( ! empty( $settings['css'] ) ) {
+					$settings['theme']['css'] = $settings['misc']['css'] = $settings['css'];
+					unset( $settings['css'] );
+				}
 			}
 		}
 
