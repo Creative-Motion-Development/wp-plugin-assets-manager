@@ -97,6 +97,7 @@ class WGZ_Assets_Manager_Public {
 
 		// Stop optimizing scripts and caching the asset manager page.
 		add_action( 'wp', [ $this, 'stop_caching_and_script_optimize' ] );
+
 		// Disable autoptimize on Assets manager page
 		add_filter( 'autoptimize_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
 		add_filter( 'wmac_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
@@ -286,8 +287,8 @@ class WGZ_Assets_Manager_Public {
 					$src = $tag->getAttribute( 'src' );
 
 					$white_list_js = [
-						'jquery.js',
-						'jquery-migrate.min.js',
+						'wam-jquery.js',
+						'wam-jquery-migrate.min.js',
 						'wp-includes/js/admin-bar.min.js',
 						// --
 						'assets-manager/assets/js/assets-manager.js',
@@ -411,6 +412,8 @@ class WGZ_Assets_Manager_Public {
 			'conditions_logic_params' => $this->get_conditions_login_params( true ),
 			'settings'                => $settings
 		] );
+
+		$this->print_plugin_scripts();
 	}
 
 	/**
@@ -569,33 +572,48 @@ class WGZ_Assets_Manager_Public {
 	 */
 	public function enqueue_plugin_scripts() {
 		if ( $this->is_user_can() && isset( $_GET['wbcr_assets_manager'] ) ) {
-			$jquery_handle = 'jquery';
-			$plugin_ver    = $this->plugin->getPluginVersion();
+			$plugin_ver = $this->plugin->getPluginVersion();
 
 			wp_enqueue_style( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', [], $plugin_ver );
 			wp_enqueue_style( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/css/assets-conditions.css', [], $plugin_ver );
 			wp_enqueue_style( 'wam-pnotify', WGZ_PLUGIN_URL . '/assets/css/PNotifyBrightTheme.css', [], $plugin_ver );
 
 			// Фикс для рукожопов, которые отключают jquery из ядра
-			if ( ! wp_script_is( 'jquery' ) ) {
-				$jquery_handle = 'wam-jquery-core';
-				$suffix        = wp_scripts_get_suffix();
-
-				wp_enqueue_script( 'wam-jquery-core', '/wp-includes/js/jquery/jquery.js', [], '1.12.4-wp' );
-				wp_enqueue_script( 'wam-jquery-migrate', "/wp-includes/js/jquery/jquery-migrate$suffix.js", [], '1.4.1' );
-			}
-
-			wp_enqueue_script( 'wam-pnotify', WGZ_PLUGIN_URL . '/assets/js/PNotify.js', [], $plugin_ver, true );
-			wp_enqueue_script( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js', [ $jquery_handle ], $plugin_ver, true );
+			/*if ( ! wp_script_is( 'jquery' ) ) {
+				wp_enqueue_script( 'jquery', '/wp-includes/js/jquery/jquery.js', [], '1.12.4-wp' );
+			}*/
+			/*wp_enqueue_script( 'wam-pnotify', WGZ_PLUGIN_URL . '/assets/js/PNotify.js', [], $plugin_ver, true );
+			wp_enqueue_script( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js', [ 'jquery' ], $plugin_ver, true );
 			wp_enqueue_script( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [
-				$jquery_handle,
+				'jquery',
 				'wam-assets-conditions'
 			], $plugin_ver, true );
 
 			wp_localize_script( 'wam-assets-manager', 'wam_localize_data', [
 				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' )
-			] );
+			] );*/
 		}
+	}
+
+	/**
+	 * Hardcode? Because, other plugins disable scripts or manipulate them.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 */
+	public function print_plugin_scripts() {
+		?>
+        <script>
+			var wam_localize_data = <?php echo json_encode( [
+				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' )
+			] ) ?>;
+        </script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-jquery.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-jquery-migrate.min.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/PNotify.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/assets-manager.js'; ?>'></script>
+		<?php
 	}
 
 
@@ -774,6 +792,7 @@ class WGZ_Assets_Manager_Public {
 						$s['settings_button_classes'] = " js-wam-button--hidden";
 					}
 				} else {
+					$s['row_classes']             = "";
 					$s['select_control_classes']  = " js-wam-select--enable";
 					$s['settings_button_classes'] = " js-wam-button--hidden";
 				}
