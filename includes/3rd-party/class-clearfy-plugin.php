@@ -84,7 +84,7 @@ class WGZ_Plugin {
 	private function register_pages() {
 		$admin_path = WGZ_PLUGIN_DIR . '/admin/pages';
 
-		self::app()->registerPage( 'WbcrGnz_AssetsManagerPage', $admin_path . '/class-pages-settings.php' );
+		self::app()->registerPage( 'WGZ_AssetsManagerPage', $admin_path . '/class-pages-settings.php' );
 	}
 
 	/**
@@ -92,8 +92,9 @@ class WGZ_Plugin {
 	 * @since  1.1.0
 	 */
 	private function global_scripts() {
-		require( WGZ_PLUGIN_DIR . '/includes/functions.php' );
-		require( WGZ_PLUGIN_DIR . '/includes/class-configurate-assets.php' );
-		new WbcrGnz_ConfigAssetsManager( self::$app );
+		require_once( WGZ_PLUGIN_DIR . '/includes/classes/class-views.php' );
+		require_once WGZ_PLUGIN_DIR . '/includes/classes/class-assets-manager-global.php';
+
+		new WGZ_Assets_Manager_Public( self::$app );
 	}
 }

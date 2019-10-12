@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @copyright (c) 2018 Webraftic Ltd
  */
-class WbcrGnz_AssetsManagerPage extends Wbcr_FactoryClearfy000_PageBase {
+class WGZ_AssetsManagerPage extends Wbcr_FactoryClearfy000_PageBase {
 
 	/**
 	 * The id of the page in the admin menu.
@@ -135,7 +135,7 @@ class WbcrGnz_AssetsManagerPage extends Wbcr_FactoryClearfy000_PageBase {
 					'hint'    => __( 'Disables assets manager initialization for frontend.', 'gonzales' ),
 					'default' => false
 				],
-				[
+				/*[
 					'type'    => 'checkbox',
 					'way'     => 'buttons',
 					'name'    => 'disable_assets_manager_on_backend',
@@ -143,7 +143,7 @@ class WbcrGnz_AssetsManagerPage extends Wbcr_FactoryClearfy000_PageBase {
 					'layout'  => [ 'hint-type' => 'icon', 'hint-icon-color' => 'grey' ],
 					'hint'    => __( 'Disables assets manager initialization for backend.', 'gonzales' ),
 					'default' => true
-				]
+				]*/
 			]
 		];
 

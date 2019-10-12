@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'WGZ_PLUGIN_ACTIVE' ) ) {
-	define( 'WGZ_PLUGIN_VERSION', '1.1.0' );
+	define( 'WGZ_PLUGIN_VERSION', '2.0.1' );
 	define( 'WGZ_PLUGIN_ACTIVE', true );
 
 	// Этот плагин загружен, как аддон для плагина Clearfy
@@ -35,7 +35,9 @@ if ( ! defined( 'WGZ_PLUGIN_ACTIVE' ) ) {
 
 	try {
 		// Global scripts
+		require_once( WGZ_PLUGIN_DIR . '/includes/functions.php' );
 		require_once( WGZ_PLUGIN_DIR . '/includes/3rd-party/class-clearfy-plugin.php' );
+
 		new WGZ_Plugin();
 	} catch( Exception $e ) {
 		$wgnz_plugin_error_func = function () use ( $e ) {

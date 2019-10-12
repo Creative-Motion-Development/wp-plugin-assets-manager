@@ -2,7 +2,7 @@
 /*
   Plugin Name: Webcraftic AM plugin load filter
   Description: Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
-  Version: 1.0.1
+  Version: 1.0.3
   Plugin URI: https://wordpress.org/plugins/gonzales/
   Author: Webcraftic <alex.kovalevv@gmail.com>
   Author URI: https://clearfy.pro/assets-manager
@@ -19,84 +19,6 @@ if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || is_admin() ||
 }
 
 // @formatter:off
-// @formatter:on
-
-//-------------------------------------------------------------------------------------------
-// pluggable.php defined function overwrite
-// pluggable.php read before the query_posts() is processed by the current user undetermined
-//-------------------------------------------------------------------------------------------
-if ( ! function_exists( 'wp_get_current_user' ) ) :
-	/**
-	 * Retrieve the current user object.
-	 *
-	 * @return WP_User Current user WP_User object
-	 */
-	function wp_get_current_user() {
-		if ( ! function_exists( 'wp_set_current_user' ) ) {
-			return 0;
-		} else {
-			return _wp_get_current_user();
-		}
-	}
-endif;
-
-if ( ! function_exists( 'get_userdata' ) ) :
-	/**
-	 * Retrieve user info by user ID.
-	 *
-	 * @param int $user_id   User ID
-	 *
-	 * @return WP_User|bool WP_User object on success, false on failure.
-	 */
-	function get_userdata( $user_id ) {
-		return get_user_by( 'id', $user_id );
-	}
-endif;
-
-if ( ! function_exists( 'get_user_by' ) ) :
-	/**
-	 * Retrieve user info by a given field
-	 *
-	 * @param string     $field   The field to retrieve the user with. id | slug | email | login
-	 * @param int|string $value   A value for $field. A user ID, slug, email address, or login name.
-	 *
-	 * @return WP_User|bool WP_User object on success, false on failure.
-	 */
-	function get_user_by( $field, $value ) {
-		$userdata = WP_User::get_data_by( $field, $value );
-
-		if ( ! $userdata ) {
-			return false;
-		}
-
-		$user = new WP_User;
-		$user->init( $userdata );
-
-		return $user;
-	}
-endif;
-
-if ( ! function_exists( 'is_user_logged_in' ) ) :
-	/**
-	 * Checks if the current visitor is a logged in user.
-	 *
-	 * @return bool True if user is logged in, false if not logged in.
-	 */
-	function is_user_logged_in() {
-		if ( ! function_exists( 'wp_set_current_user' ) ) {
-			return false;
-		}
-
-		$user = wp_get_current_user();
-
-		if ( ! $user->exists() ) {
-			return false;
-		}
-
-		return true;
-	}
-endif;
-
 //-------------------------------------------------------------------------------------------
 // Plugins load filter
 //-------------------------------------------------------------------------------------------
@@ -104,6 +26,7 @@ endif;
 class WGNZ_Plugins_Loader {
 
 	protected $prefix = 'wbcr_gnz_';
+	protected $parent_plugin_dir;
 	protected $settings;
 	protected $active_plugins = array();
 
@@ -112,7 +35,7 @@ class WGNZ_Plugins_Loader {
 		# task or a rest api request. Otherwise, the user may have problems
 		# with the work of plugins.
 		if ( $this->doing_ajax() || $this->doing_cron() || $this->doing_rest_api() ) {
-			return;
+			return false;
 		}
 
 		$is_assets_manager_active = false;
@@ -132,25 +55,33 @@ class WGNZ_Plugins_Loader {
 			if ( empty( $deactivate_components ) || ! in_array( 'assets_manager', $deactivate_components ) ) {
 				$is_clearfy_active = true;
 			}
+			if ( in_array( 'wp-plugin-clearfy/clearfy.php', $active_plugins ) ) {
+				$this->parent_plugin_dir = WP_PLUGIN_DIR . '/wp-plugin-clearfy/components/assets-manager/';
+			} else {
+				$this->parent_plugin_dir = WP_PLUGIN_DIR . '/clearfy/components/assets-manager/';
+			}
 		} else if ( in_array( 'gonzales/gonzales.php', $active_plugins ) || in_array( 'wp-plugin-gonzales/gonzales.php', $active_plugins ) ) {
 			$is_assets_manager_active = true;
 			$this->prefix             = 'wbcr_gnz_';
+			$this->parent_plugin_dir  = WP_PLUGIN_DIR . '/gonzales/';
+		}
+
+		if( !file_exists($this->parent_plugin_dir) ) {
+			return false;
 		}
 
 		# Disable plugins only if Asset Manager and Clearfy are activated
 		if ( $is_clearfy_active || $is_assets_manager_active ) {
-			$this->settings = get_option( $this->prefix . 'assets_manager_options', array() );
+			$this->settings = get_option( $this->prefix . 'assets_states', array() );
 
 			if ( ! empty( $this->settings ) ) {
 				if ( is_multisite() ) {
-					add_filter( 'site_option_active_sitewide_plugins', array( $this, 'disable_network_plugins' ), 1 );
+					add_filter( 'site_option_active_sitewide_plugins', array($this, 'disable_network_plugins' ), 1 );
 				}
 
 				add_filter( 'option_active_plugins', array( $this, 'disable_plugins' ), 1 );
-
 				add_filter( 'option_hack_file', array( $this, 'hack_file_filter' ), 1 );
 				add_action( 'plugins_loaded', array( $this, 'remove_plugin_filters' ), 1 );
-				//add_action( 'wp_loaded', array( &$this, 'cache_post_type' ), 1 );
 			}
 		}
 	}
@@ -243,71 +174,6 @@ class WGNZ_Plugins_Loader {
 	}
 
 	/**
-	 * Before plugins loaded, it does not use conditional branch such as is_home,
-	 * to set wp_query, wp in temporary query
-	 *
-	 * @since 1.0.0
-	 * @return bool
-	 */
-	private function set_wp_query() {
-		if ( empty( $GLOBALS['wp_the_query'] ) ) {
-			$rewrite_rules = get_option( 'rewrite_rules' );
-
-			$data = get_option( $this->prefix . 'queryvars' );
-
-			if ( empty( $rewrite_rules ) || empty( $data['rewrite_rules'] ) || $rewrite_rules !== $data['rewrite_rules'] ) {
-				$data['rewrite_rules'] = ( empty( $rewrite_rules ) ) ? '' : $rewrite_rules;
-				update_option( $this->prefix . 'queryvars', $data );
-
-				return false;
-			}
-
-			$GLOBALS['wp_the_query'] = new WP_Query();
-			$GLOBALS['wp_query']     = $GLOBALS['wp_the_query'];
-			$GLOBALS['wp_rewrite']   = new WP_Rewrite();
-			$GLOBALS['wp']           = new WP();
-
-			//register_taxonomy(category, post_tag, post_format) support for is_archive
-			$this->force_initial_taxonomies();
-
-			//Post Format, Custom Post Type support
-			//add_action( 'parse_request', array( $this, 'parse_request' ) );
-
-			$GLOBALS['wp']->parse_request( '' );
-			$GLOBALS['wp']->query_posts();
-		}
-
-		global $wp_query;
-
-		if ( ! is_embed() ) {
-			if ( ( is_home() || is_front_page() || is_archive() || is_search() || is_singular() ) == false || ( is_home() && ! empty( $_GET ) ) ) {
-				return false;
-			} else if ( is_singular() && empty( $wp_query->post ) ) {
-				if ( empty( $wp_query->query_vars['post_type'] ) ) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Make taxonomies and posts available to 'plugin load filter'.
-	 * force register_taxonomy (category, post_tag, post_format)
-	 *
-	 * @since 1.0.0
-	 */
-	private function force_initial_taxonomies() {
-		global $wp_actions;
-		$wp_actions['init'] = 1;
-		create_initial_taxonomies();
-		create_initial_post_types();
-		unset( $wp_actions['init'] );
-	}
-
-
-	/**
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.0.0
 	 *
@@ -332,128 +198,19 @@ class WGNZ_Plugins_Loader {
 			return false;
 		}
 
-		# If there are no plugins disabled
-		if ( ! isset( $this->settings['disabled'] ) || ! isset( $this->settings['disabled']['plugins'] ) || empty( $this->settings['disabled']['plugins'] ) ) {
-			return false;
-		}
-
-		$enabled = array();
-		if ( isset( $this->settings['enabled'] ) && isset( $this->settings['enabled']['plugins'] ) && ! empty( $this->settings['enabled']['plugins'] ) ) {
-			$enabled = $this->settings['enabled']['plugins'];
-		}
-
-		foreach ( (array) $this->settings['disabled']['plugins'] as $plugin_slug => $conditions ) {
-			$enabled_conditions = isset( $enabled[ $plugin_slug ] ) ? $enabled[ $plugin_slug ] : array();
-
-			if ( $plugin_base_part[0] == $plugin_slug && $this->is_plugin_disabled( $conditions, $enabled_conditions ) ) {
-				return true;
+		if ( ! empty( $this->settings['plugins'] ) && isset( $this->settings['plugins'][ $plugin_base_part[0] ] ) && 'disable_plugin' === $this->settings['plugins'][ $plugin_base_part[0] ]['load_mode'] ) {
+			require_once $this->parent_plugin_dir . '/includes/classes/class-check-conditions.php';
+			if ( ! empty( $this->settings['plugins'][ $plugin_base_part[0] ]['visability'] ) ) {
+				$condition = new WGZ_Check_Conditions( $this->settings['plugins'][ $plugin_base_part[0] ]['visability'] );
+				if ( $condition->validate() ) {
+					return true;
+				}
 			}
 		}
 
 		return false;
 	}
 
-	/**
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.0.0
-	 *
-	 * @param $disabled
-	 * @param $enabled
-	 *
-	 * @return bool
-	 */
-	private function is_plugin_disabled( $disabled, $enabled ) {
-		$current_url = $this->get_current_url();
-
-		if ( empty( $current_url ) ) {
-			return false;
-		}
-
-		$is_disabled_everywhere = isset( $disabled['everywhere'] ) && $disabled['everywhere'] == 1;
-		$is_disabled_current    = isset( $disabled['current'] ) && is_array( $disabled['current'] ) && in_array( $current_url, $disabled['current'] );
-		$is_disabled_custom     = isset( $disabled['custom'] ) && is_array( $disabled['custom'] ) && ! empty( $disabled['custom'] );
-		$is_disabled_regex      = isset( $disabled['regex'] ) && ! empty( $disabled['regex'] );
-
-		if ( $is_disabled_everywhere || $is_disabled_current || $is_disabled_custom || $is_disabled_regex ) {
-			if ( isset( $enabled['current'] ) && is_array( $enabled['current'] ) && in_array( $current_url, $enabled['current'] ) ) {
-				return false;
-			}
-
-			// Exclude post types
-			if ( isset( $enabled['post_types'] ) ) {
-				if ( $this->set_wp_query() && is_singular() ) {
-					global $wp_query;
-
-					$type = get_post_type( $wp_query->post );
-
-					if ( $type === false && isset( $wp_query->query_vars['post_type'] ) ) {
-						$type = $wp_query->query_vars['post_type'];
-					}
-					if ( $type === 'post' ) {
-						$fmt  = get_post_format( $wp_query->post );
-						$type = ( $fmt === 'standard' || $fmt == false ) ? 'post' : "post-$fmt";
-					}
-
-					if ( in_array( $type, $enabled['post_types'] ) ) {
-						return false;
-					}
-				}
-			}
-
-			// Exclude taxonomies
-			if ( isset( $enabled['taxonomies'] ) ) {
-				if ( $this->set_wp_query() && ( is_tax() || is_tag() ) ) {
-					$query = get_queried_object();
-
-					if ( ! empty( $query ) && isset( $query->taxonomy ) && in_array( $query->taxonomy, $enabled['taxonomies'] ) ) {
-						return false;
-					}
-				}
-			}
-
-			// Exclude cats
-			if ( isset( $enabled['categories'] ) ) {
-				if ( $this->set_wp_query() && in_array( get_query_var( 'cat' ), $enabled['categories'] ) ) {
-					return false;
-				}
-			}
-
-			if ( $is_disabled_custom ) {
-				$found_match = false;
-
-				foreach ( (array) $disabled['custom'] as $url ) {
-					// Убираем базовый url
-					$free_url = str_replace( site_url(), '', $url );
-					// Если есть *
-					if ( strpos( $free_url, '*' ) ) {
-						// Получаем строку до *
-						$free_url = strstr( $free_url, '*', true );
-						// Если это был не пустой url (типа http://site/*) и есть вхождение с начала
-						if ( untrailingslashit( $free_url ) && strpos( $current_url, $free_url ) === 0 ) {
-							$found_match = true;
-							break;
-						}
-						// Если url'ы идентичны
-					} else if ( untrailingslashit( esc_url( $free_url ) ) === $current_url ) {
-						$found_match = true;
-						break;
-					}
-				}
-
-				if ( ! $found_match ) {
-					return false;
-				}
-			}
-
-			if ( $is_disabled_regex && ! @preg_match( '/' . trim( str_replace( '\\\\', '\\', $disabled['regex'] ), '/' ) . '/', ltrim( $current_url, '/\\' ) ) ) {
-				return false;
-			}
-
-			return true;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Get current URL
@@ -470,98 +227,6 @@ class WGNZ_Plugins_Loader {
 
 		return $out;
 	}
-
-	//Post Format Type, Custom Post Type Data Cache for parse request
-	/*private function cache_post_type() {
-		if ( ! is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) || ( defined( 'DOING_CRON' ) && DOING_CRON ) ) {
-			return;
-		}
-
-		global $wp;
-		global $wp_post_statuses;
-		$public_query_vars = ( ! empty( $wp->public_query_vars ) ) ? $wp->public_query_vars : array();;
-		$post_type_query_vars = array();
-		foreach ( get_post_types( array(), 'objects' ) as $post_type => $t ) {
-			if ( $t->query_var ) {
-				$post_type_query_vars[ $t->query_var ] = $post_type;
-			}
-		}
-		$queryable_post_types = get_post_types( array( 'publicly_queryable' => true ) );
-
-		$data = get_option( $this->prefix . 'queryvars' );
-		if ( ! empty( $post_type_query_vars ) && ! empty( $queryable_post_types ) ) {
-			$data['public_query_vars']    = $public_query_vars;
-			$data['post_type_query_vars'] = $post_type_query_vars;
-			$data['queryable_post_types'] = $queryable_post_types;
-			$data['wp_post_statuses']     = $wp_post_statuses;
-			update_option( $this->prefix . 'queryvars', $data );
-		} else if ( ! empty( $data['post_type_query_vars'] ) || ! empty( $data['queryable_post_types'] ) ) {
-			//delete_option($this->prefix . 'queryvars');
-			$data['public_query_vars']    = '';
-			$data['post_type_query_vars'] = '';
-			$data['queryable_post_types'] = '';
-			$data['wp_post_statuses']     = '';
-			update_option( $this->prefix . 'queryvars', $data );
-		}
-	}*/
-
-	//parse_request Action Hook for Custom Post Type query add
-	/*public function parse_request( &$args ) {
-		if ( did_action( 'plugins_loaded' ) === 0 ) {
-			$data = get_option( $this->prefix . 'queryvars' );
-
-			if ( ! empty( $data['post_type_query_vars'] ) && ! empty( $data['queryable_post_types'] ) ) {
-				global $wp_post_statuses;
-				$post_type_query_vars = $data['post_type_query_vars'];
-				$queryable_post_types = $data['queryable_post_types'];
-				$wp_post_statuses     = $data['wp_post_statuses'];
-
-				$args->public_query_vars = $data['public_query_vars'];
-				if ( isset( $args->matched_query ) ) {
-					parse_str( $args->matched_query, $perma_query_vars );
-				}
-				foreach ( $args->public_query_vars as $wpvar ) {
-					if ( isset( $args->extra_query_vars[ $wpvar ] ) ) {
-						$args->query_vars[ $wpvar ] = $args->extra_query_vars[ $wpvar ];
-					} else if ( isset( $_POST[ $wpvar ] ) ) {
-						$args->query_vars[ $wpvar ] = $_POST[ $wpvar ];
-					} else if ( isset( $_GET[ $wpvar ] ) ) {
-						$args->query_vars[ $wpvar ] = $_GET[ $wpvar ];
-					} else if ( isset( $perma_query_vars[ $wpvar ] ) ) {
-						$args->query_vars[ $wpvar ] = $perma_query_vars[ $wpvar ];
-					}
-
-					if ( ! empty( $args->query_vars[ $wpvar ] ) ) {
-						if ( ! is_array( $args->query_vars[ $wpvar ] ) ) {
-							$args->query_vars[ $wpvar ] = (string) $args->query_vars[ $wpvar ];
-						} else {
-							foreach ( $args->query_vars[ $wpvar ] as $vkey => $v ) {
-								if ( ! is_object( $v ) ) {
-									$args->query_vars[ $wpvar ][ $vkey ] = (string) $v;
-								}
-							}
-						}
-						if ( isset( $post_type_query_vars[ $wpvar ] ) ) {
-							$args->query_vars['post_type'] = $post_type_query_vars[ $wpvar ];
-							$args->query_vars['name']      = $args->query_vars[ $wpvar ];
-						}
-					}
-				}
-
-				// Limit publicly queried post_types to those that are publicly_queryable
-				if ( isset( $args->query_vars['post_type'] ) ) {
-					if ( ! is_array( $args->query_vars['post_type'] ) ) {
-						if ( ! in_array( $args->query_vars['post_type'], $queryable_post_types ) ) {
-							unset( $args->query_vars['post_type'] );
-						}
-					} else {
-						$args->query_vars['post_type'] = array_intersect( $args->query_vars['post_type'], $queryable_post_types );
-					}
-				}
-			}
-		}
-	}*/
-
 
 	/**
 	 * Checks if the current request is a WP REST API request.
@@ -619,3 +284,4 @@ class WGNZ_Plugins_Loader {
 }
 
 new WGNZ_Plugins_Loader();
+// @formatter:on

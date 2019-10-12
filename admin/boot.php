@@ -19,7 +19,7 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 	 *
 	 * @param array $notices
 	 */
-	add_filter( 'wbcr/factory/admin_notices', function ( $notices ) {
+	/*add_filter( 'wbcr/factory/admin_notices', function ( $notices ) {
 
 		if ( is_multisite() && is_network_admin() ) {
 			$am_options = get_site_option( 'wbcr_gnz_assets_manager_options' );
@@ -51,14 +51,14 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 		}
 
 		return $notices;
-	}, 10, 2 );
+	}, 10, 2 );*/
 
 	/**
 	 * Импорт опций из плагина Assets manager в плагин Clearfy.
 	 * При попытке использовать премиум версию, у многих пользователей уже настроен бесплатный плагин и
 	 * на ручной перенос настроек уходит очень много времени. Этот кусок кода решает проблему переноса настроек между плагинами.
 	 */
-	add_action( 'admin_init', function () {
+	/*add_action( 'admin_init', function () {
 		if ( isset( $_GET['wbcr_assets_manager_transfer'] ) ) {
 			global $wpdb;
 
@@ -101,41 +101,7 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 				die();
 			}
 		}
-	} );
-
-	/**
-	 * This action is executed when the component of the Clearfy plugin is activate and if this component is name ga_cache
-	 *
-	 * @param string $component_name
-	 */
-	add_action( 'wbcr/clearfy/activated_component', function ( $component_name ) {
-		if ( $component_name == 'assets_manager' ) {
-			if ( class_exists( 'WCL_Plugin' ) ) {
-				$license = WCL_Plugin::app()->getLicense();
-				if ( ( $license->isLicenseValid() || ( defined( 'WCL_PLUGIN_DEBUG' ) && WCL_PLUGIN_DEBUG ) ) && ! WCL_Plugin::app()->isActivateComponent( 'assets-manager-premium' ) ) {
-					WCL_Plugin::app()->activateComponent( 'assets-manager-premium' );
-					wbcr_gnz_deploy_mu_plugin();
-				}
-			}
-		}
-	} );
-
-	/**
-	 * This action is executed when the component of the Clearfy plugin is activate and if this component is name ga_cache
-	 *
-	 * @param string $component_name
-	 */
-	add_action( 'wbcr_clearfy_deactivated_component', function ( $component_name ) {
-		if ( $component_name == 'assets_manager' ) {
-			if ( class_exists( 'WCL_Plugin' ) ) {
-				$license = WCL_Plugin::app()->getLicense();
-				if ( ( $license->isLicenseValid() || ( defined( 'WCL_PLUGIN_DEBUG' ) && WCL_PLUGIN_DEBUG ) ) && WCL_Plugin::app()->isActivateComponent( 'assets-manager-premium' ) ) {
-					WCL_Plugin::app()->deactivateComponent( 'assets-manager-premium' );
-					wbcr_gnz_remove_mu_plugin();
-				}
-			}
-		}
-	} );
+	} );*/
 
 	function wbcr_gnz_group_options( $options ) {
 		$options[] = [

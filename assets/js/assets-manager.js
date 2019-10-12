@@ -4,120 +4,521 @@
  * @copyright (c) 13.11.2017, Webcraftic
  * @version 1.0
  */
+// [{"type":"group","conditions":[{"param":"location-some-page","operator":"equals","type":"select","value":"base_web"}]}]
+// [{"type":"group","conditions":[{"param":"location-some-page","operator":"equals","type":"select","value":"base_web"}]}]
 
 (function($) {
 	'use strict';
 
+	class AssetsManager {
+		constructor() {
+			var tabHash = window.location.hash.replace('#', '');
+
+			if( tabHash ) {
+				$('.js-wam-assets-type-tabs__button[data-type="' + tabHash + '"]').click();
+			}
+
+			this.initEvents();
+			this.updateStat();
+		}
+
+		initEvents() {
+			var self = this;
+
+			$('.js-wam-assets-type-tabs__button').click(function() {
+				self.switchCategoryTab($(this));
+				return false;
+			});
+
+			$('.js-wam-nav-plugins__tab-switch').click(function() {
+				self.switchPluginTab($(this));
+				return false;
+			});
+
+			$('.js-wam-top-panel__save-button').click(function() {
+				self.saveSettings();
+				return false;
+			});
+
+			$('.js-wam-select-plugin-load-mode').change(function() {
+				if( 'enable' === $(this).val() ) {
+					self.enablePlugin($(this));
+				} else if( 'disable_assets' === $(this).val() || 'disable_plugin' === $(this).val() ) {
+					self.disablePlugin($(this));
+				}
+
+				return false;
+			});
+
+			$('.js-wam-open-plugin-settings').click(function() {
+				if( $(this).hasClass('js-wam-button--opened') ) {
+					self.closePluginSettings($(this));
+					return false;
+				}
+
+				self.openPluginSettings($(this));
+
+				return false;
+			});
+
+			$('.js-wam-select-asset-load-mode').change(function() {
+				let selectElement = $(this);
+
+				if( 'enable' === selectElement.val() ) {
+					self.enableAsset(selectElement);
+					return false;
+				}
+				self.disableAsset(selectElement);
+				return false;
+			});
+
+			$('.js-wam-open-asset-settings').click(function() {
+				if( $(this).hasClass('js-wam-button--opened') ) {
+					self.closeAssetSettings($(this));
+					return false;
+				}
+
+				self.openAssetSettings($(this));
+				return false;
+			});
+		}
+
+		switchCategoryTab(element) {
+			window.location.hash = '#' + element.data('type');
+
+			$('.js-wam-assets-type-tabs__button').removeClass('wam-assets-type-tab__active');
+			element.addClass('wam-assets-type-tab__active');
+
+			$('.wam-assets-type-tab-content').removeClass('wam-assets-type-tab-content__active');
+			$('#wam-assets-type-tab-content__' + element.data('type')).addClass('wam-assets-type-tab-content__active');
+		}
+
+		switchPluginTab(element) {
+			$('.js-wam-nav-plugins__tab-switch').removeClass('wam-nav-plugins__tab--active');
+			element.addClass('wam-nav-plugins__tab--active');
+
+			$('.wam-nav-plugins__tab-content').removeClass('js-wam-nav-plugins__tab-content--active');
+			$(element.find('a').attr('href')).addClass('js-wam-nav-plugins__tab-content--active');
+
+			$('.wam-table__th-plugins-settings').text(element.find('.wam-plugin-name').text());
+
+		}
+
+		setSettingsButtonOpenState(buttonElement) {
+			buttonElement.removeClass('js-wam-button--opened');
+			buttonElement.addClass('js-wam-button__icon--cogs').removeClass('js-wam-button__icon--close');
+		}
+
+		setSettingsButtonCloseState(buttonElement) {
+			buttonElement.addClass('js-wam-button--opened');
+			buttonElement.removeClass('js-wam-button__icon--cogs').addClass('js-wam-button__icon--close');
+		}
+
+		disablePlugin(selectElement) {
+			let activeContainerElement = selectElement.closest('.js-wam-nav-plugins__tab-content--active'),
+				settingsButtonElement = selectElement.closest('.wam-plugin-settings__controls').find('.js-wam-open-plugin-settings');
+
+			/*if( currentContentTabElement.find('.js-wam-select-asset-load-mode option[value="disable"]:selected').length ) {
+				var passAction = confirm("If you want to change the plugin’s load mode, all your logical settings to disable the plugins assets will be reset. Do you really want to do this?");
+				if( !passAction ) {
+					return;
+				}
+			}*/
+
+			/*var notice = PNotify.notice({
+  title: 'Confirmation Needed',
+  text: 'Are you sure?',
+  icon: 'fas fa-question-circle',
+  hide: false,
+  stack: {
+    'dir1': 'down',
+    'modal': true,
+    'firstpos1': 25
+  },
+  modules: {
+    Confirm: {
+      confirm: true
+    },
+    Buttons: {
+      closer: false,
+      sticker: false
+    },
+    History: {
+      history: false
+    },
+  }
+});
+notice.on('pnotify.confirm', function() {
+  alert('Ok, cool.');
+});
+notice.on('pnotify.cancel', function() {
+  alert('Oh ok. Chicken, I see.');
+});*/
+
+			settingsButtonElement.removeClass('js-wam-button--hidden');
+
+			selectElement.removeClass('js-wam-select--enable')
+				.addClass('js-wam-select--disable');
+
+			// Disable assets table
+			let assetSettingsContainer = activeContainerElement.find('.wam-table__asset-settings');
+			assetSettingsContainer.addClass('js-wam-table__tr--disabled-section');
+			//assetSettingsContainer.hide();
+
+			let assetConditionsContainer = activeContainerElement.find('.wam-table__asset-settings-conditions');
+			assetConditionsContainer.hide();
+			assetConditionsContainer.find(".wam-cleditor").remove();
+			assetConditionsContainer.find(".wam-conditions-builder__settings").val('');
+
+			activeContainerElement.find('.js-wam-select-asset-load-mode').val('disable')
+				.removeClass('js-wam-select--enable')
+				.addClass('js-wam-select--disable')
+				.prop('disabled', true);
+
+			activeContainerElement.find('.js-wam-open-asset-settings')
+				.removeClass('js-wam-button--opened')
+				.addClass('js-wam-button--hidden');
+
+			this.openPluginSettings(settingsButtonElement, "disable_plugin" === selectElement.val());
+			this.updateStat();
+		}
+
+		enablePlugin(selectElement) {
+			let activeContainerElement = selectElement.closest('.js-wam-nav-plugins__tab-content--active'),
+				settingsButtonElement = selectElement.closest('.wam-plugin-settings__controls').find('.js-wam-open-plugin-settings');
+
+			settingsButtonElement.addClass('js-wam-button--hidden');
+
+			selectElement.removeClass('js-wam-select--disable')
+				.addClass('js-wam-select--enable');
+
+			// Enable assets table
+			activeContainerElement.find('.wam-table__asset-settings').removeClass('js-wam-table__tr--disabled-section');
+			activeContainerElement.find('.js-wam-select-asset-load-mode').val('enable')
+				.addClass('js-wam-select--enable')
+				.removeClass('js-wam-select--disable')
+				.prop('disabled', false);
+
+			activeContainerElement.find('.js-wam-open-asset-settings')
+				.addClass('js-wam-button--hidden');
+
+			this.closePluginSettings(settingsButtonElement, true);
+			this.updateStat();
+
+		}
+
+		openPluginSettings(buttonElement) {
+			let containerElement = buttonElement.closest('.wam-plugin-settings'),
+				editorContainerElement = containerElement.find('.js-wam-plugin-settings__conditions');
+
+			this.setSettingsButtonCloseState(buttonElement);
+			editorContainerElement.show();
+			if( !editorContainerElement.find('.wam-cleditor').length ) {
+
+				this.createConditionsEditor(editorContainerElement, function(e) {
+					function a() {
+						let params = ['location-some-page', 'location-taxonomy', 'location-post-type'],
+							loadMode = containerElement.find('.js-wam-select-plugin-load-mode').val();
+
+						if( "disable_plugin" === loadMode ) {
+							for( let i = 0; i < params.length; i++ ) {
+								e.element.find('.wam-cleditor__param-select').find('option[value="' + params[i] + '"]').hide();
+							}
+						} else {
+							e.element.find('.wam-cleditor__param-select').find('option').show();
+						}
+					}
+
+					containerElement.find('.js-wam-select-plugin-load-mode').change(function() {
+						a();
+					});
+
+					a();
+				});
+			}
+		}
+
+		closePluginSettings(buttonElement, destroyEditor = false) {
+			let containerElement = buttonElement.closest('.wam-plugin-settings'),
+				editorContainerElement = containerElement.find('.js-wam-plugin-settings__conditions');
+
+			if( destroyEditor ) {
+				this.destroyCoditionEditor(editorContainerElement);
+			}
+
+			if( !buttonElement.hasClass('js-wam-button--opened') ) {
+				return false;
+			}
+
+			this.setSettingsButtonOpenState(buttonElement);
+			editorContainerElement.hide();
+		}
+
+		disableAsset(selectElement) {
+			let containerElement = selectElement.closest('tr'),
+				settingsButtonElement = containerElement.find('.js-wam-open-asset-settings');
+
+			settingsButtonElement.removeClass('js-wam-button--hidden');
+			containerElement.addClass('js-wam-table__tr--disabled-section');
+			selectElement.removeClass('js-wam-select--enable').addClass('js-wam-select--disable');
+
+			this.openAssetSettings(settingsButtonElement);
+			this.updateStat();
+		}
+
+		enableAsset(selectElement) {
+			let containerElement = selectElement.closest('tr'),
+				settingsButtonElement = containerElement.find('.js-wam-open-asset-settings');
+
+			settingsButtonElement.addClass('js-wam-button--hidden');
+			selectElement.removeClass('js-wam-select--disable').addClass('js-wam-select--enable');
+			containerElement.removeClass('js-wam-table__tr--disabled-section');
+
+			this.closeAssetSettings(settingsButtonElement, true);
+			this.updateStat();
+		}
+
+		/**
+		 * Toggle Asset Settings
+		 * @param buttonElement Object settings button
+		 * @returns {boolean}
+		 */
+		openAssetSettings(buttonElement) {
+			var placeID = buttonElement.closest('tr').attr('id'),
+				place = $('#' + placeID + '-conditions');
+
+			if( buttonElement.hasClass('js-wam-button--opened') ) {
+				return false;
+			}
+
+			this.setSettingsButtonCloseState(buttonElement);
+			place.show();
+
+			if( !place.find('.wam-cleditor').length ) {
+				this.createConditionsEditor(place.find(".wam-asset-conditions-builder"));
+			}
+
+			return true;
+		}
+
+		closeAssetSettings(buttonElement, destroyEditor = false) {
+			var placeID = buttonElement.closest('tr').attr('id'),
+				place = $('#' + placeID + '-conditions');
+
+			if( destroyEditor ) {
+				this.destroyCoditionEditor(place.find(".wam-asset-conditions-builder"));
+			}
+
+			if( !buttonElement.hasClass('js-wam-button--opened') ) {
+				return false;
+			}
+
+			this.setSettingsButtonOpenState(buttonElement);
+			place.hide();
+
+			return true;
+		}
+
+		saveSettings() {
+			var settings = {
+				save_mode: $('#js-wam-save-mode-checkbox').prop("checked"),
+				plugins: {},
+				theme: {},
+				misc: {}
+			};
+
+			$('.wam-nav-plugins__tab-content').each(function() {
+				let pluginGroupVisabilityConditionsElement = $(this).find('.js-wam-plugin-settings__conditions').find('.wam-conditions-builder__settings'),
+					pluginName = pluginGroupVisabilityConditionsElement.data('plugin-name'),
+					pluginGroupVisabilityConditionsVal = pluginGroupVisabilityConditionsElement.val(),
+					pluginGroupLoadMode = $('.js-wam-select-plugin-load-mode', $(this)).val();
+
+				if( pluginName ) {
+					if( !settings['plugins'][pluginName] ) {
+						settings['plugins'][pluginName] = {};
+					}
+					settings['plugins'][pluginName]['load_mode'] = pluginGroupLoadMode;
+					settings['plugins'][pluginName]['visability'] = pluginGroupVisabilityConditionsVal;
+				}
+
+				$('.wam-table__asset-settings-conditions', $(this)).each(function() {
+					let resourceVisabilityConditionsElement = $(this).find('.wam-conditions-builder__settings'),
+						resourceVisabilityConditionsVal = resourceVisabilityConditionsElement.val(),
+						resourceType = resourceVisabilityConditionsElement.data('resource-type'),
+						resourceHandle = resourceVisabilityConditionsElement.data('resource-handle');
+
+					if( settings['plugins'][pluginName] ) {
+						if( !settings['plugins'][pluginName][resourceType] ) {
+							settings['plugins'][pluginName][resourceType] = {};
+						}
+
+						if( 'enable' !== pluginGroupLoadMode ) {
+							resourceVisabilityConditionsVal = "";
+						}
+
+						settings['plugins'][pluginName][resourceType][resourceHandle] = {
+							visability: resourceVisabilityConditionsVal
+						};
+					}
+				});
+
+				if( undefined === typeof window.wam_localize_data || !wam_localize_data.ajaxurl ) {
+					throw new Error("Undefined wam_localize_data, please check the var in source!");
+				}
+			});
+
+			$('.wam-conditions-builder__settings', '#wam-assets-type-tab-content__theme,#wam-assets-type-tab-content__misc').each(function() {
+				let groupType = $(this).data('group-type'),
+					recourceType = $(this).data("resource-type"),
+					resourceHandle = $(this).data("resource-handle");
+
+				if( !settings[groupType][recourceType] ) {
+					settings[groupType][recourceType] = {};
+				}
+
+				settings[groupType][recourceType][resourceHandle] = {
+					visability: $(this).val()
+				}
+			});
+
+			let stackBottomRight = {
+				'dir1': 'up',
+				'dir2': 'left',
+				'firstpos1': 25,
+				'firstpos2': 25
+			};
+
+			PNotify.closeAll();
+			PNotify.alert({
+				title: 'Saving settings!',
+				text: 'Please wait, saving settings ...',
+				stack: stackBottomRight,
+				hide: false
+			});
+
+			$.ajax(wam_localize_data.ajaxurl, {
+				type: 'post',
+				dataType: 'json',
+				data: {
+					action: 'wam-save-settings',
+					settings: settings,
+					_wpnonce: $('#wam-save-button').data('nonce')
+				},
+				success: function(response) {
+					PNotify.closeAll();
+
+					if( !response || !response.success ) {
+						if( response.data ) {
+							console.log(response.data.error_message_content);
+							PNotify.alert({
+								title: response.data.error_message_title,
+								text: response.data.error_message_content,
+								stack: stackBottomRight,
+								type: 'error',
+								//hide: false
+							});
+						} else {
+							console.log(response);
+						}
+						return;
+					}
+					if( response.data ) {
+						PNotify.alert({
+							title: response.data.save_massage_title,
+							text: response.data.save_message_content,
+							stack: stackBottomRight,
+							type: 'success',
+							//hide: false
+						});
+					}
+				},
+				error: function(xhr, ajaxOptions, thrownError) {
+					PNotify.alert({
+						title: 'Unknown error',
+						text: thrownError,
+						stack: {
+							'dir1': 'up',
+							'dir2': 'left',
+							'firstpos1': 25,
+							'firstpos2': 25
+						},
+						type: 'error',
+						//hide: false
+					});
+				}
+			});
+		}
+
+		createConditionsEditor(element, callback = null) {
+			element.wamConditionsEditor({
+				// where to get an editor template
+				templateSelector: '#wam-conditions-builder-template',
+				// where to put editor options
+				saveInputSelector: '.wam-conditions-builder__settings',
+				groups: [
+					{
+						"type": "group",
+						"conditions": [
+							{
+								"param": "current-url",
+								"operator": "equals",
+								"type": "default",
+								"value": $(location).attr('pathname')
+							}
+
+						]
+					}
+
+				],
+				callback: callback
+			});
+		}
+
+		destroyCoditionEditor(element) {
+			element.find('.wam-cleditor').remove();
+			element.find('.wam-conditions-builder__settings').val('');
+		}
+
+		updateStat() {
+			let total_requests = 0,
+				total_size = 0,
+				optimized_size = 0,
+				disabled_js = 0,
+				disabled_css = 0;
+
+			$('.js-wam-asset').each(function() {
+				let size = $(this).data('size');
+
+				if( !$.isNumeric(size) ) {
+					return;
+				}
+
+				total_requests++;
+				total_size = total_size + size;
+
+				if( !$(this).hasClass('js-wam-table__tr--disabled-section') ) {
+					optimized_size = optimized_size + size;
+				} else {
+					if( $(this).hasClass('js-wam-js-asset') ) {
+						disabled_js++;
+					}
+					if( $(this).hasClass('js-wam-css-asset') ) {
+						disabled_css++;
+					}
+				}
+			});
+
+			$('.wam-float-panel__data-item.__info-request').find('.wam-float-panel__item_value').html(total_requests);
+			$('.wam-float-panel__data-item.__info-total-size').find('.wam-float-panel__item_value').html(Math.round(total_size) + ' KB');
+			$('.wam-float-panel__data-item.__info-reduced-total-size').find('.wam-float-panel__item_value').html(Math.round(optimized_size) + ' KB');
+			$('.wam-float-panel__data-item.__info-disabled-js').find('.wam-float-panel__item_value').html(disabled_js);
+			$('.wam-float-panel__data-item.__info-disabled-css').find('.wam-float-panel__item_value').html(disabled_css);
+		}
+
+	}
+
 	$(function() {
-		$('.wbcr-gnz-disable').on('change', function(ev) {
-			var class_name = 'wbcr-gnz-table__loaded-super-no';
-			var handle = $(this).data('handle');
-			if( handle != undefined ) {
-				class_name = 'wbcr-gnz-table__loaded-no';
-			}
-
-			if( $(this).prop('checked') == true ) {
-				$(this).closest('label').find('input[type="hidden"]').val('disable');
-				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').hide();
-				$(this).closest('tr').find('.wbcr-assets-manager-enable').show();
-				$(this).closest('tr').find('.wbcr-state').removeClass('wbcr-gnz-table__loaded-yes');
-				$(this).closest('tr').find('.wbcr-state').addClass(class_name).trigger('cssClassChanged');
-
-				if( typeof wbcrChangeHandleState == 'function' ) {
-					wbcrChangeHandleState(this, 1);
-				}
-			} else {
-				$(this).closest('label').find('input[type="hidden"]').val('');
-				$(this).closest('tr').find('.wbcr-assets-manager-enable').hide();
-				$(this).closest('tr').find('.wbcr-assets-manager-enable-placeholder').show();
-				$(this).closest('tr').find('.wbcr-state').removeClass(class_name);
-				$(this).closest('tr').find('.wbcr-state').addClass('wbcr-gnz-table__loaded-yes').trigger('cssClassChanged');
-
-				if( typeof wbcrChangeHandleState == 'function' ) {
-					wbcrChangeHandleState(this, 0);
-				}
-			}
-		});
-
-		$('.wbcr-gnz-action-select').on('change', function(ev) {
-			var selectElement = $(this).children(':selected');
-			$(this).closest('.wbcr-assets-manager-enable').find('.wbcr-assets-manager').hide();
-
-			if( selectElement.val() != 'current' ) {
-				$(this).closest('.wbcr-assets-manager-enable').find('.wbcr-assets-manager.' + selectElement.val()).show();
-			}
-		});
-
-		$('.wbcr-gnz-sided-disable').on('change', function(ev) {
-			$(this).closest('label').find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
-
-			var handle = $(this).data('handle');
-			if( handle != undefined ) {
-				$('.wbcr-gnz-sided-' + handle)
-					.prop('checked', $(this).prop('checked'))
-					.closest('label')
-					.find('input[type="hidden"]').val($(this).prop('checked') ? 1 : 0);
-			}
-		});
-
-		$('.wbcr-reset-button').on('click', function() {
-			$('.wbcr-gnz-disable').each(function() {
-				$(this).prop('checked', false).trigger('change');
-				$(this).closest('input').val('');
-			});
-			$('.wbcr-gnz-sided-disable').each(function() {
-				$(this).prop('checked', false).trigger('change');
-				$(this).closest('input').val(1);
-			});
-		});
-
-		$('.wbcr-state').bind('cssClassChanged', function() {
-			var el = $(this).parent('td').parent('tr').find('.wbcr-info-data');
-			if( $(this).hasClass('wbcr-gnz-table__loaded-no') || $(this).hasClass('wbcr-gnz-table__loaded-super-no') ) {
-				if( el.length > 0 ) {
-					el.data('off', 1);
-				}
-			} else {
-				if( el.length > 0 ) {
-					el.data('off', 0);
-				}
-			}
-
-			if( typeof wbcrCalculateInformation == 'function' ) {
-				wbcrCalculateInformation();
-			}
-		});
-
-		if( typeof wbcrCalculateInformation == 'function' ) {
-			wbcrCalculateInformation();
-		}
-
-		$('ul.wbcr-gnz-tabs').on('click', '.wbcr-gnz-tabs__button:not(.active)', function() {
-			window.location.hash = '#' + $(this).data('hash');
-			$(this)
-				.addClass('active').parent().siblings().find('.wbcr-gnz-tabs__button').removeClass('active')
-				.closest('.wbcr-gnz-content').find('div.wbcr-gnz-tabs-content').removeClass('active').eq($(this).parent().index()).addClass('active');
-		});
-
-		var tabHash = window.location.hash.replace('#', '');
-		if( tabHash ) {
-			$('ul.wbcr-gnz-tabs .wbcr-gnz-tabs__button[data-hash="' + tabHash + '"]').click();
-		} else {
-			$('ul.wbcr-gnz-tabs li').eq(0).find('.wbcr-gnz-tabs__button').click();
-		}
-
-		/*if ($('#wpadminbar').length > 0) {
-		 var h = $('#wpadminbar').height();
-		 if (h > 0) {
-		 $('#wbcr-gnz header.wbcr-gnz-panel').css('top', h + 'px');
-		 var top = $('#wbcr-gnz ul.wbcr-gnz-tabs').css('top');
-		 $('#wbcr-gnz ul.wbcr-gnz-tabs').css('top', top.replace('px', '') * 1 + h + 'px');
-		 }
-		 }*/
-
-		$('.wbcr-close-button').on('click', function() {
-			document.location.href = $(this).data('href');
-		});
+		new AssetsManager();
 	});
 
 })(jQuery);
