@@ -57,7 +57,9 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 		                        $option_attrs[] = 'data-placeholder="' . esc_attr( $param['placeholder'] ) . '"';
 	                        }
 
-	                        $option_attrs[] = 'data-params="' . esc_attr( @json_encode( $param['params'], JSON_UNESCAPED_UNICODE, JSON_HEX_QUOT ) ) . '"';
+	                        if ( isset( $param['params'] ) ) {
+		                        $option_attrs[] = 'data-params="' . esc_attr( @json_encode( $param['params'], JSON_UNESCAPED_UNICODE, JSON_HEX_QUOT ) ) . '"';
+	                        }
 
 	                        if ( isset( $param['only_equals'] ) ) {
 		                        $option_attrs[] = 'data-only-equals="' . intval( $param['only_equals'] ) . '"';
@@ -65,8 +67,11 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 	                        if ( isset( $param['description'] ) ) {
 		                        $option_attrs[] = 'data-hint="' . esc_attr( $param['description'] ) . '"';
 	                        }
+
+	                        $option_disabled = isset( $param['disabled'] ) ? $param['disabled'] : false;
+
 	                        ?>
-                            <option<?php echo ' ' . implode( ' ', $option_attrs ) ?> value="<?php echo esc_attr( $param['id'] ) ?>"<?php disabled( $param['disabled'] ) ?>>
+                            <option<?php echo ' ' . implode( ' ', $option_attrs ) ?> value="<?php echo esc_attr( $param['id'] ) ?>"<?php disabled( $option_disabled ) ?>>
                                 <?php echo $param['title'] ?>
                             </option>
                         <?php } ?>

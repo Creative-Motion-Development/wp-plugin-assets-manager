@@ -113,7 +113,7 @@ class WGZ_Assets_Manager_Public {
 		}
 		?>
         <label class="wam-float-panel__checkbox  wam-tooltip  wam-tooltip--bottom" data-tooltip="<?php _e( 'In test mode, you can experiment with disabling unused scripts safely for your site. The resources that you disabled will be visible only to you (the administrator), and all other users will receive an unoptimized version of the site, until you remove this tick', 'gonzales' ) ?>.">
-            <input class="wam-float-panel__checkbox-input visually-hidden" type="checkbox">
+            <input class="wam-float-panel__checkbox-input visually-hidden" type="checkbox"<?php checked( $data['save_mode'] ) ?>>
             <span class="wam-float-panel__checkbox-text-premium"><?php _e( 'Safe mode <b>PRO</b>', 'gonzales' ) ?></span>
         </label>
 		<?php

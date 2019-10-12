@@ -35,7 +35,7 @@ function wam_save_settings_action() {
 	if ( ! empty( $raw_updated_settings ) ) {
 		$settings = WGZ_Plugin::app()->getOption( 'assets_states', [] );
 
-		if ( is_array( $settings ) && ! isset( $settings['save_mode'] ) ) {
+		if ( ! defined( 'WGZP_PLUGIN_ACTIVE' ) || ( is_array( $settings ) && ! isset( $settings['save_mode'] ) ) ) {
 			$settings['save_mode'] = false;
 		}
 
