@@ -59,6 +59,11 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.0.1 (12.10.2019) =
+* Fixed: The bug with save mode.
+* Fixed: Some conditions (entire website) didn't work. It could be due save mode.
+* Fixed: Critical a php error which related "Call to undefined function wp_scripts_get_suffix".
+
 = 2.0.0 (03.10.2019) =
 * The interface has become more compact and friendly.
 * The speed and productivity of the editor is increased, it loads faster and does not freeze, as it was before.
