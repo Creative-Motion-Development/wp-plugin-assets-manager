@@ -63,6 +63,18 @@ $plugin_name = $data['name'];
                             <a href="<?php echo esc_url( $item['url_full'] ); ?>">
 								<?php echo esc_html( $item['url_short'] ); ?>
                             </a>
+                            <div style="margin-top:10px;">
+								<?php if ( ! empty( $item['deps'] ) ): ?>
+                                    <span style="color:grey;"><?php _e( 'Dependency by', 'gonzales' ) ?></span>:
+									<?php echo esc_html( implode( ', ', $item['deps'] ) ); ?>
+								<?php endif; ?>
+                            </div>
+                            <div>
+								<?php if ( ! empty( $item['requires'] ) ): ?>
+                                    <span style="color:red;"><?php _e( 'Requires for', 'gonzales' ) ?></span>:
+									<?php echo esc_html( implode( ', ', $item['requires'] ) ); ?>
+								<?php endif; ?>
+                            </div>
                         </td>
                         <td class="wam-table__td-version"><?php echo esc_html( $item['ver'] ); ?></td>
                         <td class="wam-table__td-size"><?php echo esc_html( $item['size'] ); ?> KB</td>

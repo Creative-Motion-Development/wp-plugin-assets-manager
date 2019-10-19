@@ -7,7 +7,7 @@
 
 .wam-assets-type-tabs {
   position: fixed;
-  top: 92px;
+  top: 62px;
   bottom: 0;
   left: 0;
   width: 75px;
@@ -109,6 +109,7 @@
   list-style: none;
 
   .wam-nav-plugins__tab {
+    position: relative;
     text-align: left;
     margin-bottom: 3px;
 
@@ -139,6 +140,28 @@
       a {
         background: #e8e8e8;
       }
+    }
+
+    &-load-mode--enable::after,
+    &-load-mode--disable-plugin::after,
+    &-load-mode--disable-assets::after {
+      display: block;
+      content: '';
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 10px;
+      height: 10px;
+      background: #8bc34a;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    &-load-mode--disable-assets::after,
+    &-load-mode--disable-plugin::after {
+      background: #d47b7b;
     }
   }
 }

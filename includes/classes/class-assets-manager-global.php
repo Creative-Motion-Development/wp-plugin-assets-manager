@@ -73,7 +73,6 @@ class WGZ_Assets_Manager_Public {
 		}
 
 		if ( ! is_admin() && ! $on_frontend ) {
-			add_action( 'template_redirect', [ $this, 'clean_source_code' ], 9999 );
 			add_action( 'wp_head', [ $this, 'collect_assets' ], 10000 );
 			add_action( 'wp_footer', [ $this, 'collect_assets' ], 10000 );
 		}
@@ -90,6 +89,10 @@ class WGZ_Assets_Manager_Public {
 				add_action( 'admin_bar_menu', [ $this, 'assets_manager_add_admin_bar_menu' ], 1000 );
 			}
 		}
+
+		# Reset plugin settings and clean source code
+		//add_action( 'template_redirect', [ $this, 'redirects' ], 9999 );
+		add_action( 'init', [ $this, 'redirects' ], 9999 );
 
 		##Login/Logout
 		add_action( 'wp_login', [ $this, 'user_logged_in' ], 99, 2 );
@@ -203,131 +206,17 @@ class WGZ_Assets_Manager_Public {
 		return true;
 	}
 
-	/**
-	 * We remove scripts and styles of themes, plugins to avoidE
-	 * unnecessary conflicts during the use of the asset manager.
-	 *
-	 * todo: the method requires better study. Sorry, I don't have time for this.
-	 *
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.0.8
-	 */
-	public function clean_source_code() {
+	public function redirects() {
 		if ( ! isset( $_GET['wbcr_assets_manager'] ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-			return false;
+			return;
 		}
 
-		ob_start( function ( $html ) {
-
-			$raw_html = $html;
-
-			$html = preg_replace( [
-				"'<\s*style.*?<\s*/\s*style\s*>'is",
-			], [
-				""
-			], $html );
-
-			$html = preg_replace_callback( [
-				"'<\s*link.*?>'is",
-			], function ( $matches ) {
-				$doc = new DOMDocument();
-				$doc->loadHTML( $matches[0] );
-				$imageTags = $doc->getElementsByTagName( 'link' );
-
-				foreach ( $imageTags as $tag ) {
-					$src = $tag->getAttribute( 'href' );
-
-					$white_list_js = [
-						'wp-includes/css/dashicons.min.css',
-						'wp-includes/css/admin-bar.min.css',
-						// --
-						'assets-manager/assets/css/assets-manager.css',
-						'assets-manager-premium/assets/css/assets-manager.css',
-						'assets-manager-premium-premium/assets/css/assets-manager.css',
-						// --
-						'assets-manager/assets/css/assets-conditions.css',
-						'assets-manager-premium/assets/css/assets-conditions.css',
-						'assets-manager-premium-premium/assets/css/assets-conditions.css',
-						// --
-						'clearfy/assets/css/admin-bar.css',
-						// --
-						'assets-manager/assets/css/PNotifyBrightTheme.css',
-						'assets-manager-premium/assets/css/PNotifyBrightTheme.css',
-						'assets-manager-premium-premium/assets/css/PNotifyBrightTheme.css',
-
-					];
-
-					if ( ! empty( $src ) ) {
-						foreach ( $white_list_js as $js ) {
-							if ( false !== strpos( $src, $js ) ) {
-								return $matches[0];
-							}
-						}
-					}
-
-					return '';
-				}
-			}, $html );
-
-			$html = preg_replace_callback( [
-				"'<\s*script.*?<\s*\/\s*script\s*>'is",
-			], function ( $matches ) {
-				if ( false !== strpos( $matches[0], 'wam_localize_data' ) ) {
-					return $matches[0];
-				}
-				if ( false !== strpos( $matches[0], 'wam-conditions-builder-template' ) ) {
-					return $matches[0];
-				}
-
-				$doc = new DOMDocument();
-				$doc->loadHTML( $matches[0] );
-				$imageTags = $doc->getElementsByTagName( 'script' );
-
-				foreach ( $imageTags as $tag ) {
-					$src = $tag->getAttribute( 'src' );
-
-					$white_list_js = [
-						'wam-jquery.js',
-						'wam-jquery-migrate.min.js',
-						'wp-includes/js/admin-bar.min.js',
-						// --
-						'assets-manager/assets/js/assets-manager.js',
-						'assets-manager-premium/assets/js/assets-manager.js',
-						'assets-manager-premium-premium/assets/js/assets-manager.js',
-						// --
-						'assets-manager/assets/js/assets-conditions.js',
-						'assets-manager-premium/assets/js/assets-conditions.js',
-						'assets-manager-premium-premium/assets/js/assets-conditions.js',
-						// --
-						'assets-manager/assets/js/PNotify.js',
-						'assets-manager-premium/assets/js/PNotify.js',
-						'assets-manager-premium-premium/assets/js/PNotify.js',
-
-					];
-
-					if ( ! empty( $src ) ) {
-						foreach ( $white_list_js as $js ) {
-							if ( false !== strpos( $src, $js ) ) {
-								return $matches[0];
-							}
-						}
-					}
-
-					return '';
-				}
-				//return $matches[0];
-			}, $html );
-
-			if ( empty( $html ) ) {
-				return $raw_html;
-			}
-
-			return $html;
-		} );
+		$this->reset_plugin_settings_redirect();
+		$this->clean_source_code();
 	}
 
 	/**
-	 * Добавляем ссылку для перехода к менджеру в меню Clearfy (которое в админбаре)
+	 * Добавляем ссылку для перехода к менеджеру в меню Clearfy (которое в админбаре)
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.1.0
@@ -336,12 +225,7 @@ class WGZ_Assets_Manager_Public {
 	 *
 	 * @return mixed
 	 */
-	function clearfy_admin_bar_menu_filter( $menu_items ) {
-		//todo: Закрыть функциональность для админки
-		if ( is_admin() ) {
-			return $menu_items;
-		}
-
+	public function clearfy_admin_bar_menu_filter( $menu_items ) {
 		$current_url = add_query_arg( [ 'wbcr_assets_manager' => 1 ] );
 
 		$menu_items['assets_manager_render_template'] = [
@@ -353,19 +237,14 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
-	 * Добавляем меню для перехода к менджеру в админбар
+	 * Add Assets Manager menu to admin bar.
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.1.0
 	 *
 	 * @param WP_Admin_Bar $wp_admin_bar
 	 */
-	function assets_manager_add_admin_bar_menu( $wp_admin_bar ) {
-		//todo: Закрыть функциональность для админки
-		if ( ! $this->is_user_can() || is_admin() ) {
-			return;
-		}
-
+	public function assets_manager_add_admin_bar_menu( $wp_admin_bar ) {
 		$current_url = add_query_arg( [ 'wbcr_assets_manager' => 1 ] );
 
 		$args = [
@@ -377,29 +256,20 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
-	 * Печатает шаблон менеджера скриптов в теле страницы
+	 * Render Assets Manager view in the page body.
 	 *
-	 * Это функция обратного вызова, для хуков admin_footer,
-	 * wp_footer
+	 * This is callback function for admin_footer and wp_footer hooks.
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
 	 * @throws \Exception
 	 */
-	function assets_manager_render_template() {
+	public function assets_manager_render_template() {
 		if ( ! $this->is_user_can() || ! isset( $_GET['wbcr_assets_manager'] ) ) {
 			return;
 		}
 
-		// Reset settings
-		if ( isset( $_GET['wam_reset_settings'] ) ) {
-			check_admin_referer( 'wam_reset_settings' );
-			$this->plugin->updateOption( 'assets_states', [] );
-			wp_redirect( untrailingslashit( $this->get_current_url() ) . '?wbcr_assets_manager' );
-			die();
-		}
-
-		$settings = $this->plugin->getOption( 'assets_states', [] );
+		$settings = $this->get_settings();
 
 		$views = new WGZ_Views( WGZ_PLUGIN_DIR );
 		$views->print_template( 'assets-manager', [
@@ -417,16 +287,21 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
+	 * Filter loaded assets by user conditions.
+	 *
+	 * If enabled save mode or onened Assets Manager panel, assets will not be filtered.     *
+	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
 	 *
-	 * @param $src
-	 * @param $handle
+	 * @param string $src
+	 * @param string $handle
 	 *
-	 * @return mixed
+	 * @return bool
+	 * @throws \Exception
 	 */
-	function filter_load_assets( $src, $handle ) {
-		$settings = $this->plugin->getOption( 'assets_states', [] );
+	public function filter_load_assets( $src, $handle ) {
+		$settings = $this->get_settings();
 
 		if ( isset( $_GET['wbcr_assets_manager'] ) || empty( $settings ) || ( true === $settings['save_mode'] && ! $this->is_user_can() ) ) {
 			return $src;
@@ -518,15 +393,21 @@ class WGZ_Assets_Manager_Public {
 								$resource_type = 'misc';
 							}
 
-							$resource_name = '';
+							$collection = &$this->collection[ $resource_type ];
+
 							if ( 'plugins' == $resource_type ) {
 								$clean_url     = str_replace( WP_PLUGIN_URL . '/', '', $url );
 								$url_parts     = explode( '/', $clean_url );
-								$resource_name = isset( $url_parts[0] ) ? $url_parts[0] : '';
+								$resource_name = ! empty( $url_parts[0] ) ? $url_parts[0] : null;
+
+								if ( empty( $resource_name ) ) {
+									continue;
+								}
+								$collection = &$this->collection[ $resource_type ][ $resource_name ];
 							}
 
-							if ( ! isset( $this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] ) ) {
-								$this->collection[ $resource_type ][ $resource_name ][ $type ][ $el ] = [
+							if ( ! isset( $collection[ $type ][ $el ] ) ) {
+								$collection[ $type ][ $el ] = [
 									'url_full'  => $url,
 									'url_short' => $url_short,
 									//'state' => $this->get_visibility($type, $el),
@@ -577,21 +458,6 @@ class WGZ_Assets_Manager_Public {
 			wp_enqueue_style( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/css/assets-manager.css', [], $plugin_ver );
 			wp_enqueue_style( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/css/assets-conditions.css', [], $plugin_ver );
 			wp_enqueue_style( 'wam-pnotify', WGZ_PLUGIN_URL . '/assets/css/PNotifyBrightTheme.css', [], $plugin_ver );
-
-			// Фикс для рукожопов, которые отключают jquery из ядра
-			/*if ( ! wp_script_is( 'jquery' ) ) {
-				wp_enqueue_script( 'jquery', '/wp-includes/js/jquery/jquery.js', [], '1.12.4-wp' );
-			}*/
-			/*wp_enqueue_script( 'wam-pnotify', WGZ_PLUGIN_URL . '/assets/js/PNotify.js', [], $plugin_ver, true );
-			wp_enqueue_script( 'wam-assets-conditions', WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js', [ 'jquery' ], $plugin_ver, true );
-			wp_enqueue_script( 'wam-assets-manager', WGZ_PLUGIN_URL . '/assets/js/assets-manager.js', [
-				'jquery',
-				'wam-assets-conditions'
-			], $plugin_ver, true );
-
-			wp_localize_script( 'wam-assets-manager', 'wam_localize_data', [
-				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' )
-			] );*/
 		}
 	}
 
@@ -602,21 +468,181 @@ class WGZ_Assets_Manager_Public {
 	 * @since  2.0.0
 	 */
 	public function print_plugin_scripts() {
+		$scope = 'frontend';
+
+		if ( $this->plugin->isNetworkActive() && $this->plugin->isNetworkAdmin() ) {
+			$scope = 'networkadmin';
+		} else if ( is_admin() ) {
+			$scope = 'admin';
+		}
 		?>
         <script>
 			var wam_localize_data = <?php echo json_encode( [
-				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' )
+				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
+				'scope'   => $scope,
+				'i18n'    => [
+					'reset_settings_warning_title' => __( 'Are you sure you want to reset all plugin settings?', 'gonzales' ),
+					'reset_settings_warning_text'  => __( 'If you click OK, all conditions settings will be reset, including settings that you made on other pages and in the admin panel. ', 'gonzales' )
+				]
 			] ) ?>;
         </script>
-        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-jquery.js'; ?>'></script>
-        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-jquery-migrate.min.js'; ?>'></script>
-        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/PNotify.js'; ?>'></script>
-        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/assets-conditions.js'; ?>'></script>
-        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/assets-manager.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/libs/wam-jquery.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/libs/wam-jquery-migrate.min.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/libs/wam-pnotify.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/libs/wam-pnotify-confirm.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/libs/wam-pnotify-history.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-assets-conditions.js'; ?>'></script>
+        <script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-assets-manager.js'; ?>'></script>
 		<?php
 	}
 
+	/**
+	 * We remove scripts and styles of themes, plugins to avoidE
+	 * unnecessary conflicts during the use of the asset manager.
+	 *
+	 * todo: the method requires better study. Sorry, I don't have time for this.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.8
+	 */
+	private function clean_source_code() {
+		ob_start( function ( $html ) {
 
+			$raw_html = $html;
+
+			$html = preg_replace( [
+				"'<\s*style.*?<\s*/\s*style\s*>'is",
+			], [
+				""
+			], $html );
+
+			$html = preg_replace_callback( [
+				"'<\s*link.*?>'is",
+			], function ( $matches ) {
+				$doc = new DOMDocument();
+				$doc->loadHTML( $matches[0] );
+				$imageTags = $doc->getElementsByTagName( 'link' );
+
+				foreach ( $imageTags as $tag ) {
+					$src = $tag->getAttribute( 'href' );
+
+					$white_list_js = [
+						'wp-includes/css/dashicons.min.css',
+						'wp-includes/css/admin-bar.min.css',
+						// --
+						'assets-manager/assets/css/assets-manager.css',
+						'assets-manager-premium/assets/css/assets-manager.css',
+						'assets-manager-premium-premium/assets/css/assets-manager.css',
+						// --
+						'assets-manager/assets/css/assets-conditions.css',
+						'assets-manager-premium/assets/css/assets-conditions.css',
+						'assets-manager-premium-premium/assets/css/assets-conditions.css',
+						// --
+						'clearfy/assets/css/admin-bar.css',
+						// --
+						'assets-manager/assets/css/PNotifyBrightTheme.css',
+						'assets-manager-premium/assets/css/PNotifyBrightTheme.css',
+						'assets-manager-premium-premium/assets/css/PNotifyBrightTheme.css',
+
+					];
+
+					if ( ! empty( $src ) ) {
+						foreach ( $white_list_js as $js ) {
+							if ( false !== strpos( $src, $js ) ) {
+								return $matches[0];
+							}
+						}
+					}
+
+					return '';
+				}
+			}, $html );
+
+			$html = preg_replace_callback( [
+				"'<\s*script.*?<\s*\/\s*script\s*>'is",
+			], function ( $matches ) {
+				if ( false !== strpos( $matches[0], 'wam_localize_data' ) ) {
+					return $matches[0];
+				}
+				if ( false !== strpos( $matches[0], 'wam-conditions-builder-template' ) ) {
+					return $matches[0];
+				}
+
+				$doc = new DOMDocument();
+				$doc->loadHTML( $matches[0] );
+				$imageTags = $doc->getElementsByTagName( 'script' );
+
+				foreach ( $imageTags as $tag ) {
+					$src = $tag->getAttribute( 'src' );
+
+					$white_list_js = [
+						'wam-jquery.js',
+						'wam-jquery-migrate.min.js',
+						'wp-includes/js/admin-bar.min.js',
+						// --
+						'assets-manager/assets/js/wam-assets-manager.js',
+						'assets/js/wam-assets-conditions.js',
+						// --
+						'assets/js/libs/wam-pnotify.js',
+						'assets/js/libs/wam-pnotify-confirm.js',
+						'assets/js/libs/wam-pnotify-history.js',
+
+					];
+
+					if ( ! empty( $src ) ) {
+						foreach ( $white_list_js as $js ) {
+							if ( false !== strpos( $src, $js ) ) {
+								return $matches[0];
+							}
+						}
+					}
+
+					return '';
+				}
+				//return $matches[0];
+			}, $html );
+
+			if ( empty( $html ) ) {
+				return $raw_html;
+			}
+
+			return $html;
+		} );
+	}
+
+	/**
+	 * If exists GET var, the method make redirect to Assets Manager
+	 *
+	 * Before redirecting, the method will clear some options to completely reset settings.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 */
+	private function reset_plugin_settings_redirect() {
+		// Reset settings
+		if ( isset( $_GET['wbcr_assets_manager'] ) && isset( $_GET['wam_reset_settings'] ) ) {
+			check_admin_referer( 'wam_reset_settings' );
+			$this->plugin->updateOption( 'assets_states', [] );
+			$this->plugin->updateOption( 'backend_assets_states', [] );
+
+			if ( $this->plugin->isNetworkActive() ) {
+				$this->plugin->updateNetworkOption( 'backend_assets_states', [] );
+			}
+
+			wp_redirect( untrailingslashit( $this->get_current_url() ) . '?wbcr_assets_manager' );
+			die();
+		}
+	}
+
+	/**
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 *
+	 * @param string $type
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
 	private function get_collected_assets( $type ) {
 		$assets = [];
 
@@ -626,13 +652,49 @@ class WGZ_Assets_Manager_Public {
 
 		foreach ( (array) $this->collection as $resource_type => $resources ) {
 			if ( $type == $resource_type ) {
-				foreach ( $resources as $resource_name => $types ) {
-					$assets = $this->get_parsed_asset_settings( $types, $resource_type );
-				}
+				$assets = $this->get_parsed_asset_settings( $resources, $resource_type );
 			}
 		}
 
 		return $assets;
+	}
+
+	private function get_asset_requires( $handle ) {
+		$requires = [];
+
+		if ( empty( $this->collection ) ) {
+			return $requires;
+		}
+
+		foreach ( (array) $this->collection as $resource_type => $resources ) {
+			if ( empty( $resources ) ) {
+				continue;
+			}
+
+			if ( 'plugins' == $resource_type ) {
+				foreach ( (array) $resources as $plugin_name => $plugin_types ) {
+					if ( ! empty( $plugin_types ) ) {
+						foreach ( (array) $plugin_types as $plugin_type_name => $plugin_resources ) {
+							foreach ( (array) $plugin_resources as $plugin_resource_name => $plugin_resource ) {
+								if ( ! empty( $plugin_resource['deps'] ) && in_array( $handle, $plugin_resource['deps'] ) ) {
+									$requires[] = $plugin_resource_name;
+								}
+							}
+						}
+					}
+				}
+			} else {
+				foreach ( (array) $resources as $other_type_name => $other_resources ) {
+					foreach ( (array) $other_resources as $other_resource_name => $other_resource ) {
+						if ( ! empty( $other_resource['deps'] ) && in_array( $handle, $other_resource['deps'] ) ) {
+							$requires[] = $other_resource_name;
+						}
+					}
+				}
+			}
+		}
+
+		return $requires;
 	}
 
 	/**
@@ -688,7 +750,7 @@ class WGZ_Assets_Manager_Public {
 	 * @throws \Exception
 	 */
 	private function get_parsed_plugin_settings( $plugin_name, $setting_name = null ) {
-		$settings         = $this->plugin->getOption( 'assets_states', [] );
+		$settings         = $this->get_settings();
 		$default_settings = [
 			'load_mode'               => 'enable',
 			'visability'              => "",
@@ -745,7 +807,7 @@ class WGZ_Assets_Manager_Public {
 	private function get_parsed_asset_settings( array $assets, $group_name, $plugin_name = null ) {
 		$plugin_group      = false;
 		$settings_formated = [];
-		$settings          = $this->plugin->getOption( 'assets_states', [] );
+		$settings          = $this->get_settings();
 
 		if ( ! isset( $assets['js'] ) ) {
 			$assets['js'] = [];
@@ -797,7 +859,8 @@ class WGZ_Assets_Manager_Public {
 					$s['settings_button_classes'] = " js-wam-button--hidden";
 				}
 
-				$s = array_merge( $s, $attrs );
+				$s['requires'] = $this->get_asset_requires( $name );
+				$s             = array_merge( $s, $attrs );
 			}
 		}
 
@@ -832,6 +895,28 @@ class WGZ_Assets_Manager_Public {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Get all plugin settings in dependence on logic.
+	 *
+	 * If plugin loaded in admin area, the method will return settings for the admin area.     *
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.1
+	 * @return array All plugin settings
+	 * @throws \Exception
+	 */
+	private function get_settings() {
+		if ( is_admin() ) {
+			if ( $this->plugin->isNetworkActive() && $this->plugin->isNetworkAdmin() ) {
+				return $this->plugin->getNetworkOption( 'backend_assets_states', [] );
+			}
+
+			return $this->plugin->getOption( 'backend_assets_states', [] );
+		}
+
+		return $this->plugin->getOption( 'assets_states', [] );
 	}
 
 	/**
@@ -904,7 +989,7 @@ class WGZ_Assets_Manager_Public {
 		$roles_param_values = [
 			[
 				'value' => 'guest',
-				'title' => __( 'Guest', 'insert-php' ),
+				'title' => __( 'Guest', 'gonzales' ),
 			]
 		];
 
@@ -943,6 +1028,274 @@ class WGZ_Assets_Manager_Public {
 		}
 
 		$pro_label = ! defined( 'WGZP_PLUGIN_ACTIVE' ) ? ' (Pro)' : '';
+
+		$location_items = [
+			[
+				'id'            => 'current-url',
+				'title'         => __( 'Current URL', 'gonzales' ),
+				'type'          => 'default',
+				'default_value' => ( "/" === $this->get_current_url() ? "/" : untrailingslashit( $this->get_current_url() ) ),
+				'description'   => __( 'Current Url', 'gonzales' )
+			],
+			[
+				'id'          => 'location-page',
+				'title'       => __( 'Custom URL', 'gonzales' ) . $pro_label,
+				'type'        => 'text',
+				'description' => __( 'An URL of the current page where a user who views your website is located.', 'gonzales' ),
+				'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
+			],
+			[
+				'id'          => 'regular-expression',
+				'title'       => __( 'Regular Expression', 'gonzales' ) . $pro_label,
+				'type'        => 'regexp',
+				'placeholder' => '^(about-page-[0-9]+|contacts-[0-9]{,2})',
+				'description' => __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' ),
+				'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
+			]
+		];
+
+		if ( ! is_admin() ) {
+			$location_items[] = [
+				'id'          => 'location-some-page',
+				'title'       => __( 'Page', 'gonzales' ),
+				'type'        => 'select',
+				'params'      => [
+					'Basic'         => [
+						[
+							'value' => 'base_web',
+							'title' => __( 'Entire Website', 'gonzales' ),
+						],
+						[
+							'value' => 'base_sing',
+							'title' => __( 'All Singulars', 'gonzales' ),
+						],
+						[
+							'value' => 'base_arch',
+							'title' => __( 'All Archives', 'gonzales' ),
+						],
+					],
+					'Special Pages' => [
+						[
+							'value' => 'spec_404',
+							'title' => __( '404 Page', 'gonzales' )
+						],
+						[
+							'value' => 'spec_search',
+							'title' => __( 'Search Page', 'gonzales' )
+						],
+						[
+							'value' => 'spec_blog',
+							'title' => __( 'Blog / Posts Page', 'gonzales' )
+						],
+						[
+							'value' => 'spec_front',
+							'title' => __( 'Front Page', 'gonzales' )
+						],
+						[
+							'value' => 'spec_date',
+							'title' => __( 'Date Archive', 'gonzales' )
+						],
+						[
+							'value' => 'spec_auth',
+							'title' => __( 'Author Archive', 'gonzales' )
+						],
+					],
+					'Posts'         => [
+						[
+							'value' => 'post_all',
+							'title' => __( 'All Posts', 'gonzales' )
+						],
+						[
+							'value' => 'post_arch',
+							'title' => __( 'All Posts Archive', 'gonzales' )
+						],
+						[
+							'value' => 'post_cat',
+							'title' => __( 'All Categories Archive', 'gonzales' )
+						],
+						[
+							'value' => 'post_tag',
+							'title' => __( 'All Tags Archive', 'gonzales' )
+						],
+					],
+					'Pages'         => [
+						[
+							'value' => 'page_all',
+							'title' => __( 'All Pages', 'gonzales' )
+						],
+						[
+							'value' => 'page_arch',
+							'title' => __( 'All Pages Archive', 'gonzales' )
+						],
+					],
+
+				],
+				'description' => __( 'List of specific pages.', 'gonzales' )
+			];
+			$location_items[] = [
+				'id'          => 'location-post-type',
+				'title'       => __( 'Post type', 'gonzales' ),
+				'type'        => 'select',
+				'params'      => $post_types_param_values,
+				'description' => __( 'A post type of the current page.', 'gonzales' ),
+			];
+			$location_items[] = [
+				'id'          => 'location-taxonomy',
+				'title'       => __( 'Taxonomy', 'gonzales' ),
+				'type'        => 'select',
+				'params'      => $taxonomies_param_values,
+				'description' => __( 'A taxonomy of the current page.', 'gonzales' ),
+			];
+		} else {
+			$location_items[] = [
+				'id'          => 'location-some-page',
+				'title'       => __( 'Page', 'gonzales' ),
+				'type'        => 'select',
+				'params'      => [
+					'Basic'      => [
+						[
+							'value' => 'all_admin_area',
+							'title' => __( 'All Admin Pages', 'gonzales' ),
+						],
+						[
+							'value' => 'posts_all',
+							'title' => __( 'All Posts', 'gonzales' )
+						],
+						[
+							'value' => 'posts_add_new',
+							'title' => __( 'Add New Post', 'gonzales' )
+						],
+						[
+							'value' => 'posts_taxonomies',
+							'title' => __( 'All Taxonomies', 'gonzales' )
+						]
+					],
+					'Dashboard'  => [
+						[
+							'value' => 'dashboard_home',
+							'title' => __( 'Home', 'gonzales' )
+						],
+						[
+							'value' => 'dashboard_wordpress_updates',
+							'title' => __( 'WordPress Updates', 'gonzales' )
+						],
+					],
+					'Media'      => [
+						[
+							'value' => 'media_library',
+							'title' => __( 'Library', 'gonzales' )
+						],
+						[
+							'value' => 'media_library_add_new',
+							'title' => __( 'Add new', 'gonzales' )
+						]
+					],
+					'Appearance' => [
+						[
+							'value' => 'appearance_themes',
+							'title' => __( 'Themes', 'gonzales' )
+						],
+						[
+							'value' => 'appearance_customize',
+							'title' => __( 'Customize', 'gonzales' )
+						],
+						[
+							'value' => 'appearance_widgets',
+							'title' => __( 'Widgets', 'gonzales' )
+						],
+						[
+							'value' => 'appearance_menus',
+							'title' => __( 'Menus', 'gonzales' )
+						],
+						[
+							'value' => 'appearance_theme_editor',
+							'title' => __( 'Theme Editor', 'gonzales' )
+						]
+					],
+					'Plugins'    => [
+						[
+							'value' => 'plugins_installed',
+							'title' => __( 'Installed Plugins', 'gonzales' )
+						],
+						[
+							'value' => 'plugins_add_new',
+							'title' => __( 'Add New', 'gonzales' )
+						],
+						[
+							'value' => 'plugins_editor',
+							'title' => __( 'Plugin Editor', 'gonzales' )
+						]
+					],
+					'Users'      => [
+						[
+							'value' => 'users_all',
+							'title' => __( 'All Users', 'gonzales' )
+						],
+						[
+							'value' => 'users_add_new',
+							'title' => __( 'Add New', 'gonzales' )
+						],
+						[
+							'value' => 'users_your_profile',
+							'title' => __( 'Your profile', 'gonzales' )
+						]
+					],
+					'Tools'      => [
+						[
+							'value' => 'tools_available',
+							'title' => __( 'Available Tools', 'gonzales' )
+						],
+						[
+							'value' => 'tools_import',
+							'title' => __( 'Import', 'gonzales' )
+						],
+						[
+							'value' => 'tools_export',
+							'title' => __( 'Export', 'gonzales' )
+						],
+						[
+							'value' => 'tools_site_health',
+							'title' => __( 'Site Health', 'gonzales' )
+						],
+						[
+							'value' => 'tools_export_personal_data',
+							'title' => __( 'Export Personal Data', 'gonzales' )
+						],
+						[
+							'value' => 'tools_erase_personal_data',
+							'title' => __( 'Erase Personal Data', 'gonzales' )
+						]
+					],
+					'Settings'   => [
+						[
+							'value' => 'settings_general',
+							'title' => __( 'General', 'gonzales' )
+						],
+						[
+							'value' => 'settings_writing',
+							'title' => __( 'Writing', 'gonzales' )
+						],
+						[
+							'value' => 'settings_reading',
+							'title' => __( 'Reading', 'gonzales' )
+						],
+						[
+							'value' => 'settings_media',
+							'title' => __( 'Media', 'gonzales' )
+						],
+						[
+							'value' => 'settings_permalinks',
+							'title' => __( 'Permalinks', 'gonzales' )
+						],
+						[
+							'value' => 'settings_privacy',
+							'title' => __( 'Privacy', 'gonzales' )
+						]
+					],
+				],
+				'description' => __( 'List of specific pages.', 'gonzales' )
+			];
+		}
 
 		$grouped_filter_params = [
 			[
@@ -987,121 +1340,7 @@ class WGZ_Assets_Manager_Public {
 			[
 				'id'    => 'location',
 				'title' => __( 'Location', 'gonzales' ),
-				'items' => [
-					[
-						'id'            => 'current-url',
-						'title'         => __( 'Current URL', 'gonzales' ),
-						'type'          => 'default',
-						'default_value' => ( "/" === $this->get_current_url() ? "/" : trailingslashit( $this->get_current_url() ) ),
-						'description'   => __( 'Current Url', 'gonzales' )
-					],
-					[
-						'id'          => 'location-page',
-						'title'       => __( 'Custom URL', 'gonzales' ) . $pro_label,
-						'type'        => 'text',
-						'description' => __( 'An URL of the current page where a user who views your website is located.', 'gonzales' ),
-						'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
-					],
-					[
-						'id'          => 'regular-expression',
-						'title'       => __( 'Regular Expression', 'gonzales' ) . $pro_label,
-						'type'        => 'regexp',
-						'placeholder' => '^(about-page-[0-9]+|contacts-[0-9]{,2})',
-						'description' => __( 'Regular expressions can be used by experts. This tool creates flexible conditions to disable the resource. For example, if you specify this expression: ^([A-z0-9]+-)?gifts? then the resource will be disabled at the following pages http://yoursite.test/get-gift/, http://yoursite.test/gift/, http://yoursite.test/get-gifts/, http://yoursite.test/gifts/. The plugin ignores the backslash at the beginning of the query string, so you can dismiss it. Check your regular expressions in here: https://regex101.com, this will prevent you from the mistakes. This feature is available at the paid version.', 'gonzales' ),
-						'disabled'    => ! defined( 'WGZP_PLUGIN_ACTIVE' )
-					],
-					[
-						'id'          => 'location-some-page',
-						'title'       => __( 'Page', 'gonzales' ),
-						'type'        => 'select',
-						'params'      => [
-							'Basic'         => [
-								[
-									'value' => 'base_web',
-									'title' => __( 'Entire Website', 'insert-php' ),
-								],
-								[
-									'value' => 'base_sing',
-									'title' => __( 'All Singulars', 'insert-php' ),
-								],
-								[
-									'value' => 'base_arch',
-									'title' => __( 'All Archives', 'insert-php' ),
-								],
-							],
-							'Special Pages' => [
-								[
-									'value' => 'spec_404',
-									'title' => __( '404 Page', 'insert-php' )
-								],
-								[
-									'value' => 'spec_search',
-									'title' => __( 'Search Page', 'insert-php' )
-								],
-								[
-									'value' => 'spec_blog',
-									'title' => __( 'Blog / Posts Page', 'insert-php' )
-								],
-								[
-									'value' => 'spec_front',
-									'title' => __( 'Front Page', 'insert-php' )
-								],
-								[
-									'value' => 'spec_date',
-									'title' => __( 'Date Archive', 'insert-php' )
-								],
-								[
-									'value' => 'spec_auth',
-									'title' => __( 'Author Archive', 'insert-php' )
-								],
-							],
-							'Posts'         => [
-								[
-									'value' => 'post_all',
-									'title' => __( 'All Posts', 'insert-php' )
-								],
-								[
-									'value' => 'post_arch',
-									'title' => __( 'All Posts Archive', 'insert-php' )
-								],
-								[
-									'value' => 'post_cat',
-									'title' => __( 'All Categories Archive', 'insert-php' )
-								],
-								[
-									'value' => 'post_tag',
-									'title' => __( 'All Tags Archive', 'insert-php' )
-								],
-							],
-							'Pages'         => [
-								[
-									'value' => 'page_all',
-									'title' => __( 'All Pages', 'insert-php' )
-								],
-								[
-									'value' => 'page_arch',
-									'title' => __( 'All Pages Archive', 'insert-php' )
-								],
-							],
-
-						],
-						'description' => __( 'List of specific pages.', 'gonzales' )
-					],
-					[
-						'id'          => 'location-post-type',
-						'title'       => __( 'Post type', 'gonzales' ),
-						'type'        => 'select',
-						'params'      => $post_types_param_values,
-						'description' => __( 'A post type of the current page.', 'gonzales' ),
-					],
-					[
-						'id'          => 'location-taxonomy',
-						'title'       => __( 'Taxonomy', 'gonzales' ),
-						'type'        => 'select',
-						'params'      => $taxonomies_param_values,
-						'description' => __( 'A taxonomy of the current page.', 'gonzales' ),
-					]
-				]
+				'items' => $location_items
 			]
 		];
 

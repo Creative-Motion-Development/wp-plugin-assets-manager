@@ -24,16 +24,6 @@ class WGZ_Check_Conditions {
 		}
 	}
 
-	/*public function __call( $method ) {
-		$extended_methods = apply_filters( 'wam/conditions/extended_methods', [] );
-
-		if ( isset( $extended_methods[ $method ] ) ) {
-			return $extended_methods[ $method ]();
-		}
-
-		return null;
-	}*/
-
 	/**
 	 * Проверяем в правильном ли формате нам передано условие
 	 *
@@ -125,6 +115,18 @@ class WGZ_Check_Conditions {
 	}
 
 	/**
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 *
+	 * @param string $path
+	 *
+	 * @return string
+	 */
+	protected function get_admin_url_path( $path ) {
+		return str_replace( site_url(), '', admin_url( $path ) );
+	}
+
+	/**
 	 * Get current URL
 	 *
 	 * @return string
@@ -132,7 +134,7 @@ class WGZ_Check_Conditions {
 	protected function get_current_url_path() {
 		$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
 
-		return ! empty( $url[0] ) ? trailingslashit( $url[0] ) : '/';
+		return ! empty( $url[0] ) ? untrailingslashit( $url[0] ) : '/';
 	}
 
 	/**
@@ -238,72 +240,174 @@ class WGZ_Check_Conditions {
 	 * @return boolean
 	 */
 	protected function location_some_page( $operator, $value ) {
-		$post_id = ( ! is_404() && ! is_search() && ! is_archive() && ! is_home() ) ? get_the_ID() : false;
+		if ( ! is_admin() ) {
+			// For frontend area
+			switch ( $value ) {
+				case 'base_web':    // Basic - Entire Website
+					$result = ! is_admin();
+					break;
+				case 'base_sing':   // Basic - All Singulars
+					$result = is_singular();
+					break;
+				case 'base_arch':   // Basic - All Archives
+					$result = is_archive();
+					break;
+				case 'spec_404':    // Special Pages - 404 Page
+					$result = is_404();
+					break;
+				case 'spec_search': // Special Pages - Search Page
+					$result = is_search();
+					break;
+				case 'spec_blog':   // Special Pages - Blog / Posts Page
+					$result = is_home();
+					break;
+				case 'spec_front':  // Special Pages - Front Page
+					$result = is_front_page();
+					break;
+				case 'spec_date':   // Special Pages - Date Archive
+					$result = is_date();
+					break;
+				case 'spec_auth':   // Special Pages - Author Archive
+					$result = is_author();
+					break;
+				case 'post_all':    // Posts - All Posts
+				case 'page_all':    // Pages - All Pages
+					$result  = false;
+					$post_id = ( ! is_404() && ! is_search() && ! is_archive() && ! is_home() ) ? get_the_ID() : false;
 
-		switch ( $value ) {
-			case 'base_web':    // Basic - Entire Website
-				$result = true;
-				break;
-			case 'base_sing':   // Basic - All Singulars
-				$result = is_singular();
-				break;
-			case 'base_arch':   // Basic - All Archives
-				$result = is_archive();
-				break;
-			case 'spec_404':    // Special Pages - 404 Page
-				$result = is_404();
-				break;
-			case 'spec_search': // Special Pages - Search Page
-				$result = is_search();
-				break;
-			case 'spec_blog':   // Special Pages - Blog / Posts Page
-				$result = is_home();
-				break;
-			case 'spec_front':  // Special Pages - Front Page
-				$result = is_front_page();
-				break;
-			case 'spec_date':   // Special Pages - Date Archive
-				$result = is_date();
-				break;
-			case 'spec_auth':   // Special Pages - Author Archive
-				$result = is_author();
-				break;
-			case 'post_all':    // Posts - All Posts
-			case 'page_all':    // Pages - All Pages
-				$result = false;
-				if ( false !== $post_id ) {
-					$post_type = 'post_all' == $value ? 'post' : 'page';
-					$result    = $post_type == get_post_type( $post_id );
-				}
-				break;
-			case 'post_arch':   // Posts - All Posts Archive
-			case 'page_arch':   // Pages - All Pages Archive
-				$result = false;
-				if ( is_archive() ) {
-					$post_type = 'post_arch' == $value ? 'post' : 'page';
-					$result    = $post_type == get_post_type();
-				}
-				break;
-			case 'post_cat':    // Posts - All Categories Archive
-			case 'post_tag':    // Posts - All Tags Archive
-				$result = false;
-				if ( is_archive() && 'post' == get_post_type() ) {
-					$taxonomy = 'post_tag' == $value ? 'post_tag' : 'category';
-					$obj      = get_queried_object();
-
-					$current_taxonomy = '';
-					if ( '' !== $obj && null !== $obj ) {
-						$current_taxonomy = $obj->taxonomy;
+					if ( false !== $post_id ) {
+						$post_type = 'post_all' == $value ? 'post' : 'page';
+						$result    = $post_type == get_post_type( $post_id );
 					}
-
-					if ( $current_taxonomy == $taxonomy ) {
-						$result = true;
+					break;
+				case 'post_arch':   // Posts - All Posts Archive
+				case 'page_arch':   // Pages - All Pages Archive
+					$result = false;
+					if ( is_archive() ) {
+						$post_type = 'post_arch' == $value ? 'post' : 'page';
+						$result    = $post_type == get_post_type();
 					}
-				}
-				break;
+					break;
+				case 'post_cat':    // Posts - All Categories Archive
+				case 'post_tag':    // Posts - All Tags Archive
+					$result = false;
+					if ( is_archive() && 'post' == get_post_type() ) {
+						$taxonomy = 'post_tag' == $value ? 'post_tag' : 'category';
+						$obj      = get_queried_object();
 
-			default:
-				$result = true;
+						$current_taxonomy = '';
+						if ( '' !== $obj && null !== $obj ) {
+							$current_taxonomy = $obj->taxonomy;
+						}
+
+						if ( $current_taxonomy == $taxonomy ) {
+							$result = true;
+						}
+					}
+					break;
+
+				default:
+					$result = true;
+			}
+		} else {
+			// For admin area
+			switch ( $value ) {
+				case 'all_admin_area':
+					$result = is_admin();
+					break;
+				case 'dashboard_home':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'index.php' );
+					break;
+				case 'dashboard_wordpress_updates':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'update-core.php' );
+					break;
+				case 'posts_all':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'edit.php' );
+					break;
+				case 'posts_add_new':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'post-new.php' );
+					break;
+				case 'posts_taxonomies':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'edit-tags.php' );
+					break;
+				case 'media_library':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'upload.php' );
+					break;
+				case 'media_library_add_new':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'media-new.php' );
+					break;
+				case 'appearance_themes':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'themes.php' );
+					break;
+				case 'appearance_customize':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'customize.php' );
+					break;
+				case 'appearance_widgets':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'widgets.php' );
+					break;
+				case 'appearance_menus':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'nav-menus.php' );
+					break;
+				case 'appearance_theme_editor':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'theme-editor.php' );
+					break;
+				case 'plugins_installed':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'plugins.php' );
+					break;
+				case 'plugins_add_new':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'plugin-install.php' );
+					break;
+				case 'plugins_editor':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'plugin-editor.php' );
+					break;
+				case 'users_all':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'users.php' );
+					break;
+				case 'users_add_new':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'user-new.php' );
+					break;
+				case 'users_your_profile':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'profile.php' );
+					break;
+				case 'tools_available':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'tools.php' );
+					break;
+				case 'tools_import':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'import.php' );
+					break;
+				case 'tools_export':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'export.php' );
+					break;
+				case 'tools_site_health':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'site-health.php' );
+					break;
+				case 'tools_export_personal_data':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'tools.php' );
+					break;
+				case 'tools_erase_personal_data':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'tools.php' );
+					break;
+				case 'settings_general':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-general.php' );
+					break;
+				case 'settings_writing':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-writing.php' );
+					break;
+				case 'settings_reading':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-reading.php' );
+					break;
+				case 'settings_media':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-media.php' );
+					break;
+				case 'settings_permalinks':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-permalink.php' );
+					break;
+				case 'settings_privacy':
+					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'privacy.php' );
+					break;
+				default:
+					$result = true;
+			}
 		}
 
 		return $this->apply_operator( $operator, $result, true );
@@ -322,7 +426,7 @@ class WGZ_Check_Conditions {
 	 * @param string $value
 	 */
 	protected function current_url( $operator, $value ) {
-		$value = trailingslashit( $value );
+		$value = untrailingslashit( $value );
 
 		return $this->apply_operator( $operator, $value, $this->get_current_url_path() );
 	}

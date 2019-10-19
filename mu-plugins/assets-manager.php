@@ -2,19 +2,19 @@
 /*
   Plugin Name: Webcraftic AM plugin load filter
   Description: Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
-  Version: 1.0.3
+  Version: 1.0.6
   Plugin URI: https://wordpress.org/plugins/gonzales/
   Author: Webcraftic <alex.kovalevv@gmail.com>
   Author URI: https://clearfy.pro/assets-manager
   Framework Version: FACTORY_000_VERSION
 */
-// TODO: The plugin does not support backend
+
 // todo: проверить, как работает кеширование
 // todo: замерить, скорость работы этого решения
 
 defined( 'ABSPATH' ) || exit;
 
-if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || is_admin() || isset( $_GET['wbcr_assets_manager'] ) ) {
+if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || isset( $_GET['wbcr_assets_manager'] ) ) {
 	return;
 }
 
@@ -35,7 +35,7 @@ class WGNZ_Plugins_Loader {
 		# task or a rest api request. Otherwise, the user may have problems
 		# with the work of plugins.
 		if ( $this->doing_ajax() || $this->doing_cron() || $this->doing_rest_api() ) {
-			return false;
+			return;
 		}
 
 		$is_assets_manager_active = false;
@@ -67,12 +67,19 @@ class WGNZ_Plugins_Loader {
 		}
 
 		if( !file_exists($this->parent_plugin_dir) ) {
-			return false;
+			return;
 		}
 
 		# Disable plugins only if Asset Manager and Clearfy are activated
 		if ( $is_clearfy_active || $is_assets_manager_active ) {
-			$this->settings = get_option( $this->prefix . 'assets_states', array() );
+			if( is_multisite() && is_network_admin() ) {
+				$this->settings = get_site_option( $this->prefix . 'backend_assets_states', array() );
+			} else if( is_admin() ) {
+				$this->settings = get_option( $this->prefix . 'backend_assets_states', array() );
+			} else {
+				$this->settings = get_option( $this->prefix . 'assets_states', array() );
+			}
+
 
 			if ( ! empty( $this->settings ) ) {
 				if ( is_multisite() ) {
@@ -209,23 +216,6 @@ class WGNZ_Plugins_Loader {
 		}
 
 		return false;
-	}
-
-
-	/**
-	 * Get current URL
-	 *
-	 * @return string
-	 */
-	private function get_current_url() {
-		$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
-		if ( strlen( $url[0] ) > 1 ) {
-			$out = rtrim( $url[0], '/' );
-		} else {
-			$out = $url[0];
-		}
-
-		return $out;
 	}
 
 	/**

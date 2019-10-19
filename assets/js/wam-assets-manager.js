@@ -4,22 +4,21 @@
  * @copyright (c) 13.11.2017, Webcraftic
  * @version 1.0
  */
-// [{"type":"group","conditions":[{"param":"location-some-page","operator":"equals","type":"select","value":"base_web"}]}]
-// [{"type":"group","conditions":[{"param":"location-some-page","operator":"equals","type":"select","value":"base_web"}]}]
 
 (function($) {
 	'use strict';
 
 	class AssetsManager {
 		constructor() {
-			var tabHash = window.location.hash.replace('#', '');
-
-			if( tabHash ) {
-				$('.js-wam-assets-type-tabs__button[data-type="' + tabHash + '"]').click();
+			if( undefined === typeof window.wam_localize_data || !wam_localize_data.ajaxurl ) {
+				throw new Error("Undefined wam_localize_data, please check the var in source!");
 			}
+
+			this.pluginVars = window.wam_localize_data;
 
 			this.initEvents();
 			this.updateStat();
+			this.setDefaultCategoryTab();
 		}
 
 		initEvents() {
@@ -81,6 +80,49 @@
 				self.openAssetSettings($(this));
 				return false;
 			});
+
+			$('.js-wam-reset-settings').click(function() {
+				self.setWarningForClearSettingsAction($(this));
+				return false;
+			});
+		}
+
+		setWarningForClearSettingsAction(button) {
+			var notice = WamPnotify.notice({
+				title: this.pluginVars.i18n.reset_settings_warning_title,
+				text: this.pluginVars.i18n.reset_settings_warning_text,
+				icon: 'fas fa-question-circle',
+				hide: false,
+				stack: {
+					'dir1': 'down',
+					'modal': true,
+					'firstpos1': 25
+				},
+				modules: {
+					Confirm: {
+						confirm: true
+					},
+					Buttons: {
+						closer: false,
+						sticker: false
+					},
+					History: {
+						history: false
+					},
+				}
+			});
+			notice.on('pnotify.confirm', function() {
+				window.location.href = button.attr('href');
+			});
+			/*notice.on('pnotify.cancel', function() {
+				alert('Oh ok. Chicken, I see.');
+			});*/
+		}
+
+		setDefaultCategoryTab() {
+			let tabHash = window.location.hash.replace('#', '');
+
+			tabHash && $('.js-wam-assets-type-tabs__button[data-type="' + tabHash + '"]').click();
 		}
 
 		switchCategoryTab(element) {
@@ -361,10 +403,6 @@ notice.on('pnotify.cancel', function() {
 						};
 					}
 				});
-
-				if( undefined === typeof window.wam_localize_data || !wam_localize_data.ajaxurl ) {
-					throw new Error("Undefined wam_localize_data, please check the var in source!");
-				}
 			});
 
 			$('.wam-conditions-builder__settings', '#wam-assets-type-tab-content__theme,#wam-assets-type-tab-content__misc').each(function() {
@@ -388,29 +426,30 @@ notice.on('pnotify.cancel', function() {
 				'firstpos2': 25
 			};
 
-			PNotify.closeAll();
-			PNotify.alert({
+			WamPnotify.closeAll();
+			WamPnotify.alert({
 				title: 'Saving settings!',
 				text: 'Please wait, saving settings ...',
 				stack: stackBottomRight,
 				hide: false
 			});
 
-			$.ajax(wam_localize_data.ajaxurl, {
+			$.ajax(this.pluginVars.ajaxurl, {
 				type: 'post',
 				dataType: 'json',
 				data: {
 					action: 'wam-save-settings',
+					scope: this.pluginVars.scope,
 					settings: settings,
 					_wpnonce: $('#wam-save-button').data('nonce')
 				},
 				success: function(response) {
-					PNotify.closeAll();
+					WamPnotify.closeAll();
 
 					if( !response || !response.success ) {
 						if( response.data ) {
 							console.log(response.data.error_message_content);
-							PNotify.alert({
+							WamPnotify.alert({
 								title: response.data.error_message_title,
 								text: response.data.error_message_content,
 								stack: stackBottomRight,
@@ -423,7 +462,7 @@ notice.on('pnotify.cancel', function() {
 						return;
 					}
 					if( response.data ) {
-						PNotify.alert({
+						WamPnotify.alert({
 							title: response.data.save_massage_title,
 							text: response.data.save_message_content,
 							stack: stackBottomRight,
@@ -433,7 +472,7 @@ notice.on('pnotify.cancel', function() {
 					}
 				},
 				error: function(xhr, ajaxOptions, thrownError) {
-					PNotify.alert({
+					WamPnotify.alert({
 						title: 'Unknown error',
 						text: thrownError,
 						stack: {

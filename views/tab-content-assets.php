@@ -46,6 +46,16 @@ if ( empty( $data['assets'] ) ) {
                         <a href="<?php echo esc_url( $item['url_full'] ); ?>">
 							<?php echo esc_html( $item['url_short'] ); ?>
                         </a>
+                        <div class="wam-table__td-handle-deps">
+							<?php if ( ! empty( $item['deps'] ) ): ?>
+                                <span style="color:grey;"><?php _e( 'Dependency by', 'gonzales' ) ?></span>:
+								<?php echo esc_html( implode( ', ', $item['deps'] ) ); ?>
+							<?php endif; ?><br>
+							<?php if ( ! empty( $item['requires'] ) ): ?>
+                                <span style="color:red;"><?php _e( 'Requires for', 'gonzales' ) ?></span>:
+								<?php echo esc_html( implode( ', ', $item['requires'] ) ); ?>
+							<?php endif; ?>
+                        </div>
                     </td>
                     <td class="wam-assets__table-td-version"><?php echo esc_html( $item['ver'] ); ?></td>
                     <td class="wam-assets__table-td-size"><?php echo esc_html( $item['size'] ); ?> KB</td>

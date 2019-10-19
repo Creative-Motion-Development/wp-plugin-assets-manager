@@ -410,7 +410,6 @@ body p {
 #WBCR-AM .wam-table td {
   padding: 17px 10px;
   vertical-align: top;
-  border-bottom: 1px solid #ECEDED;
   text-align: left;
   box-shadow: none;
 }
@@ -507,7 +506,7 @@ body p {
 #WBCR-AM .wam-float-panel {
   position: fixed;
   z-index: 50;
-  top: 30px;
+  top: 0;
   right: 0;
   left: 0;
   width: 100%;
@@ -751,7 +750,7 @@ body p {
 }
 #WBCR-AM .wam-assets-type-tabs {
   position: fixed;
-  top: 92px;
+  top: 62px;
   bottom: 0;
   left: 0;
   width: 75px;
@@ -837,6 +836,7 @@ body p {
   list-style: none;
 }
 #WBCR-AM .wam-nav-plugins .wam-nav-plugins__tab {
+  position: relative;
   text-align: left;
   margin-bottom: 3px;
 }
@@ -860,6 +860,26 @@ body p {
 }
 #WBCR-AM .wam-nav-plugins .wam-nav-plugins__tab.wam-nav-plugins__tab--active a {
   background: #e8e8e8;
+}
+#WBCR-AM .wam-nav-plugins .wam-nav-plugins__tab-load-mode--enable::after,
+#WBCR-AM .wam-nav-plugins .wam-nav-plugins__tab-load-mode--disable-plugin::after,
+#WBCR-AM .wam-nav-plugins .wam-nav-plugins__tab-load-mode--disable-assets::after {
+  display: block;
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 10px;
+  height: 10px;
+  background: #8bc34a;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+#WBCR-AM .wam-nav-plugins .wam-nav-plugins__tab-load-mode--disable-assets::after,
+#WBCR-AM .wam-nav-plugins .wam-nav-plugins__tab-load-mode--disable-plugin::after {
+  background: #d47b7b;
 }
 #WBCR-AM .wam-nav-plugins__tab-content {
   display: none;
@@ -986,7 +1006,7 @@ body p {
   min-width: 1365px;
   position: fixed;
   z-index: 99999999;
-  top: 32px;
+  top: 0;
   bottom: 0;
   left: 0;
   right: 0;

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Ajax действие для сохранения настроек менеджера скриптов
+ * Ajax action for save plugin settings.
  *
  * @author Alexander Kovalev <alex.kovalevv@gmail.com>
  * @since  2.0.0
@@ -30,10 +30,17 @@ function wam_save_settings_action() {
 
 	$save_message_title   = __( 'Settings saved successfully!', 'clearfy' );
 	$save_message_content = __( 'If you use test mode, do not forget to disable it. We also recommend that you flush the cache if you use caching plugins.', 'clearfy' );
-	$raw_updated_settings = WGZ_Plugin::app()->request->post( 'settings' );
+	$scope                = WGZ_Plugin::app()->request->post( 'scope', 'frontend' );
+	$raw_updated_settings = WGZ_Plugin::app()->request->post( 'settings', [], true );
 
 	if ( ! empty( $raw_updated_settings ) ) {
-		$settings = WGZ_Plugin::app()->getOption( 'assets_states', [] );
+		if ( 'networkadmin' === $scope ) {
+			$settings = WGZ_Plugin::app()->getNetworkOption( 'backend_assets_states', [] );
+		} else if ( 'admin' === $scope ) {
+			$settings = WGZ_Plugin::app()->getOption( 'backend_assets_states', [] );
+		} else {
+			$settings = WGZ_Plugin::app()->getOption( 'assets_states', [] );
+		}
 
 		if ( ! defined( 'WGZP_PLUGIN_ACTIVE' ) || ( is_array( $settings ) && ! isset( $settings['save_mode'] ) ) ) {
 			$settings['save_mode'] = false;
@@ -67,9 +74,22 @@ function wam_save_settings_action() {
 			$settings['misc'] = $raw_updated_settings['misc'];
 		}
 
-		$settings = apply_filters( 'wam/before_save_settings', $settings, $raw_updated_settings );
+		/**
+		 * Filter run before save settings.
+		 *
+		 * @param array  $settings
+		 * @param array  $raw_updated_settings
+		 * @param string $scope
+		 */
+		$settings = apply_filters( 'wam/before_save_settings', $settings, $raw_updated_settings, $scope );
 
-		WGZ_Plugin::app()->updateOption( 'assets_states', $settings );
+		if ( 'networkadmin' === $scope ) {
+			WGZ_Plugin::app()->updateNetworkOption( 'backend_assets_states', $settings );
+		} else if ( 'admin' === $scope ) {
+			WGZ_Plugin::app()->updateOption( 'backend_assets_states', $settings );
+		} else {
+			WGZ_Plugin::app()->updateOption( 'assets_states', $settings );
+		}
 
 		// If mu  plugin does not exist, install it.
 		wbcr_gnz_deploy_mu_plugin();
