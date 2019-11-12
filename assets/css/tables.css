@@ -9,9 +9,17 @@
   box-sizing: border-box;
   table-layout: fixed;
   border-collapse: collapse;
-  /*td:first-child {
-    width: 20%;
-  }*/
+}
+.wam-table__handle-deps {
+  margin-top: 15px;
+}
+.wam-table__handle-deps span,
+.wam-table__handle-deps a {
+  font-size: 11px !important;
+}
+.wam-table__handle-deps a {
+  color: red;
+  text-decoration: underline;
 }
 .wam-table tr:nth-child(2n) > td {
   background: #f9f9f9;
@@ -26,24 +34,11 @@
 .wam-table th:not(:last-child) {
   border-right: 2px solid #FFF;
 }
-.wam-table td {
-  padding: 17px 10px;
-  vertical-align: top;
-  text-align: left;
-  box-shadow: none;
-}
 .wam-table__th-actions {
   width: 200px;
 }
 .wam-table__th-type {
   width: 100px;
-}
-.wam-table__td-handle {
-  word-break: break-word;
-}
-.wam-table__td-handle-deps {
-  font-size: 11px;
-  margin-top: 15px;
 }
 .wam-table__th-version {
   width: 100px;
@@ -54,6 +49,15 @@
 .wam-table__th-plugins-list,
 .wam-table__td-plugins-list {
   width: 350px;
+}
+.wam-table td {
+  padding: 17px 10px;
+  vertical-align: top;
+  text-align: left;
+  box-shadow: none;
+}
+.wam-table__td-handle {
+  word-break: break-word;
 }
 .wam-table__td-plugins-list {
   padding: 0 !important;

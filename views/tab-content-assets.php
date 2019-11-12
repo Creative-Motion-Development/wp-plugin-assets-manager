@@ -24,7 +24,7 @@ if ( empty( $data['assets'] ) ) {
 	<?php if ( ! empty( $data['assets'] ) ): ?>
 		<?php foreach ( (array) $data['assets'] as $resource_type => $assets ): ?>
 			<?php foreach ( (array) $assets as $resource_handle => $item ): ?>
-                <tr data-size="<?php echo esc_attr( $item['size'] ); ?>" class="js-wam-asset js-wam-<?php echo esc_attr( $resource_type ); ?>-asset wam-table__asset-settings<?php echo $item['row_classes']; ?>" id="wam-table__loaded-resourse-<?php echo md5( $resource_handle . $resource_type . $item['url_full'] ); ?>">
+                <tr data-size="<?php echo esc_attr( $item['size'] ); ?>" data-asset-handle="<?php echo esc_attr( $resource_handle . '-' . $resource_type ); ?>" class="js-wam-asset js-wam-<?php echo esc_attr( $resource_type ); ?>-asset wam-table__asset-settings<?php echo $item['row_classes']; ?>" id="wam-table__loaded-resourse-<?php echo md5( $resource_handle . $resource_type . $item['url_full'] ); ?>">
                     <td class="wam-table__td-actions">
                         <select class="wam-select<?php echo $item['select_control_classes']; ?> js-wam-select-asset-load-mode">
                             <option value="enable"<?php selected( 'enable', $item['load_mode'] ) ?>>
@@ -46,14 +46,18 @@ if ( empty( $data['assets'] ) ) {
                         <a href="<?php echo esc_url( $item['url_full'] ); ?>">
 							<?php echo esc_html( $item['url_short'] ); ?>
                         </a>
-                        <div class="wam-table__td-handle-deps">
+                        <div class="wam-table__handle-deps">
 							<?php if ( ! empty( $item['deps'] ) ): ?>
-                                <span style="color:grey;"><?php _e( 'Dependency by', 'gonzales' ) ?></span>:
-								<?php echo esc_html( implode( ', ', $item['deps'] ) ); ?>
-							<?php endif; ?><br>
+                                <span class="wam-colors--grey"><?php _e( 'Dependency by', 'gonzales' ) ?></span>:
+                                <span class="wam-table__asset-deps js-wam-table__asset-deps">
+                                        <?php echo implode( ', ', $item['deps'] ); ?>
+                                    </span><br>
+							<?php endif; ?>
 							<?php if ( ! empty( $item['requires'] ) ): ?>
-                                <span style="color:red;"><?php _e( 'Requires for', 'gonzales' ) ?></span>:
-								<?php echo esc_html( implode( ', ', $item['requires'] ) ); ?>
+                                <span class="wam-colors--red"><?php _e( 'Requires for', 'gonzales' ) ?></span>:
+                                <span class="wam-table__asset-requires js-wam-table__asset-requires">
+                                        <?php echo implode( ', ', $item['requires'] ); ?>
+                                    </span>
 							<?php endif; ?>
                         </div>
                     </td>

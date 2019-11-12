@@ -24,6 +24,26 @@
 		initEvents() {
 			var self = this;
 
+			$('.js-wam-require-handle-tag').click(function() {
+				let handle = $(this).data('tag-handle'),
+					assetElement = $('[data-asset-handle="' + handle + '"]'),
+					currentTabElement = $(this).closest('.wam-assets-type-tab-content'),
+					searchTabElement = assetElement.closest('.wam-assets-type-tab-content');
+
+				self.switchCategoryTab($('.wam-assets-type-tabs__button--' + searchTabElement.data('category')));
+
+				assetElement.get(0).scrollIntoView({
+					block: 'center'
+				});
+
+				assetElement.css('border', '1px solid red');
+				setTimeout(function() {
+					assetElement.css('border', '0');
+				}, 2000)
+
+				return false;
+			});
+
 			$('.js-wam-assets-type-tabs__button').click(function() {
 				self.switchCategoryTab($(this));
 				return false;
@@ -61,12 +81,46 @@
 			});
 
 			$('.js-wam-select-asset-load-mode').change(function() {
-				let selectElement = $(this);
+				let selectElement = $(this),
+					requires = selectElement.closest('tr').find('.js-wam-table__asset-requires');
 
 				if( 'enable' === selectElement.val() ) {
 					self.enableAsset(selectElement);
 					return false;
 				}
+
+				if( requires.length ) {
+					// show warning
+					var notice = WamPnotify.notice({
+						title: self.pluginVars.i18n.asset_canbe_required_title,
+						text: self.pluginVars.i18n.asset_canbe_required_text.replace('%s', requires.text()),
+						icon: 'fas fa-question-circle',
+						hide: false,
+						stack: {
+							'dir1': 'down',
+							'modal': true,
+							'firstpos1': 25
+						},
+						modules: {
+							Confirm: {
+								confirm: true
+							},
+							Buttons: {
+								closer: false,
+								sticker: false
+							},
+							History: {
+								history: false
+							},
+						}
+					});
+					notice.on('pnotify.confirm', function() {
+						self.disableAsset(selectElement);
+					});
+
+					return false;
+				}
+
 				self.disableAsset(selectElement);
 				return false;
 			});
@@ -259,15 +313,12 @@ notice.on('pnotify.cancel', function() {
 
 				this.createConditionsEditor(editorContainerElement, function(e) {
 					function a() {
-						let params = ['location-some-page', 'location-taxonomy', 'location-post-type'],
-							loadMode = containerElement.find('.js-wam-select-plugin-load-mode').val();
+						let loadMode = containerElement.find('.js-wam-select-plugin-load-mode').val();
 
 						if( "disable_plugin" === loadMode ) {
-							for( let i = 0; i < params.length; i++ ) {
-								e.element.find('.wam-cleditor__param-select').find('option[value="' + params[i] + '"]').hide();
-							}
+							e.element.addClass('wam-cleditor__disable-plugin-mode');
 						} else {
-							e.element.find('.wam-cleditor__param-select').find('option').show();
+							e.element.removeClass('wam-cleditor__disable-plugin-mode');
 						}
 					}
 
@@ -454,7 +505,8 @@ notice.on('pnotify.cancel', function() {
 								text: response.data.error_message_content,
 								stack: stackBottomRight,
 								type: 'error',
-								//hide: false
+								delay: 15000,
+								hide: true
 							});
 						} else {
 							console.log(response);
@@ -467,7 +519,8 @@ notice.on('pnotify.cancel', function() {
 							text: response.data.save_message_content,
 							stack: stackBottomRight,
 							type: 'success',
-							//hide: false
+							delay: 3000,
+							hide: true
 						});
 					}
 				},
@@ -482,7 +535,8 @@ notice.on('pnotify.cancel', function() {
 							'firstpos2': 25
 						},
 						type: 'error',
-						//hide: false
+						delay: 15000,
+						hide: true
 					});
 				}
 			});
@@ -502,7 +556,7 @@ notice.on('pnotify.cancel', function() {
 								"param": "current-url",
 								"operator": "equals",
 								"type": "default",
-								"value": $(location).attr('pathname')
+								"value": this.getCurrentUrl()
 							}
 
 						]
@@ -511,6 +565,24 @@ notice.on('pnotify.cancel', function() {
 				],
 				callback: callback
 			});
+		}
+
+		/**
+		 * Get current url
+		 *
+		 * if it is the admin area url would be with query string
+		 *
+		 * @returns {jQuery|*|*}
+		 */
+		getCurrentUrl() {
+			let path = $(location).attr('pathname'),
+				queryString = $(location).attr('search');
+
+			if( "admin" === this.pluginVars.scope || "networkadmin" === this.pluginVars.scope ) {
+				return path + queryString.replace(/[?&]{1}wbcr_assets_manager=1/g, '');
+			}
+
+			return path;
 		}
 
 		destroyCoditionEditor(element) {

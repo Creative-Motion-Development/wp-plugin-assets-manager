@@ -30,10 +30,9 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
-	 * Проверяет права пользователя
+	 * Check user permissions
 	 *
-	 * Пользователь должен иметь права администратора или суперадминистратора,
-	 * чтобы использовать менеджер скриптов.
+	 * User must have administrator or super administrator permissions to use the plugin.
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.1.0
@@ -99,7 +98,8 @@ class WGZ_Assets_Manager_Public {
 		add_action( 'wp_logout', [ $this, 'user_logged_out' ] );
 
 		// Stop optimizing scripts and caching the asset manager page.
-		add_action( 'wp', [ $this, 'stop_caching_and_script_optimize' ] );
+		//add_action( 'plugins_loaded', [ $this, 'stop_caching_and_script_optimize' ] );
+		$this->stop_caching_and_script_optimize();
 
 		// Disable autoptimize on Assets manager page
 		add_filter( 'autoptimize_filter_noptimize', [ $this, 'autoptimize_noptimize' ], 10, 0 );
@@ -110,6 +110,14 @@ class WGZ_Assets_Manager_Public {
 		}
 	}
 
+	/**
+	 * Render a fake checkbox to show for user, it is pro feature.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.1
+	 *
+	 * @param array $data   Temlate data
+	 */
 	public function print_save_mode_fake_checkbox( $data ) {
 		if ( defined( 'WGZP_PLUGIN_ACTIVE' ) ) {
 			return;
@@ -123,10 +131,10 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
-	 * Записываем cookie с ролями пользователя
+	 * Write cookie with user roles
 	 *
-	 * Это нужно для идентификации в MU плагине, так как мы не можем использовать
-	 * большинство функций wordpress.
+	 * MU plugin will use cookie for identity user role. We can't use all wordpress
+	 * features before full wp load.
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
@@ -145,7 +153,7 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
-	 * Удаляем cookie с ролями
+	 * Delete cookie with user roles when user logged out
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
@@ -189,6 +197,26 @@ class WGZ_Assets_Manager_Public {
 		if ( ! defined( 'DONOTMINIFY' ) ) {
 			define( 'DONOTMINIFY', true );
 		}
+
+		if ( ! defined( 'DONOTROCKETOPTIMIZE' ) ) {
+			define( 'DONOTROCKETOPTIMIZE', true );
+		}
+
+		if ( ! defined( 'DONOTMINIFYJS' ) ) {
+			define( 'DONOTMINIFYJS', true );
+		}
+
+		if ( ! defined( 'DONOTASYNCCSS' ) ) {
+			define( 'DONOTASYNCCSS', true );
+		}
+
+		if ( ! defined( 'DONOTMINIFYCSS' ) ) {
+			define( 'DONOTMINIFYCSS', true );
+		}
+
+		if ( ! defined( 'WHM_DO_NOT_HIDE_WP' ) ) {
+			define( 'WHM_DO_NOT_HIDE_WP', true );
+		}
 	}
 
 	/**
@@ -206,6 +234,14 @@ class WGZ_Assets_Manager_Public {
 		return true;
 	}
 
+	/**
+	 * Adds two actions "Reset options" and "Clean source code"
+	 *
+	 * The method will call in init action.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.1.0
+	 */
 	public function redirects() {
 		if ( ! isset( $_GET['wbcr_assets_manager'] ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 			return;
@@ -216,12 +252,12 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
-	 * Добавляем ссылку для перехода к менеджеру в меню Clearfy (которое в админбаре)
+	 * Adds a link in Clearfy admin bar menu to go to the Assets manager
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.1.0
 	 *
-	 * @param array $menu_items   Массив ссылок из меню Clearfy
+	 * @param array $menu_items   Array links of Clearfy menu
 	 *
 	 * @return mixed
 	 */
@@ -273,7 +309,6 @@ class WGZ_Assets_Manager_Public {
 
 		$views = new WGZ_Views( WGZ_PLUGIN_DIR );
 		$views->print_template( 'assets-manager', [
-			'current_url'             => esc_url( $this->get_current_url() ),
 			'save_mode'               => isset( $settings['save_mode'] ) ? (bool) $settings['save_mode'] : false,
 			'collection'              => $this->collection,
 			'loaded_plugins'          => $this->get_loaded_plugins(),
@@ -446,7 +481,7 @@ class WGZ_Assets_Manager_Public {
 	}
 
 	/**
-	 * Подключаем скрипты и стили плагина
+	 * Enqueue scripts and styles of the plugin
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
@@ -481,6 +516,8 @@ class WGZ_Assets_Manager_Public {
 				'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
 				'scope'   => $scope,
 				'i18n'    => [
+					'asset_canbe_required_title'   => __( 'Warning', 'gonzales' ),
+					'asset_canbe_required_text'    => __( 'The asset is required for %s. If you will disable the asset, other assets which in dependence on this asset also will disabled.', 'gonzales' ),
 					'reset_settings_warning_title' => __( 'Are you sure you want to reset all plugin settings?', 'gonzales' ),
 					'reset_settings_warning_text'  => __( 'If you click OK, all conditions settings will be reset, including settings that you made on other pages and in the admin panel. ', 'gonzales' )
 				]
@@ -629,7 +666,7 @@ class WGZ_Assets_Manager_Public {
 				$this->plugin->updateNetworkOption( 'backend_assets_states', [] );
 			}
 
-			wp_redirect( untrailingslashit( $this->get_current_url() ) . '?wbcr_assets_manager' );
+			wp_redirect( remove_query_arg( [ 'wam_reset_settings', '_wpnonce' ] ) );
 			die();
 		}
 	}
@@ -677,7 +714,7 @@ class WGZ_Assets_Manager_Public {
 						foreach ( (array) $plugin_types as $plugin_type_name => $plugin_resources ) {
 							foreach ( (array) $plugin_resources as $plugin_resource_name => $plugin_resource ) {
 								if ( ! empty( $plugin_resource['deps'] ) && in_array( $handle, $plugin_resource['deps'] ) ) {
-									$requires[] = $plugin_resource_name;
+									$requires[] = '<a class="js-wam-require-handle-tag" data-tag-handle="' . esc_attr( $plugin_resource_name . '-' . $plugin_type_name ) . '" href="#">' . esc_attr( $plugin_resource_name ) . '</a>';
 								}
 							}
 						}
@@ -687,7 +724,7 @@ class WGZ_Assets_Manager_Public {
 				foreach ( (array) $resources as $other_type_name => $other_resources ) {
 					foreach ( (array) $other_resources as $other_resource_name => $other_resource ) {
 						if ( ! empty( $other_resource['deps'] ) && in_array( $handle, $other_resource['deps'] ) ) {
-							$requires[] = $other_resource_name;
+							$requires[] = '<a class="js-wam-require-handle-tag" data-tag-handle="' . esc_attr( $other_resource_name . '-' . $other_type_name ) . '" href="#">' . esc_attr( $other_resource_name ) . '</a>';
 						}
 					}
 				}
@@ -942,15 +979,23 @@ class WGZ_Assets_Manager_Public {
 	 *
 	 * @return string
 	 */
-	private function get_current_url() {
-		$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
-		if ( strlen( $url[0] ) > 1 ) {
-			$out = rtrim( $url[0], '/' );
-		} else {
-			$out = $url[0];
+	private function get_current_url_path() {
+		if ( ! is_admin() ) {
+			$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
+			if ( strlen( $url[0] ) > 1 ) {
+				$out = rtrim( $url[0], '/' );
+			} else {
+				$out = $url[0];
+			}
+
+			return "/" === $out ? "/" : untrailingslashit( $out );
 		}
 
-		return $out;
+		$removeble_args = array_merge( [ 'wbcr_assets_manager' ], wp_removable_query_args() );
+
+		$url = remove_query_arg( $removeble_args, $_SERVER['REQUEST_URI'] );
+
+		return untrailingslashit( $url );
 	}
 
 	/**
@@ -1034,7 +1079,7 @@ class WGZ_Assets_Manager_Public {
 				'id'            => 'current-url',
 				'title'         => __( 'Current URL', 'gonzales' ),
 				'type'          => 'default',
-				'default_value' => ( "/" === $this->get_current_url() ? "/" : untrailingslashit( $this->get_current_url() ) ),
+				'default_value' => $this->get_current_url_path(),
 				'description'   => __( 'Current Url', 'gonzales' )
 			],
 			[

@@ -12,6 +12,16 @@
       padding: 4px;
     }
 
+    &@{prefix}__disable-plugin-mode {
+      @{prefix}__param-select {
+        option[value="location-taxonomy"],
+        option[value="location-post-type"],
+        option[value="location-some-page"] {
+          display: none;
+        }
+      }
+    }
+
     @{prefix}__text {
       width: 300px;
     }

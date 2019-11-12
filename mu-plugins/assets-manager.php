@@ -2,7 +2,7 @@
 /*
   Plugin Name: Webcraftic AM plugin load filter
   Description: Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
-  Version: 1.0.6
+  Version: 1.0.7
   Plugin URI: https://wordpress.org/plugins/gonzales/
   Author: Webcraftic <alex.kovalevv@gmail.com>
   Author URI: https://clearfy.pro/assets-manager
@@ -25,7 +25,9 @@ if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || isset( $_GET[
 
 class WGNZ_Plugins_Loader {
 
-	protected $prefix = 'wbcr_gnz_';
+	const DEFAULT_OPTIONS_PREFIX = 'wbcr_gnz_';
+	const CLEARFY_OPTIONS_PREFIX = 'wbcr_clearfy_';
+
 	protected $parent_plugin_dir;
 	protected $settings;
 	protected $active_plugins = array();
@@ -38,48 +40,29 @@ class WGNZ_Plugins_Loader {
 			return;
 		}
 
-		$is_assets_manager_active = false;
 		$is_clearfy_active        = false;
 
-		$active_plugins = $this->get_active_plugins();
+		$this->active_plugins = $this->get_active_plugins();
 
-		if ( in_array( 'clearfy/clearfy.php', $active_plugins ) || in_array( 'wp-plugin-clearfy/clearfy.php', $active_plugins ) ) {
-			$this->prefix = 'wbcr_clearfy_';
+		add_filter( 'wam/conditions/call_method', [ $this, 'check_conditions_method' ], 10, 4 );
 
-			if ( is_multisite() ) {
-				$deactivate_components = get_site_option( $this->prefix . 'deactive_preinstall_components', array() );
-			} else {
-				$deactivate_components = get_option( $this->prefix . 'deactive_preinstall_components', array() );
-			}
+		if ( $this->is_active_clearfy() ) {
+			$deactivate_components = $this->get_clearfy_deactivate_components();
 
 			if ( empty( $deactivate_components ) || ! in_array( 'assets_manager', $deactivate_components ) ) {
 				$is_clearfy_active = true;
 			}
-			if ( in_array( 'wp-plugin-clearfy/clearfy.php', $active_plugins ) ) {
-				$this->parent_plugin_dir = WP_PLUGIN_DIR . '/wp-plugin-clearfy/components/assets-manager/';
-			} else {
-				$this->parent_plugin_dir = WP_PLUGIN_DIR . '/clearfy/components/assets-manager/';
-			}
-		} else if ( in_array( 'gonzales/gonzales.php', $active_plugins ) || in_array( 'wp-plugin-gonzales/gonzales.php', $active_plugins ) ) {
-			$is_assets_manager_active = true;
-			$this->prefix             = 'wbcr_gnz_';
-			$this->parent_plugin_dir  = WP_PLUGIN_DIR . '/gonzales/';
 		}
 
-		if( !file_exists($this->parent_plugin_dir) ) {
+		$parent_plugin_dir = $this->get_parent_plugin_dir();
+
+		if( empty($parent_plugin_dir) || !file_exists($parent_plugin_dir) ) {
 			return;
 		}
 
 		# Disable plugins only if Asset Manager and Clearfy are activated
-		if ( $is_clearfy_active || $is_assets_manager_active ) {
-			if( is_multisite() && is_network_admin() ) {
-				$this->settings = get_site_option( $this->prefix . 'backend_assets_states', array() );
-			} else if( is_admin() ) {
-				$this->settings = get_option( $this->prefix . 'backend_assets_states', array() );
-			} else {
-				$this->settings = get_option( $this->prefix . 'assets_states', array() );
-			}
-
+		if ( $is_clearfy_active || $this->is_active_assets_manager_standalone() ) {
+			$this->settings = $this->get_assets_manager_options();
 
 			if ( ! empty( $this->settings ) ) {
 				if ( is_multisite() ) {
@@ -162,6 +145,36 @@ class WGNZ_Plugins_Loader {
 	}
 
 	/**
+	 * Extra method for extend WGZ_Check_Conditions class.
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.7
+	 *
+	 * @param mixed $default
+	 * @param string $method_name
+	 * @param string $operator
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	public function check_conditions_method( $default, $method_name, $operator, $value ) {
+		$premium_plugin_dir = $this->get_parent_premium_plugin_dir();
+
+		if( $premium_plugin_dir && file_exists($premium_plugin_dir) ) {
+			require_once $premium_plugin_dir . '/includes/class-check-conditions.php';
+			if(class_exists('WGNZP_Check_Conditions')) {
+				$conditions = new WGNZP_Check_Conditions();
+
+				if ( method_exists( $conditions, $method_name ) ) {
+					return $conditions->$method_name( $operator, $value );
+				}
+			}
+		}
+
+		return $default;
+	}
+
+	/**
 	 * Get a list of active plugins.
 	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
@@ -181,6 +194,8 @@ class WGNZ_Plugins_Loader {
 	}
 
 	/**
+	 * Determines whether the current plugin is disabled
+	 *
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.0.0
 	 *
@@ -206,7 +221,8 @@ class WGNZ_Plugins_Loader {
 		}
 
 		if ( ! empty( $this->settings['plugins'] ) && isset( $this->settings['plugins'][ $plugin_base_part[0] ] ) && 'disable_plugin' === $this->settings['plugins'][ $plugin_base_part[0] ]['load_mode'] ) {
-			require_once $this->parent_plugin_dir . '/includes/classes/class-check-conditions.php';
+			require_once $this->get_parent_plugin_dir() . '/includes/classes/class-check-conditions.php';
+
 			if ( ! empty( $this->settings['plugins'][ $plugin_base_part[0] ]['visability'] ) ) {
 				$condition = new WGZ_Check_Conditions( $this->settings['plugins'][ $plugin_base_part[0] ]['visability'] );
 				if ( $condition->validate() ) {
@@ -249,8 +265,10 @@ class WGNZ_Plugins_Loader {
 	}
 
 	/**
+	 * Determines whether the current request is a WordPress Ajax request.
+	 *
 	 * @since 1.0.0
-	 * @return bool
+	 * @return bool True if it's a WordPress Ajax request, false otherwise.
 	 */
 	private function doing_ajax() {
 		if ( function_exists( 'wp_doing_ajax' ) ) {
@@ -261,8 +279,10 @@ class WGNZ_Plugins_Loader {
 	}
 
 	/**
+	 * Determines whether the current request is a WordPress cron request.
+	 *
 	 * @since 1.0.0
-	 * @return bool
+	 * @return bool True if it's a WordPress cron request, false otherwise.
 	 */
 	private function doing_cron() {
 		if ( function_exists( 'wp_doing_cron' ) ) {
@@ -270,6 +290,171 @@ class WGNZ_Plugins_Loader {
 		}
 
 		return defined( 'DOING_CRON' ) && DOING_CRON;
+	}
+
+	/**
+	 * Is Clearfy plugin actives?
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function is_active_clearfy() {
+		return $this->is_active_clearfy_dev() || $this->is_active_clearfy_prod();
+	}
+
+	/**
+	 * Is Clearfy Dev plugin actives?
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function is_active_clearfy_dev() {
+		return in_array( 'wp-plugin-clearfy/clearfy.php', $this->active_plugins );
+	}
+
+	/**
+	 * Is Clearfy Prod plugin actives?
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function is_active_clearfy_prod() {
+		return in_array( 'clearfy/clearfy.php', $this->active_plugins );
+	}
+
+	/**
+	 * Is Assets Manager standalone actives?
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function is_active_assets_manager_standalone() {
+		return $this->is_active_assets_manager_standalone_prod() || $this->is_active_assets_manager_standalone_dev();
+	}
+
+	/**
+	 * Is Assets Manager standalone prod actives?
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function is_active_assets_manager_standalone_prod() {
+		return in_array( 'gonzales/gonzales.php', $this->active_plugins );
+	}
+
+	/**
+	 * Is Assets Manager standalone dev actives?
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function is_active_assets_manager_standalone_dev() {
+		return in_array( 'wp-plugin-gonzales/gonzales.php', $this->active_plugins );
+	}
+
+	/**
+	 * Get options prefix
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function get_options_prefix() {
+		if( $this->is_active_clearfy() ) {
+			return self::CLEARFY_OPTIONS_PREFIX;
+		}
+		return self::DEFAULT_OPTIONS_PREFIX;
+	}
+
+	/**
+	 * Get Clearfy deactivated components
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return array|null
+	 */
+	private function get_clearfy_deactivate_components() {
+		if ( is_multisite() ) {
+			return get_site_option( $this->get_options_prefix() . 'deactive_preinstall_components', array() );
+		}
+
+		return get_option( $this->get_options_prefix() . 'deactive_preinstall_components', array() );
+	}
+
+	/**
+	 * Get Assets Manager options
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function get_assets_manager_options() {
+		if( is_multisite() && is_network_admin() ) {
+			return get_site_option( $this->get_options_prefix() . 'backend_assets_states', array() );
+		} else if( is_admin() ) {
+			return get_option( $this->get_options_prefix() . 'backend_assets_states', array() );
+		}
+
+		return get_option( $this->get_options_prefix() . 'assets_states', array() );
+	}
+
+	/**
+	 * Get parent plugin dir
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function get_parent_plugin_dir() {
+		if ( $this->is_active_clearfy() ) {
+			if ( $this->is_active_clearfy_dev() ) {
+				return WP_PLUGIN_DIR . '/wp-plugin-clearfy/components/assets-manager/';
+			}
+
+			return WP_PLUGIN_DIR . '/clearfy/components/assets-manager/';
+		} else if ( $this->is_active_assets_manager_standalone() ) {
+			if ( $this->is_active_assets_manager_standalone_dev() ) {
+				return WP_PLUGIN_DIR . '/wp-plugin-gonzales/';
+			}
+
+			return WP_PLUGIN_DIR . '/gonzales/';
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get premium plugin dir in dependence on environment
+	 *
+	 * @since 1.0.7
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @return string|null
+	 */
+	private function get_parent_premium_plugin_dir() {
+		$is_active_prod             = in_array( 'clearfy_package/clearfy-package.php', $this->active_plugins );
+		$is_active_dev              = in_array( 'wp-plugin-clearfy-package/clearfy-package.php', $this->active_plugins );
+		$is_active_stand_alone_prod = in_array( 'assets-manager-premium/assets-manager-premium.php', $this->active_plugins );
+		$is_active_stand_alone_dev  = in_array( 'wp-plugin-assets-manager-premium/assets-manager-premium.php', $this->active_plugins );
+
+		if($is_active_dev) {
+			$premium_plugin_dir = WP_PLUGIN_DIR .'/wp-plugin-clearfy-package/plugins/assets-manager-premium';
+		} else if($is_active_prod) {
+			$premium_plugin_dir = WP_PLUGIN_DIR .'/clearfy_package/assets-manager-premium';
+		} else if($is_active_stand_alone_prod){
+			$premium_plugin_dir = WP_PLUGIN_DIR .'/assets-manager-premium/';
+		} else if($is_active_stand_alone_dev) {
+			$premium_plugin_dir = WP_PLUGIN_DIR .'/wp-plugin-assets-manager-premium/';
+		} else {
+			return null;
+		}
+
+		return wp_normalize_path($premium_plugin_dir);
 	}
 }
 

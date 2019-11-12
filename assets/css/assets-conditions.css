@@ -10,6 +10,11 @@
   top: 0;
   padding: 4px;
 }
+#WBCR-AM .wam-cleditor.wam-cleditor__disable-plugin-mode .wam-cleditor__param-select option[value="location-taxonomy"],
+#WBCR-AM .wam-cleditor.wam-cleditor__disable-plugin-mode .wam-cleditor__param-select option[value="location-post-type"],
+#WBCR-AM .wam-cleditor.wam-cleditor__disable-plugin-mode .wam-cleditor__param-select option[value="location-some-page"] {
+  display: none;
+}
 #WBCR-AM .wam-cleditor .wam-cleditor__text {
   width: 300px;
 }

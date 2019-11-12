@@ -80,6 +80,7 @@ class WGZUpdate010108 extends Wbcr_Factory000_Update {
 			}
 		}
 
+		//update_option( $this->plugin->getPrefix() . 'backend_assets_states', $settings );
 		update_option( $this->plugin->getPrefix() . 'assets_states', $settings );
 	}
 

@@ -127,17 +127,6 @@ class WGZ_Check_Conditions {
 	}
 
 	/**
-	 * Get current URL
-	 *
-	 * @return string
-	 */
-	protected function get_current_url_path() {
-		$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
-
-		return ! empty( $url[0] ) ? untrailingslashit( $url[0] ) : '/';
-	}
-
-	/**
 	 * Get referer URL
 	 *
 	 * @return string
@@ -150,6 +139,30 @@ class WGZ_Check_Conditions {
 		}
 
 		return $out ? urldecode( $out ) : '/';
+	}
+
+	/**
+	 * Get current URL
+	 *
+	 * @return string
+	 */
+	protected function get_current_url_path( $clear_query = false ) {
+		if ( ! is_admin() && ! $clear_query ) {
+			$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
+			if ( strlen( $url[0] ) > 1 ) {
+				$out = rtrim( $url[0], '/' );
+			} else {
+				$out = $url[0];
+			}
+
+			return "/" === $out ? "/" : untrailingslashit( $out );
+		}
+
+		$removeble_args = array_merge( [ 'wbcr_assets_manager' ], wp_removable_query_args() );
+
+		$url = remove_query_arg( $removeble_args, $_SERVER['REQUEST_URI'] );
+
+		return untrailingslashit( $url );
 	}
 
 	/**
@@ -316,94 +329,94 @@ class WGZ_Check_Conditions {
 					$result = is_admin();
 					break;
 				case 'dashboard_home':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'index.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'index.php' );
 					break;
 				case 'dashboard_wordpress_updates':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'update-core.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'update-core.php' );
 					break;
 				case 'posts_all':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'edit.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'edit.php' );
 					break;
 				case 'posts_add_new':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'post-new.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'post-new.php' );
 					break;
 				case 'posts_taxonomies':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'edit-tags.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'edit-tags.php' );
 					break;
 				case 'media_library':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'upload.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'upload.php' );
 					break;
 				case 'media_library_add_new':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'media-new.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'media-new.php' );
 					break;
 				case 'appearance_themes':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'themes.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'themes.php' );
 					break;
 				case 'appearance_customize':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'customize.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'customize.php' );
 					break;
 				case 'appearance_widgets':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'widgets.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'widgets.php' );
 					break;
 				case 'appearance_menus':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'nav-menus.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'nav-menus.php' );
 					break;
 				case 'appearance_theme_editor':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'theme-editor.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'theme-editor.php' );
 					break;
 				case 'plugins_installed':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'plugins.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'plugins.php' );
 					break;
 				case 'plugins_add_new':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'plugin-install.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'plugin-install.php' );
 					break;
 				case 'plugins_editor':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'plugin-editor.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'plugin-editor.php' );
 					break;
 				case 'users_all':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'users.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'users.php' );
 					break;
 				case 'users_add_new':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'user-new.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'user-new.php' );
 					break;
 				case 'users_your_profile':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'profile.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'profile.php' );
 					break;
 				case 'tools_available':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'tools.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'tools.php' );
 					break;
 				case 'tools_import':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'import.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'import.php' );
 					break;
 				case 'tools_export':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'export.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'export.php' );
 					break;
 				case 'tools_site_health':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'site-health.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'site-health.php' );
 					break;
 				case 'tools_export_personal_data':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'tools.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'tools.php' );
 					break;
 				case 'tools_erase_personal_data':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'tools.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'tools.php' );
 					break;
 				case 'settings_general':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-general.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-general.php' );
 					break;
 				case 'settings_writing':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-writing.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-writing.php' );
 					break;
 				case 'settings_reading':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-reading.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-reading.php' );
 					break;
 				case 'settings_media':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-media.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-media.php' );
 					break;
 				case 'settings_permalinks':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'options-permalink.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-permalink.php' );
 					break;
 				case 'settings_privacy':
-					$result = $this->get_current_url_path() === $this->get_admin_url_path( 'privacy.php' );
+					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'privacy.php' );
 					break;
 				default:
 					$result = true;
@@ -426,9 +439,10 @@ class WGZ_Check_Conditions {
 	 * @param string $value
 	 */
 	protected function current_url( $operator, $value ) {
-		$value = untrailingslashit( $value );
+		$value       = ( "/" === $value ) ? "/" : untrailingslashit( $value );
+		$current_url = $this->get_current_url_path();
 
-		return $this->apply_operator( $operator, $value, $this->get_current_url_path() );
+		return $this->apply_operator( $operator, $value, $current_url );
 	}
 
 	/**
@@ -459,13 +473,13 @@ class WGZ_Check_Conditions {
 	 * @return boolean
 	 */
 	protected function location_taxonomy( $operator, $value ) {
-		$term_name = null;
+		$taxonomy = null;
 
 		if ( is_tax() || is_tag() || is_category() ) {
-			$term_name = get_queried_object()->name;
+			$taxonomy = get_queried_object()->taxonomy;
 		}
 
-		return $this->apply_operator( $operator, $term_name, $value );
+		return $this->apply_operator( $operator, $taxonomy, $value );
 	}
 
 
