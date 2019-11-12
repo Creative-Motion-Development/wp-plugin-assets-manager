@@ -566,21 +566,10 @@ class WGZ_Assets_Manager_Public {
 					$white_list_js = [
 						'wp-includes/css/dashicons.min.css',
 						'wp-includes/css/admin-bar.min.css',
-						// --
-						'assets-manager/assets/css/assets-manager.css',
-						'assets-manager-premium/assets/css/assets-manager.css',
-						'assets-manager-premium-premium/assets/css/assets-manager.css',
-						// --
-						'assets-manager/assets/css/assets-conditions.css',
-						'assets-manager-premium/assets/css/assets-conditions.css',
-						'assets-manager-premium-premium/assets/css/assets-conditions.css',
-						// --
+						'assets/css/assets-manager.css',
+						'assets/css/assets-conditions.css',
 						'clearfy/assets/css/admin-bar.css',
-						// --
-						'assets-manager/assets/css/PNotifyBrightTheme.css',
-						'assets-manager-premium/assets/css/PNotifyBrightTheme.css',
-						'assets-manager-premium-premium/assets/css/PNotifyBrightTheme.css',
-
+						'assets/css/PNotifyBrightTheme.css'
 					];
 
 					if ( ! empty( $src ) ) {
@@ -617,7 +606,7 @@ class WGZ_Assets_Manager_Public {
 						'wam-jquery-migrate.min.js',
 						'wp-includes/js/admin-bar.min.js',
 						// --
-						'assets-manager/assets/js/wam-assets-manager.js',
+						'assets/js/wam-assets-manager.js',
 						'assets/js/wam-assets-conditions.js',
 						// --
 						'assets/js/libs/wam-pnotify.js',

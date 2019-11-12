@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wam_save_settings_action() {
 	check_ajax_referer( 'wam_save_settigns' );
 
-	if ( ! WCL_Plugin::app()->currentUserCan() ) {
+	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_send_json_error( [
 			'error_message_title'   => __( 'Save settings failed!', 'gonzales' ),
 			'error_message_content' => __( 'You don\'t have enough capability to edit this information.', 'gonzales' )

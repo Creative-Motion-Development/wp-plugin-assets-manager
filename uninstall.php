@@ -8,6 +8,10 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 // remove plugin options
 global $wpdb;
 
+if ( ! defined( 'WGZ_PLUGIN_DIR' ) ) {
+	define( 'WGZ_PLUGIN_DIR', dirname( __FILE__ ) );
+}
+
 if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 }
@@ -43,5 +47,6 @@ if ( is_multisite() ) {
 }
 
 // Remove mu plugin
-require_once dirname( __FILE__ ) . 'includes/functions.php';
+require_once WGZ_PLUGIN_DIR . '/includes/functions.php';
+// todo: for the function require the constant WGZ_PLUGIN_DIR
 wbcr_gnz_remove_mu_plugin();
