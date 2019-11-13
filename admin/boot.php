@@ -23,7 +23,7 @@ add_action( 'wbcr/factory/admin_notices', function ( $notices, $plugin_name ) {
 	$notice_text = __( 'We released great plugin upgrade! But, some plugin settings can\'t be migrated. Please check the disabled assets in the plugin, if they are configured incorrectly, you will need to fix the settings. Make sure the plugin works for you.', 'gonzales' );
 
 	$notices[] = [
-		'id'              => 'cyrlitera_plugin_compatibility',
+		'id'              => 'am-great-release-warning',
 		'type'            => 'warning',
 		'dismissible'     => true,
 		'dismiss_expires' => 0,
