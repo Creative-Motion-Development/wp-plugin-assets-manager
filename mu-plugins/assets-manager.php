@@ -1,13 +1,10 @@
 <?php
-/*
-  Plugin Name: Webcraftic AM plugin load filter
-  Description: Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
-  Version: 1.0.7
-  Plugin URI: https://wordpress.org/plugins/gonzales/
-  Author: Webcraftic <alex.kovalevv@gmail.com>
-  Author URI: https://clearfy.pro/assets-manager
-  Framework Version: FACTORY_000_VERSION
-*/
+/**
+ * Webcraftic AM plugin load filter
+ * Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
+ * Version: 1.0.8
+ * Framework Version: FACTORY_000_VERSION
+ */
 
 // todo: проверить, как работает кеширование
 // todo: замерить, скорость работы этого решения

@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/gonzales/
  * Description: Increase the speed of the pages by disabling unused scripts (.JS) and styles (.CSS). Make your website REACTIVE!
  * Author: Webcraftic <wordpress.webraftic@gmail.com>
- * Version: 2.0.1
+ * Version: 2.0.3
  * Text Domain: gonzales
  * Domain Path: /languages/
  * Author URI: https://webcraftic.com
@@ -47,7 +47,7 @@ $wgnz_plugin_info = array(
 
 	// PLUGIN SUPPORT
 	'support_details'      => array(
-		'url'       => 'https://webcraftic.com',
+		'url'       => 'https://clearfy.pro',
 		'pages_map' => array(
 			'support'  => 'support',           // {site}/support
 			'docs'     => 'docs'               // {site}/docs

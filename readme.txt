@@ -59,6 +59,12 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.0.3 (13.11.2019) =
+* Fixed: Minor bugs. Comment head of mu plugin determined as main.
+
+= 2.0.2 (13.11.2019) =
+* Fixed: Minor bugs. Added an admin notice about great release.
+
 = 2.0.1 (12.10.2019) =
 * Fixed: The bug with save mode.
 * Fixed: Some conditions (entire website) didn't work. It could be due save mode.
