@@ -59,6 +59,12 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.0.4 (10.12.2019) =
+* Fixed: Bug "[Warning message when open the Customize](https://wordpress.org/support/topic/warning-message-when-open-the-customize/)".
+* Fixed: Conditional logic in the premium plugin didn't work in previous version due an error.
+* Added: You can control asset requires. Now if you disabled asset and it required for which other asset, you will get prompt with warning.
+* Added: If you click on the "requires" tag, you will be gone to the asset for which require the current asset.
+
 = 2.0.3 (13.11.2019) =
 * Fixed: Minor bugs. Comment head of mu plugin determined as main.
 
