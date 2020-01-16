@@ -1,11 +1,11 @@
 <?php
-
-defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
-
-/**
- * @var array     $data
- * @var WGZ_Views $this
- */
+	
+	defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
+	
+	/**
+	 * @var array $data
+	 * @var WGZ_Views $this
+	 */
 ?>
 <div class="wam-info-section">
     <div class="wam-info-section__warning">
@@ -22,10 +22,12 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
                         To enable the changes for other users, uncheck Safe mode.', 'gonzales' ) ?>
         </p>
         <p>
-			<?php echo sprintf( __( 'For more details and user guides, check the plugin’s <a href="%s" target="_blank" rel="noreferrer noopener">documentation</a>.', 'gonzales' ), WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'docs' ) ) ?>
+			<?php echo sprintf( __( 'For more details and user guides, check the plugin’s <a href="%s" target="_blank" rel="noreferrer noopener">documentation</a>.', 'gonzales' ), WGZ_Plugin::app()->get_support()->get_docs_url( true, 'docs' ) ) ?>
         </p>
     </div>
-    <a class="wbcr-gnz-button__pro" href="<?php echo WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'assets-manager' ) ?>" target="_blank" rel="noreferrer noopener">'
+    <a class="wbcr-gnz-button__pro"
+       href="<?php echo WGZ_Plugin::app()->get_support()->get_tracking_page_url( 'assets-manager', 'assets-manager' ) ?>"
+       target="_blank" rel="noreferrer noopener">'
 		<?php _e( 'Upgrade to Premium', 'gonzales' ) ?></a>
     <div class="wam-info-section__go-to-premium">
         <h3>

@@ -208,7 +208,7 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 
 	function wbcr_gnz_set_plugin_meta( $links, $file ) {
 		if ( $file == WGZ_PLUGIN_BASE ) {
-			$url     = WbcrFactoryClearfy000_Helpers::getWebcrafticSitePageUrl( WGZ_Plugin::app()->getPluginName(), 'assets-manager', 'plugin_row' );
+			$url     = WGZ_Plugin::app()->get_support()->get_tracking_page_url( 'assets-manager', 'plugin_row' );
 			$links[] = '<a href="' . $url . '" style="color: #FF5722;font-weight: bold;" target="_blank">' . __( 'Get premium', 'gonzales' ) . '</a>';
 		}
 
