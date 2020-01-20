@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! defined( 'WGZ_PLUGIN_ACTIVE' ) ) {
 	define( 'WGZ_PLUGIN_VERSION', '2.0.3' );
+	define( 'WGZ_TEXT_DOMAIN', 'gonzales' );
 	define( 'WGZ_PLUGIN_ACTIVE', true );
 
 	// Этот плагин загружен, как аддон для плагина Clearfy
