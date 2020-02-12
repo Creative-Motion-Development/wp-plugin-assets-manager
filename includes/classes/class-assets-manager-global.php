@@ -876,7 +876,7 @@ class WGZ_Assets_Manager_Public {
 					$s['select_control_classes']  = " js-wam-select--disable";
 					$s['settings_button_classes'] = "";
 
-					if ( $plugin_load_mode && 'enable' !== $plugin_load_mode ) {
+					if ( isset($plugin_load_mode) && 'enable' !== $plugin_load_mode ) {
 						$s['settings_button_classes'] = " js-wam-button--hidden";
 					}
 				} else {
