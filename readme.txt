@@ -59,6 +59,9 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.0.5 (12.02.2020) =
+* Fixed: Minor bug
+
 = 2.0.4 (10.12.2019) =
 * Fixed: Bug "[Warning message when open the Customize](https://wordpress.org/support/topic/warning-message-when-open-the-customize/)".
 * Fixed: Conditional logic in the premium plugin didn't work in previous version due an error.
