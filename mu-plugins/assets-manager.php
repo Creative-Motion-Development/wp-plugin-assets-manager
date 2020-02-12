@@ -9,9 +9,9 @@
 // todo: проверить, как работает кеширование
 // todo: замерить, скорость работы этого решения
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
-if ( defined( 'WP_SETUP_CONFIG' ) || defined( 'WP_INSTALLING' ) || isset( $_GET['wbcr_assets_manager'] ) ) {
+if( defined('WP_SETUP_CONFIG') || defined('WP_INSTALLING') || isset($_GET['wbcr_assets_manager']) ) {
 	return;
 }
 
@@ -29,24 +29,25 @@ class WGNZ_Plugins_Loader {
 	protected $settings;
 	protected $active_plugins = array();
 
-	public function __construct() {
+	public function __construct()
+	{
 		# We must always load the plugin if it is an ajax request, a cron
 		# task or a rest api request. Otherwise, the user may have problems
 		# with the work of plugins.
-		if ( $this->doing_ajax() || $this->doing_cron() || $this->doing_rest_api() ) {
+		if( $this->doing_ajax() || $this->doing_cron() || $this->doing_rest_api() ) {
 			return;
 		}
 
-		$is_clearfy_active        = false;
+		$is_clearfy_active = false;
 
 		$this->active_plugins = $this->get_active_plugins();
 
-		add_filter( 'wam/conditions/call_method', [ $this, 'check_conditions_method' ], 10, 4 );
+		add_filter('wam/conditions/call_method', [$this, 'check_conditions_method'], 10, 4);
 
-		if ( $this->is_active_clearfy() ) {
+		if( $this->is_active_clearfy() ) {
 			$deactivate_components = $this->get_clearfy_deactivate_components();
 
-			if ( empty( $deactivate_components ) || ! in_array( 'assets_manager', $deactivate_components ) ) {
+			if( empty($deactivate_components) || !in_array('assets_manager', $deactivate_components) ) {
 				$is_clearfy_active = true;
 			}
 		}
@@ -58,30 +59,31 @@ class WGNZ_Plugins_Loader {
 		}
 
 		# Disable plugins only if Asset Manager and Clearfy are activated
-		if ( $is_clearfy_active || $this->is_active_assets_manager_standalone() ) {
+		if( $is_clearfy_active || $this->is_active_assets_manager_standalone() ) {
 			$this->settings = $this->get_assets_manager_options();
 
-			if ( ! empty( $this->settings ) ) {
-				if ( is_multisite() ) {
-					add_filter( 'site_option_active_sitewide_plugins', array($this, 'disable_network_plugins' ), 1 );
+			if( !empty($this->settings) ) {
+				if( is_multisite() ) {
+					add_filter('site_option_active_sitewide_plugins', array($this, 'disable_network_plugins'), 1);
 				}
 
-				add_filter( 'option_active_plugins', array( $this, 'disable_plugins' ), 1 );
-				add_filter( 'option_hack_file', array( $this, 'hack_file_filter' ), 1 );
-				add_action( 'plugins_loaded', array( $this, 'remove_plugin_filters' ), 1 );
+				add_filter('option_active_plugins', array($this, 'disable_plugins'), 1);
+				add_filter('option_hack_file', array($this, 'hack_file_filter'), 1);
+				add_action('plugins_loaded', array($this, 'remove_plugin_filters'), 1);
 			}
 		}
 	}
 
 	/**
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.0.0
-	 *
 	 * @param $hackFile
 	 *
 	 * @return mixed
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.0
+	 *
 	 */
-	public function hack_file_filter( $hackFile ) {
+	public function hack_file_filter($hackFile)
+	{
 		$this->remove_plugin_filters();
 
 		return $hackFile;
@@ -91,8 +93,9 @@ class WGNZ_Plugins_Loader {
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.0.0
 	 */
-	public function remove_plugin_filters() {
-		remove_action( 'option_active_plugins', array( $this, 'disable_plugins' ), 1 );
+	public function remove_plugin_filters()
+	{
+		remove_action('option_active_plugins', array($this, 'disable_plugins'), 1);
 	}
 
 	/**
@@ -101,16 +104,17 @@ class WGNZ_Plugins_Loader {
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  1.0.0
 	 */
-	public function disable_network_plugins( $plugins_list ) {
+	public function disable_network_plugins($plugins_list)
+	{
 		$new_plugin_list = $plugins_list;
 
-		if ( is_array( $plugins_list ) && ! empty( $plugins_list ) ) {
-			$temp_plugin_list = array_keys( $plugins_list );
-			$temp_plugin_list = $this->disable_plugins( $temp_plugin_list );
+		if( is_array($plugins_list) && !empty($plugins_list) ) {
+			$temp_plugin_list = array_keys($plugins_list);
+			$temp_plugin_list = $this->disable_plugins($temp_plugin_list);
 
 			$new_plugin_list = array();
-			foreach ( (array) $temp_plugin_list as $plugin_file ) {
-				$new_plugin_list[ $plugin_file ] = $plugins_list[ $plugin_file ];
+			foreach((array)$temp_plugin_list as $plugin_file) {
+				$new_plugin_list[$plugin_file] = $plugins_list[$plugin_file];
 			}
 		}
 
@@ -120,21 +124,22 @@ class WGNZ_Plugins_Loader {
 	/**
 	 * We control the disabling of plugins that are activated for blog.
 	 *
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.0.0
-	 *
 	 * @param $plugins_list
 	 *
 	 * @return mixed
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.0
+	 *
 	 */
-	public function disable_plugins( $plugins_list ) {
-		if ( ! is_array( $plugins_list ) || empty( $plugins_list ) ) {
+	public function disable_plugins($plugins_list)
+	{
+		if( !is_array($plugins_list) || empty($plugins_list) ) {
 			return $plugins_list;
 		}
 
-		foreach ( (array) $plugins_list as $key => $plugin_base ) {
-			if ( $this->is_disabled_plugin( $plugin_base ) ) {
-				unset( $plugins_list[ $key ] );
+		foreach((array)$plugins_list as $key => $plugin_base) {
+			if( $this->is_disabled_plugin($plugin_base) ) {
+				unset($plugins_list[$key]);
 			}
 		}
 
@@ -144,26 +149,27 @@ class WGNZ_Plugins_Loader {
 	/**
 	 * Extra method for extend WGZ_Check_Conditions class.
 	 *
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.0.7
-	 *
 	 * @param mixed $default
 	 * @param string $method_name
 	 * @param string $operator
 	 * @param mixed $value
 	 *
 	 * @return mixed
+	 * @since  1.0.7
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 */
-	public function check_conditions_method( $default, $method_name, $operator, $value ) {
+	public function check_conditions_method($default, $method_name, $operator, $value)
+	{
 		$premium_plugin_dir = $this->get_parent_premium_plugin_dir();
 
 		if( $premium_plugin_dir && file_exists($premium_plugin_dir) ) {
 			require_once $premium_plugin_dir . '/includes/class-check-conditions.php';
-			if(class_exists('WGNZP_Check_Conditions')) {
+			if( class_exists('WGNZP_Check_Conditions') ) {
 				$conditions = new WGNZP_Check_Conditions();
 
-				if ( method_exists( $conditions, $method_name ) ) {
-					return $conditions->$method_name( $operator, $value );
+				if( method_exists($conditions, $method_name) ) {
+					return $conditions->$method_name($operator, $value);
 				}
 			}
 		}
@@ -174,33 +180,35 @@ class WGNZ_Plugins_Loader {
 	/**
 	 * Get a list of active plugins.
 	 *
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.0.0
 	 * @return array
+	 * @since  1.0.0
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 */
-	private function get_active_plugins() {
-		if ( is_multisite() ) {
-			$active_network_plugins = (array) get_site_option( 'active_sitewide_plugins' );
-			$active_network_plugins = array_keys( $active_network_plugins );
-			$active_blog_plugins    = (array) get_option( 'active_plugins' );
+	private function get_active_plugins()
+	{
+		if( is_multisite() ) {
+			$active_network_plugins = (array)get_site_option('active_sitewide_plugins');
+			$active_network_plugins = array_keys($active_network_plugins);
+			$active_blog_plugins = (array)get_option('active_plugins');
 
-			return array_unique( array_merge( $active_network_plugins, $active_blog_plugins ) );
+			return array_unique(array_merge($active_network_plugins, $active_blog_plugins));
 		}
 
-		return (array) get_option( 'active_plugins' );
+		return (array)get_option('active_plugins');
 	}
 
 	/**
 	 * Determines whether the current plugin is disabled
 	 *
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  1.0.0
-	 *
 	 * @param $plugin_base
 	 *
 	 * @return bool
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  1.0.0
+	 *
 	 */
-	private function is_disabled_plugin( $plugin_base ) {
+	private function is_disabled_plugin($plugin_base)
+	{
 
 		$white_plgins_list = array(
 			'clearfy', // prod
@@ -210,19 +218,19 @@ class WGNZ_Plugins_Loader {
 			'clearfy_package' // premium package
 		);
 
-		$plugin_base_part = explode( '/', $plugin_base );
+		$plugin_base_part = explode('/', $plugin_base);
 
 		# If plugin base is incorrect or plugin name in the white list
-		if ( 2 !== sizeof( $plugin_base_part ) || in_array( $plugin_base_part[0], $white_plgins_list ) ) {
+		if( 2 !== sizeof($plugin_base_part) || in_array($plugin_base_part[0], $white_plgins_list) ) {
 			return false;
 		}
 
-		if ( ! empty( $this->settings['plugins'] ) && isset( $this->settings['plugins'][ $plugin_base_part[0] ] ) && 'disable_plugin' === $this->settings['plugins'][ $plugin_base_part[0] ]['load_mode'] ) {
+		if( !empty($this->settings['plugins']) && isset($this->settings['plugins'][$plugin_base_part[0]]) && 'disable_plugin' === $this->settings['plugins'][$plugin_base_part[0]]['load_mode'] ) {
 			require_once $this->get_parent_plugin_dir() . '/includes/classes/class-check-conditions.php';
 
-			if ( ! empty( $this->settings['plugins'][ $plugin_base_part[0] ]['visability'] ) ) {
-				$condition = new WGZ_Check_Conditions( $this->settings['plugins'][ $plugin_base_part[0] ]['visability'] );
-				if ( $condition->validate() ) {
+			if( !empty($this->settings['plugins'][$plugin_base_part[0]]['visability']) ) {
+				$condition = new WGZ_Check_Conditions($this->settings['plugins'][$plugin_base_part[0]]['visability']);
+				if( $condition->validate() ) {
 					return true;
 				}
 			}
@@ -243,180 +251,194 @@ class WGNZ_Plugins_Loader {
 	 * @since  1.0.0
 	 * @return boolean
 	 */
-	private function doing_rest_api() {
+	private function doing_rest_api()
+	{
 		$prefix = rest_get_url_prefix();
 
-		$rest_route = isset( $_GET['rest_route'] ) ? $_GET['rest_route'] : null;
+		$rest_route = isset($_GET['rest_route']) ? $_GET['rest_route'] : null;
 
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST // (#1)
-		     || ! is_null( $rest_route ) // (#2)
-		        && strpos( trim( $rest_route, '\\/' ), $prefix, 0 ) === 0 ) {
+		if( defined('REST_REQUEST') && REST_REQUEST // (#1)
+			|| !is_null($rest_route) // (#2)
+			&& strpos(trim($rest_route, '\\/'), $prefix, 0) === 0 ) {
 			return true;
 		}
 
 		// (#3)
-		$rest_url    = wp_parse_url( site_url( $prefix ) );
-		$current_url = wp_parse_url( add_query_arg( array() ) );
+		$rest_url = wp_parse_url(site_url($prefix));
+		$current_url = wp_parse_url(add_query_arg(array()));
 
-		return strpos( $current_url['path'], $rest_url['path'], 0 ) === 0;
+		return strpos($current_url['path'], $rest_url['path'], 0) === 0;
 	}
 
 	/**
 	 * Determines whether the current request is a WordPress Ajax request.
 	 *
-	 * @since 1.0.0
 	 * @return bool True if it's a WordPress Ajax request, false otherwise.
+	 * @since 1.0.0
 	 */
-	private function doing_ajax() {
-		if ( function_exists( 'wp_doing_ajax' ) ) {
+	private function doing_ajax()
+	{
+		if( function_exists('wp_doing_ajax') ) {
 			return wp_doing_ajax();
 		}
 
-		return defined( 'DOING_AJAX' ) && DOING_AJAX;
+		return defined('DOING_AJAX') && DOING_AJAX;
 	}
 
 	/**
 	 * Determines whether the current request is a WordPress cron request.
 	 *
-	 * @since 1.0.0
 	 * @return bool True if it's a WordPress cron request, false otherwise.
+	 * @since 1.0.0
 	 */
-	private function doing_cron() {
-		if ( function_exists( 'wp_doing_cron' ) ) {
+	private function doing_cron()
+	{
+		if( function_exists('wp_doing_cron') ) {
 			return wp_doing_cron();
 		}
 
-		return defined( 'DOING_CRON' ) && DOING_CRON;
+		return defined('DOING_CRON') && DOING_CRON;
 	}
 
 	/**
 	 * Is Clearfy plugin actives?
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function is_active_clearfy() {
+	private function is_active_clearfy()
+	{
 		return $this->is_active_clearfy_dev() || $this->is_active_clearfy_prod();
 	}
 
 	/**
 	 * Is Clearfy Dev plugin actives?
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function is_active_clearfy_dev() {
-		return in_array( 'wp-plugin-clearfy/clearfy.php', $this->active_plugins );
+	private function is_active_clearfy_dev()
+	{
+		return in_array('wp-plugin-clearfy/clearfy.php', $this->active_plugins);
 	}
 
 	/**
 	 * Is Clearfy Prod plugin actives?
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function is_active_clearfy_prod() {
-		return in_array( 'clearfy/clearfy.php', $this->active_plugins );
+	private function is_active_clearfy_prod()
+	{
+		return in_array('clearfy/clearfy.php', $this->active_plugins);
 	}
 
 	/**
 	 * Is Assets Manager standalone actives?
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function is_active_assets_manager_standalone() {
+	private function is_active_assets_manager_standalone()
+	{
 		return $this->is_active_assets_manager_standalone_prod() || $this->is_active_assets_manager_standalone_dev();
 	}
 
 	/**
 	 * Is Assets Manager standalone prod actives?
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function is_active_assets_manager_standalone_prod() {
-		return in_array( 'gonzales/gonzales.php', $this->active_plugins );
+	private function is_active_assets_manager_standalone_prod()
+	{
+		return in_array('gonzales/gonzales.php', $this->active_plugins);
 	}
 
 	/**
 	 * Is Assets Manager standalone dev actives?
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function is_active_assets_manager_standalone_dev() {
-		return in_array( 'wp-plugin-gonzales/gonzales.php', $this->active_plugins );
+	private function is_active_assets_manager_standalone_dev()
+	{
+		return in_array('wp-plugin-gonzales/gonzales.php', $this->active_plugins);
 	}
 
 	/**
 	 * Get options prefix
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function get_options_prefix() {
+	private function get_options_prefix()
+	{
 		if( $this->is_active_clearfy() ) {
 			return self::CLEARFY_OPTIONS_PREFIX;
 		}
+
 		return self::DEFAULT_OPTIONS_PREFIX;
 	}
 
 	/**
 	 * Get Clearfy deactivated components
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return array|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function get_clearfy_deactivate_components() {
-		if ( is_multisite() ) {
-			return get_site_option( $this->get_options_prefix() . 'deactive_preinstall_components', array() );
+	private function get_clearfy_deactivate_components()
+	{
+		if( is_multisite() ) {
+			return get_site_option($this->get_options_prefix() . 'deactive_preinstall_components', array());
 		}
 
-		return get_option( $this->get_options_prefix() . 'deactive_preinstall_components', array() );
+		return get_option($this->get_options_prefix() . 'deactive_preinstall_components', array());
 	}
 
 	/**
 	 * Get Assets Manager options
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function get_assets_manager_options() {
+	private function get_assets_manager_options()
+	{
 		if( is_multisite() && is_network_admin() ) {
-			return get_site_option( $this->get_options_prefix() . 'backend_assets_states', array() );
+			return get_site_option($this->get_options_prefix() . 'backend_assets_states', array());
 		} else if( is_admin() ) {
-			return get_option( $this->get_options_prefix() . 'backend_assets_states', array() );
+			return get_option($this->get_options_prefix() . 'backend_assets_states', array());
 		}
 
-		return get_option( $this->get_options_prefix() . 'assets_states', array() );
+		return get_option($this->get_options_prefix() . 'assets_states', array());
 	}
 
 	/**
 	 * Get parent plugin dir
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function get_parent_plugin_dir() {
-		if ( $this->is_active_clearfy() ) {
-			if ( $this->is_active_clearfy_dev() ) {
+	private function get_parent_plugin_dir()
+	{
+		if( $this->is_active_clearfy() ) {
+			if( $this->is_active_clearfy_dev() ) {
 				return WP_PLUGIN_DIR . '/wp-plugin-clearfy/components/assets-manager/';
 			}
 
 			return WP_PLUGIN_DIR . '/clearfy/components/assets-manager/';
-		} else if ( $this->is_active_assets_manager_standalone() ) {
-			if ( $this->is_active_assets_manager_standalone_dev() ) {
+		} else if( $this->is_active_assets_manager_standalone() ) {
+			if( $this->is_active_assets_manager_standalone_dev() ) {
 				return WP_PLUGIN_DIR . '/wp-plugin-gonzales/';
 			}
 
@@ -429,24 +451,25 @@ class WGNZ_Plugins_Loader {
 	/**
 	 * Get premium plugin dir in dependence on environment
 	 *
-	 * @since 1.0.7
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @return string|null
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since 1.0.7
 	 */
-	private function get_parent_premium_plugin_dir() {
-		$is_active_prod             = in_array( 'clearfy_package/clearfy-package.php', $this->active_plugins );
-		$is_active_dev              = in_array( 'wp-plugin-clearfy-package/clearfy-package.php', $this->active_plugins );
-		$is_active_stand_alone_prod = in_array( 'assets-manager-premium/assets-manager-premium.php', $this->active_plugins );
-		$is_active_stand_alone_dev  = in_array( 'wp-plugin-assets-manager-premium/assets-manager-premium.php', $this->active_plugins );
+	private function get_parent_premium_plugin_dir()
+	{
+		$is_active_prod = in_array('clearfy_package/clearfy-package.php', $this->active_plugins);
+		$is_active_dev = in_array('wp-plugin-clearfy-package/clearfy-package.php', $this->active_plugins);
+		$is_active_stand_alone_prod = in_array('assets-manager-premium/assets-manager-premium.php', $this->active_plugins);
+		$is_active_stand_alone_dev = in_array('wp-plugin-assets-manager-premium/assets-manager-premium.php', $this->active_plugins);
 
-		if($is_active_dev) {
-			$premium_plugin_dir = WP_PLUGIN_DIR .'/wp-plugin-clearfy-package/plugins/assets-manager-premium';
-		} else if($is_active_prod) {
-			$premium_plugin_dir = WP_PLUGIN_DIR .'/clearfy_package/assets-manager-premium';
-		} else if($is_active_stand_alone_prod){
-			$premium_plugin_dir = WP_PLUGIN_DIR .'/assets-manager-premium/';
-		} else if($is_active_stand_alone_dev) {
-			$premium_plugin_dir = WP_PLUGIN_DIR .'/wp-plugin-assets-manager-premium/';
+		if( $is_active_dev ) {
+			$premium_plugin_dir = WP_PLUGIN_DIR . '/wp-plugin-clearfy-package/plugins/assets-manager-premium';
+		} else if( $is_active_prod ) {
+			$premium_plugin_dir = WP_PLUGIN_DIR . '/clearfy_package/plugins/assets-manager-premium';
+		} else if( $is_active_stand_alone_prod ) {
+			$premium_plugin_dir = WP_PLUGIN_DIR . '/assets-manager-premium/';
+		} else if( $is_active_stand_alone_dev ) {
+			$premium_plugin_dir = WP_PLUGIN_DIR . '/wp-plugin-assets-manager-premium/';
 		} else {
 			return null;
 		}
