@@ -8,32 +8,11 @@
  */
 
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) {
+if( !defined('ABSPATH') ) {
 	exit;
 }
 
-/**
- * Печатает ошибки совместимости с похожими плагинами
- */
-add_action( 'wbcr/factory/admin_notices', function ( $notices, $plugin_name ) {
-	if ( $plugin_name != WGZ_Plugin::app()->getPluginName() ) {
-		return $notices;
-	}
-
-	$notice_text = __( 'We released great plugin upgrade! But, some plugin settings can\'t be migrated. Please check the disabled assets in the plugin, if they are configured incorrectly, you will need to fix the settings. Make sure the plugin works for you.', 'gonzales' );
-
-	$notices[] = [
-		'id'              => 'am-great-release-warning',
-		'type'            => 'warning',
-		'dismissible'     => true,
-		'dismiss_expires' => 0,
-		'text'            => '<p><b>' . __( 'Assets manager', 'gonzales' ) . ': </b>' . $notice_text . '</p>'
-	];
-
-	return $notices;
-}, 10, 2 );
-
-if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
+if( defined('LOADING_ASSETS_MANAGER_AS_ADDON') ) {
 
 	/**
 	 * Уведомление, которое сообщает о возможности импорта опций из плагина Assets manager в Clearfy
@@ -124,106 +103,109 @@ if ( defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) ) {
 		}
 	} );*/
 
-	function wbcr_gnz_group_options( $options ) {
+	function wbcr_gnz_group_options($options)
+	{
 		$options[] = [
-			'name'   => 'disable_assets_manager',
-			'title'  => __( 'Disable assets manager', 'gonzales' ),
-			'tags'   => [],
+			'name' => 'disable_assets_manager',
+			'title' => __('Disable assets manager', 'gonzales'),
+			'tags' => [],
 			'values' => []
 		];
 
 		$options[] = [
-			'name'  => 'disable_assets_manager_panel',
-			'title' => __( 'Disable assets manager panel', 'gonzales' ),
-			'tags'  => []
+			'name' => 'disable_assets_manager_panel',
+			'title' => __('Disable assets manager panel', 'gonzales'),
+			'tags' => []
 		];
 
 		$options[] = [
-			'name'  => 'disable_assets_manager_on_front',
-			'title' => __( 'Disable assets manager on front', 'gonzales' ),
-			'tags'  => []
+			'name' => 'disable_assets_manager_on_front',
+			'title' => __('Disable assets manager on front', 'gonzales'),
+			'tags' => []
 		];
 
 		$options[] = [
-			'name'  => 'disable_assets_manager_on_backend',
-			'title' => __( 'Disable assets manager on back-end', 'gonzales' ),
-			'tags'  => []
+			'name' => 'disable_assets_manager_on_backend',
+			'title' => __('Disable assets manager on back-end', 'gonzales'),
+			'tags' => []
 		];
 
 		$options[] = [
-			'name'  => 'manager_options',
-			'title' => __( 'Assets manager options', 'gonzales' ),
-			'tags'  => []
+			'name' => 'manager_options',
+			'title' => __('Assets manager options', 'gonzales'),
+			'tags' => []
 		];
 
 		return $options;
 	}
 
-	add_filter( "wbcr_clearfy_group_options", 'wbcr_gnz_group_options' );
+	add_filter("wbcr_clearfy_group_options", 'wbcr_gnz_group_options');
 } else {
 
 	/**
 	 * Удаляем лишние виджеты в левом сайдбаре
 	 *
-	 * @param array                  $widgets
-	 * @param string                 $position
+	 * @param array $widgets
+	 * @param string $position
 	 * @param Wbcr_Factory000_Plugin $plugin
 	 */
-	add_filter( 'wbcr/factory/pages/impressive/widgets', function ( $widgets, $position, $plugin ) {
-		if ( $plugin->getPluginName() == WGZ_Plugin::app()->getPluginName() ) {
-			unset( $widgets['business_suggetion'] );
+	add_filter('wbcr/factory/pages/impressive/widgets', function ($widgets, $position, $plugin) {
+		if( $plugin->getPluginName() == WGZ_Plugin::app()->getPluginName() ) {
+			unset($widgets['business_suggetion']);
 
-			if ( $position == 'right' ) {
-				unset( $widgets['donate_widget'] );
-				unset( $widgets['rating_widget'] );
-				unset( $widgets['info_widget'] );
+			if( $position == 'right' ) {
+				unset($widgets['donate_widget']);
+				unset($widgets['rating_widget']);
+				unset($widgets['info_widget']);
 			}
 		}
 
 		return $widgets;
-	}, 20, 3 );
+	}, 20, 3);
 
 	/**
 	 * Заменяем премиум возможности в бизнес виджете
 	 *
-	 * @param array  $features
+	 * @param array $features
 	 * @param string $page_id
 	 * @param string $plugin
 	 */
-	add_filter( 'wbcr/clearfy/pages/suggetion_features', function ( $features, $plugin_name, $page_id ) {
+	add_filter('wbcr/clearfy/pages/suggetion_features', function ($features, $plugin_name, $page_id) {
 
-		if ( ! empty( $plugin_name ) && ( $plugin_name == WGZ_Plugin::app()->getPluginName() ) ) {
-			$upgrade_feature   = [];
-			$upgrade_feature[] = __( 'Disable plugins (groups of scripts)', 'gonzales' );
-			$upgrade_feature[] = __( 'Conditions by the link template', 'gonzales' );
-			$upgrade_feature[] = __( 'Conditions by the regular expression', 'gonzales' );
-			$upgrade_feature[] = __( 'Safe mode', 'gonzales' );
-			$upgrade_feature[] = __( 'Statistics and optimization results', 'gonzales' );
+		if( !empty($plugin_name) && ($plugin_name == WGZ_Plugin::app()->getPluginName()) ) {
+			$upgrade_feature = [];
+			$upgrade_feature[] = __('Disable plugins (groups of scripts)', 'gonzales');
+			$upgrade_feature[] = __('Conditions by the link template', 'gonzales');
+			$upgrade_feature[] = __('Conditions by the regular expression', 'gonzales');
+			$upgrade_feature[] = __('Safe mode', 'gonzales');
+			$upgrade_feature[] = __('Statistics and optimization results', 'gonzales');
 
 			return $upgrade_feature;
 		}
 
 		return $features;
-	}, 20, 3 );
+	}, 20, 3);
 
-	function wbcr_gnz_set_plugin_meta( $links, $file ) {
-		if ( $file == WGZ_PLUGIN_BASE ) {
-			$url     = WGZ_Plugin::app()->get_support()->get_tracking_page_url( 'assets-manager', 'plugin_row' );
-			$links[] = '<a href="' . $url . '" style="color: #FF5722;font-weight: bold;" target="_blank">' . __( 'Get premium', 'gonzales' ) . '</a>';
+	function wbcr_gnz_set_plugin_meta($links, $file)
+	{
+		if( $file == WGZ_PLUGIN_BASE ) {
+			$url = WGZ_Plugin::app()->get_support()->get_tracking_page_url('assets-manager', 'plugin_row');
+			$links[] = '<a href="' . $url . '" style="color: #FF5722;font-weight: bold;" target="_blank">' . __('Get premium', 'gonzales') . '</a>';
 		}
 
 		return $links;
 	}
 
-	add_filter( 'plugin_row_meta', 'wbcr_gnz_set_plugin_meta', 10, 2 );
+	add_filter('plugin_row_meta', 'wbcr_gnz_set_plugin_meta', 10, 2);
 
-	function wbcr_gnz_rating_widget_url( $page_url, $plugin_name ) {
-		if ( ! defined( 'LOADING_ASSETS_MANAGER_AS_ADDON' ) && ( $plugin_name == WGZ_Plugin::app()->getPluginName() ) ) {
+	function wbcr_gnz_rating_widget_url($page_url, $plugin_name)
+	{
+		if( !defined('LOADING_ASSETS_MANAGER_AS_ADDON') && ($plugin_name == WGZ_Plugin::app()->getPluginName()) ) {
 			return 'https://goo.gl/zyNV6z';
 		}
 
 		return $page_url;
 	}
 
-	add_filter( 'wbcr_factory_pages_000_imppage_rating_widget_url', 'wbcr_gnz_rating_widget_url', 10, 2 );
+	add_filter('wbcr_factory_pages_000_imppage_rating_widget_url', 'wbcr_gnz_rating_widget_url', 10, 2);
 }
