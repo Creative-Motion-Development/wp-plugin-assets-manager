@@ -59,6 +59,10 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.0.6 (15.12.2020) =
+* Added: Subscribe form
+* Fixed: Minor bug
+
 = 2.0.5 (12.02.2020) =
 * Fixed: Minor bug
 
