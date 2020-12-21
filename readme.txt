@@ -59,6 +59,10 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.0.7 (21.12.2020) =
+* Disabled search by options for a single plugin.
+* Fixed: duplicate templates and scripts error when rendering html views of Assets manager.
+
 = 2.0.6 (15.12.2020) =
 * Added: Subscribe form
 * Fixed: Minor bug
