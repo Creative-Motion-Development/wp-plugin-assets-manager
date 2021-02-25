@@ -22,6 +22,8 @@ class WGZ_Assets_Manager_Public {
 
 	public $template_rendered = false;
 
+	private $deregistered = [];
+
 	/**
 	 * @param Wbcr_Factory000_Plugin $plugin
 	 */
@@ -54,6 +56,36 @@ class WGZ_Assets_Manager_Public {
 		if( $this->plugin->getPopulateOption('disable_assets_manager', false) ) {
 			return;
 		}
+
+		add_action('wp_enqueue_scripts', function () {
+			$settings = $this->get_settings();
+
+			foreach($settings as $key => $group) {
+				if( "plugins" === $key ) {
+					foreach($group as $plugin) {
+						if( isset($plugin['js']) ) {
+							$this->move_to_footer_js($plugin['js']);
+						}
+						if( isset($plugin['css']) ) {
+							$this->move_to_footer_css($plugin['css']);
+						}
+					}
+				} else if( in_array($key, ['misc', 'theme']) ) {
+					if( isset($group['js']) ) {
+						$this->move_to_footer_js($group['js']);
+					}
+					if( isset($group['css']) ) {
+						$this->move_to_footer_css($group['css']);
+					}
+				}
+			}
+		}, 999);
+
+		add_action('get_footer', function () {
+			foreach($this->deregistered as $style) {
+				wp_enqueue_style($style->handle);
+			}
+		});
 
 		$on_frontend = $this->plugin->getPopulateOption('disable_assets_manager_on_front');
 		$on_backend = $this->plugin->getPopulateOption('disable_assets_manager_on_backend', true);
@@ -114,6 +146,44 @@ class WGZ_Assets_Manager_Public {
 			require_once WGZ_PLUGIN_DIR . '/admin/ajax/save-settings.php';
 		}
 	}
+
+
+	protected function move_to_footer_css($css)
+	{
+		$wp_styles = wp_styles();
+
+		if( !empty($css) ) {
+			foreach((array)$css as $css_handler => $css) {
+				if( isset($css['move_to_footer']) && "true" === $css['move_to_footer'] ) {
+					if( $style = $wp_styles->query($css_handler, 'registered') ) {
+						wp_dequeue_style($css_handler);
+						//wp_deregister_style($css_handler);
+						$this->deregistered[$css_handler] = $style;
+					}
+
+					// A hack to avoid tons of warnings the first time we calculate things.
+					$wp_styles->groups[$css_handler] = 1;
+				}
+			}
+		}
+	}
+
+	protected function move_to_footer_js($js)
+	{
+		$wp_scripts = wp_scripts();
+
+		if( !empty($js) ) {
+			foreach((array)$js as $js_handler => $js) {
+				if( isset($js['move_to_footer']) && "true" === $js['move_to_footer'] ) {
+					if( $script = $wp_scripts->query($js_handler, 'registered') ) {
+						wp_deregister_script($js_handler);
+						wp_register_script($script->handle, $script->src, $script->deps, $script->ver, true);
+					}
+				}
+			}
+		}
+	}
+
 
 	/**
 	 * Render a fake checkbox to show for user, it is pro feature.
@@ -896,6 +966,12 @@ class WGZ_Assets_Manager_Public {
 						$s['load_mode'] = "enable";
 					}
 					$s['visability'] = "";
+				}
+
+				if( isset($settings[$type]) && isset($settings[$type][$name]) && !empty($settings[$type][$name]['move_to_footer']) ) {
+					$s['move_to_footer'] = "true" === $settings[$type][$name]['move_to_footer'];
+				} else {
+					$s['move_to_footer'] = false;
 				}
 
 				if( 'disable' === $s['load_mode'] ) {
