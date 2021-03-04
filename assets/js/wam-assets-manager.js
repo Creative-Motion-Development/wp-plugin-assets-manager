@@ -478,8 +478,6 @@ notice.on('pnotify.cancel', function() {
 					recourceType = $(this).data("resource-type"),
 					resourceHandle = $(this).data("resource-handle");
 
-				console.log(recourceType);
-
 				if( !settings[groupType] ) {
 					settings[groupType] = {};
 				}

@@ -63,11 +63,7 @@ $plugin_name = $data['name'];
 							<a href="<?php echo esc_url($item['url_full']); ?>">
 								<?php echo esc_html($item['url_short']); ?>
 							</a>
-							<p>
-								<input type="checkbox" class="wam-checkbox wam-table__checkbox wam-checkbox__move-to-footer" <?php checked($item['move_to_footer']) ?>>
-								<?php _e('Move to footer', 'gonzales') ?>
-								<i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip="<?php _e('This function will force a script or style from the header to the footer. This can fix problems of blocking page rendering.', 'gonzales') ?>"></i>
-							</p>
+							<?php do_action('wam/views/assets/handle_column/after_url', $item); ?>
 							<div class="wam-table__handle-deps">
 								<?php if( !empty($item['deps']) ): ?>
 									<span class="wam-colors--grey"><?php _e('Dependency by', 'gonzales') ?></span>:

@@ -106,6 +106,7 @@ class WGZ_Assets_Manager_Public {
 			}
 
 			add_action('wam/views/safe_mode_checkbox', [$this, 'print_save_mode_fake_checkbox']);
+			add_action('wam/views/assets/handle_column/after_url', [$this, 'print_move_to_footer_fake_checkbox']);
 		}
 
 		if( !is_admin() && !$on_frontend ) {
@@ -205,6 +206,29 @@ class WGZ_Assets_Manager_Public {
 		</label>
 		<?php
 	}
+
+	/**
+	 * Render a fake checkbox to show for user, it is pro feature.
+	 *
+	 * @param array $data Temlate data
+	 * @since  1.1
+	 *
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 */
+	public function print_move_to_footer_fake_checkbox($item)
+	{
+		if( defined('WGZP_PLUGIN_ACTIVE') ) {
+			return;
+		}
+		?>
+		<label class="wam-table__label-move-to-footer-premium">
+			<input type="checkbox" class="wam-checkbox wam-table__checkbox" disabled="disabled" <?php checked($item['move_to_footer']) ?>>
+			<?php _e('Move to footer (PRO)', 'gonzales') ?>
+			<i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip="<?php _e('This function will force a script or style from the header to the footer. This can fix problems of blocking page rendering.', 'gonzales') ?>"></i>
+		</label>
+		<?php
+	}
+
 
 	/**
 	 * Write cookie with user roles
