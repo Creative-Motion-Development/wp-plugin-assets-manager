@@ -2,7 +2,7 @@
 /**
  * Webcraftic AM plugin load filter
  * Dynamically activated only plugins that you have selected in each page. [Note]  Webcraftic AM has been automatically installed/deleted by Activate/Deactivate of "load filter plugin".
- * Version: 1.0.9
+ * Version: 1.1.2
  * Framework Version: FACTORY_000_VERSION
  */
 
@@ -10,6 +10,58 @@
 // todo: замерить, скорость работы этого решения
 
 defined('ABSPATH') || exit;
+
+/**
+ * Stop optimizing scripts and caching the asset manager page.
+ *
+ * For some types of pages it is imperative to not be cached. Think of an e-commerce scenario:
+ * when a customer enters checkout, they wouldn’t want to see a cached page with some previous
+ * customer’s payment data.
+ *
+ * Elaborate plugins like WooCommerce (and many others) use the DONOTCACHEPAGE constant to let
+ * caching plugins know about certain pages or endpoints that should not be cached in any case.
+ * Accordingly, all popular caching plugins, including WP Rocket, support the constant and would
+ * not cache a request for which DONOTCACHEPAGE is defined as true.
+ */
+if( isset($_GET['wbcr_assets_manager']) ) {
+	//  Disable Query monitor plugin on the assets manager pages to avoid conflicts.
+	if( !defined('QM_DISABLED') ) {
+		define('QM_DISABLED', true);
+	}
+
+	//  Disable Cache Plugins
+	if( !defined('DONOTCACHEPAGE') ) {
+		define('DONOTCACHEPAGE', true);
+	}
+
+	if( !defined('DONOTCACHCEOBJECT') ) {
+		define('DONOTCACHCEOBJECT', true);
+	}
+
+	if( !defined('DONOTMINIFY') ) {
+		define('DONOTMINIFY', true);
+	}
+
+	if( !defined('DONOTROCKETOPTIMIZE') ) {
+		define('DONOTROCKETOPTIMIZE', true);
+	}
+
+	if( !defined('DONOTMINIFYJS') ) {
+		define('DONOTMINIFYJS', true);
+	}
+
+	if( !defined('DONOTASYNCCSS') ) {
+		define('DONOTASYNCCSS', true);
+	}
+
+	if( !defined('DONOTMINIFYCSS') ) {
+		define('DONOTMINIFYCSS', true);
+	}
+
+	if( !defined('WHM_DO_NOT_HIDE_WP') ) {
+		define('WHM_DO_NOT_HIDE_WP', true);
+	}
+}
 
 if( defined('WP_SETUP_CONFIG') || defined('WP_INSTALLING') || isset($_GET['wbcr_assets_manager']) ) {
 	return;

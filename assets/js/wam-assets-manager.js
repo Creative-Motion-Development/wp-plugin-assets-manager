@@ -90,6 +90,7 @@
 				}
 
 				if( requires.length ) {
+
 					// show warning
 					var notice = WamPnotify.notice({
 						title: self.pluginVars.i18n.asset_canbe_required_title,
@@ -513,8 +514,6 @@ notice.on('pnotify.cancel', function() {
 				settings[groupType][recourceType][resourceHandle]['visability'] = $(this).val();
 			});
 
-			console.log(settings);
-
 			let stackBottomRight = {
 				'dir1': 'up',
 				'dir2': 'left',
@@ -544,7 +543,6 @@ notice.on('pnotify.cancel', function() {
 
 					if( !response || !response.success ) {
 						if( response.data ) {
-							console.log(response.data.error_message_content);
 							WamPnotify.alert({
 								title: response.data.error_message_title,
 								text: response.data.error_message_content,

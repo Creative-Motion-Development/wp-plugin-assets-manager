@@ -29,9 +29,11 @@
 			let value = null;
 
 			if( 'select' === paramOptions['type'] ) {
-				value = this._getSelectValue(paramOptions);
+				value = this._getSelectControlValue(paramOptions);
+			} else if( 'equals' === paramOptions['type'] ) {
+				value = this._getEqualsControlValue(paramOptions);
 			} else if( 'integer' === paramOptions['type'] ) {
-				value = this._getIntegerValue(paramOptions);
+				value = this._getIntegerControlValue(paramOptions);
 			} else {
 				value = this._getTextValue(paramOptions);
 			}
@@ -106,6 +108,8 @@
 				operators = ['between'];
 			} else if( 'integer' === paramOptions['type'] ) {
 				operators = ['equals', 'notequal', 'less', 'greater', 'between'];
+			} else if( 'equals' === paramOptions['type'] ) {
+				operators = ['equals', 'notequal'];
 			} else if( 'regexp' === paramOptions['type'] ) {
 				operators = ['equals'];
 			} else if( 'default' === paramOptions['type'] ) {
@@ -144,6 +148,8 @@
 		_createValueControl(paramOptions, isInit) {
 			if( 'select' === paramOptions['type'] ) {
 				this._createValueAsSelect(paramOptions, isInit);
+			} else if( 'equals' === paramOptions['type'] ) {
+				this._createValueAsEquals(paramOptions, isInit);
 			} else if( 'integer' === paramOptions['type'] ) {
 				this._createValueAsInteger(paramOptions, isInit);
 			} else {
@@ -218,7 +224,7 @@
 		/**
 		 * Returns a value for the select control.
 		 */
-		_getSelectValue() {
+		_getSelectControlValue() {
 			let $select = this._conditionElement.find(".wam-cleditor__condition-value select");
 
 			let value = $select.val();
@@ -275,7 +281,7 @@
 		/**
 		 * Returns a value for the Integer control.
 		 */
-		_getIntegerValue() {
+		_getIntegerControlValue() {
 			let value = {};
 
 			let $operator = this._conditionElement.find(".wam-cleditor__operator-select");
@@ -307,6 +313,73 @@
 			} else {
 				this._conditionElement.find(".wam-cleditor__integer-solo").val(value);
 			}
+		}
+
+		// -------------------
+		// Query string Control
+		// -------------------
+
+		/**
+		 * Creates a control for the input linked with the integer.
+		 */
+		_createValueAsEquals(paramOptions, isInit) {
+			let self = this;
+
+			let $operator = this._conditionElement.find(".wam-cleditor__operator-select");
+			let $control;
+
+			$control = $("<span><input type='text' class='wam-cleditor__equals-value1' /> <span class='wam-cleditor__equals-icon'>=</span> <input type='text' class='wam-cleditor__equals-value2' /></span>");
+
+			if( paramOptions['placeholder'] && $.isArray(paramOptions['placeholder']) ) {
+				$control.find('.wam-cleditor__equals-value1').attr('placeholder', paramOptions['placeholder'][0]);
+
+				if( paramOptions['placeholder'][1] ) {
+					$control.find('.wam-cleditor__equals-value2').attr('placeholder', paramOptions['placeholder'][1]);
+				}
+			}
+
+			self._insertValueControl($control);
+
+			$operator.on('change', function() {
+				let currentOperator = $operator.val();
+				let equalIcon = $control.find('.wam-cleditor__equals-icon');
+
+				if( 'equals' === currentOperator ) {
+					equalIcon.text('=');
+				} else {
+					equalIcon.text('≠');
+				}
+			});
+
+			$operator.change();
+
+			if( isInit && this.options.value ) {
+				this._setEqualsControlValue(this.options.value);
+			}
+		}
+
+		/**
+		 * Returns a value for the Integer control.
+		 */
+		_getEqualsControlValue() {
+			let value = {};
+
+			value.var_name = this._conditionElement.find(".wam-cleditor__equals-value1").val();
+			value.var_value = this._conditionElement.find(".wam-cleditor__equals-value2").val();
+
+			return value;
+		}
+
+		/**
+		 * Sets a value for the Integer control.
+		 */
+		_setEqualsControlValue(value) {
+			if( !value ) {
+				value = {};
+			}
+
+			this._conditionElement.find(".wam-cleditor__equals-value1").val(value.var_name);
+			this._conditionElement.find(".wam-cleditor__equals-value2").val(value.var_value);
 		}
 
 		// -------------------
@@ -400,7 +473,7 @@
 					description: optionElement.data('hint').trim()
 				};
 
-			if( "text" === type || "default" === type || "regexp" === type ) {
+			if( "text" === type || "default" === type || "regexp" === type || "equals" === type ) {
 				data['placeholder'] = optionElement.data('placeholder');
 				delete data['values'];
 			}

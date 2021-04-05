@@ -1,6 +1,6 @@
 <?php
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) {
+if( !defined('ABSPATH') ) {
 	exit;
 }
 
@@ -15,11 +15,12 @@ class WGZ_Check_Conditions {
 
 	protected $condition;
 
-	public function __construct( $condition ) {
-		if ( empty( $condition ) ) {
+	public function __construct($condition)
+	{
+		if( empty($condition) ) {
 			$this->condition = [];
 		} else {
-			$condition       = @json_decode( stripslashes( $condition ) );
+			$condition = @json_decode(stripslashes($condition));
 			$this->condition = $condition;
 		}
 	}
@@ -27,28 +28,30 @@ class WGZ_Check_Conditions {
 	/**
 	 * Проверяем в правильном ли формате нам передано условие
 	 *
-	 * @since  2.2.0
-	 *
 	 * @param \stdClass $condition
 	 *
 	 * @return bool
+	 * @since  2.2.0
+	 *
 	 */
-	protected function validate_condition_schema( $condition ) {
-		$isset_attrs = ! empty( $condition->param ) && ! empty( $condition->operator ) && ! empty( $condition->type ) && isset( $condition->value );
+	protected function validate_condition_schema($condition)
+	{
+		$isset_attrs = !empty($condition->param) && !empty($condition->operator) && !empty($condition->type) && isset($condition->value);
 
-		$allow_params = in_array( $condition->param, [
+		$allow_params = in_array($condition->param, [
 			'user-role',
 			'user-mobile',
 			'user-cookie-name',
 			'current-url',
+			'query-string',
 			'location-page',
 			'regular-expression',
 			'location-some-page',
 			'location-post-type',
 			'location-taxonomy'
-		] );
+		]);
 
-		$allow_operators = in_array( $condition->operator, [
+		$allow_operators = in_array($condition->operator, [
 			'equals',
 			'notequal',
 			'less',
@@ -58,43 +61,44 @@ class WGZ_Check_Conditions {
 			'contains',
 			'notcontain',
 			'between'
-		] );
+		]);
 
-		$allow_types = in_array( $condition->type, [ 'select', 'text', 'default', 'regexp' ] );
+		$allow_types = in_array($condition->type, ['select', 'text', 'default', 'regexp', 'equals']);
 
 		return $isset_attrs && $allow_params && $allow_operators && $allow_types;
 	}
 
 	/**
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  2.0.0
 	 * @return bool
+	 * @since  2.0.0
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 */
-	public function validate() {
-		if ( empty( $this->condition ) && ! is_array( $this->condition ) ) {
+	public function validate()
+	{
+		if( empty($this->condition) && !is_array($this->condition) ) {
 			return false;
 		}
 
 		$or = null;
-		foreach ( $this->condition as $group_OR ) {
-			if ( ! empty( $group_OR->conditions ) && is_array( $group_OR->conditions ) ) {
+		foreach($this->condition as $group_OR) {
+			if( !empty($group_OR->conditions) && is_array($group_OR->conditions) ) {
 				$and = null;
-				foreach ( $group_OR->conditions as $condition ) {
-					if ( $this->validate_condition_schema( $condition ) ) {
-						$method_name = str_replace( '-', '_', $condition->param );
-						if ( is_null( $and ) ) {
-							$and = $this->call_method( $method_name, $condition->operator, $condition->value );
+				foreach($group_OR->conditions as $condition) {
+					if( $this->validate_condition_schema($condition) ) {
+						$method_name = str_replace('-', '_', $condition->param);
+						if( is_null($and) ) {
+							$and = $this->call_method($method_name, $condition->operator, $condition->value);
 						} else {
-							$and = $and && $this->call_method( $method_name, $condition->operator, $condition->value );
+							$and = $and && $this->call_method($method_name, $condition->operator, $condition->value);
 						}
 					}
 				}
 
-				$or = is_null( $or ) ? $and : $or || $and;
+				$or = is_null($or) ? $and : $or || $and;
 			}
 		}
 
-		return is_null( $or ) ? false : $or;
+		return is_null($or) ? false : $or;
 	}
 
 	/**
@@ -106,24 +110,26 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return bool
 	 */
-	protected function call_method( $method_name, $operator, $value ) {
-		if ( method_exists( $this, $method_name ) ) {
-			return $this->$method_name( $operator, $value );
+	protected function call_method($method_name, $operator, $value)
+	{
+		if( method_exists($this, $method_name) ) {
+			return $this->$method_name($operator, $value);
 		} else {
-			return apply_filters( 'wam/conditions/call_method', false, $method_name, $operator, $value );
+			return apply_filters('wam/conditions/call_method', false, $method_name, $operator, $value);
 		}
 	}
 
 	/**
-	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
-	 * @since  2.0.0
-	 *
 	 * @param string $path
 	 *
 	 * @return string
+	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
+	 * @since  2.0.0
+	 *
 	 */
-	protected function get_admin_url_path( $path ) {
-		return str_replace( site_url(), '', admin_url( $path ) );
+	protected function get_admin_url_path($path)
+	{
+		return str_replace(site_url(), '', admin_url($path));
 	}
 
 	/**
@@ -131,14 +137,15 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return string
 	 */
-	protected function get_referer_url() {
+	protected function get_referer_url()
+	{
 		$out = "";
-		$url = explode( '?', str_replace( site_url(), '', $_SERVER['HTTP_REFERER'] ), 2 );
-		if ( isset( $url[0] ) ) {
-			$out = trim( $url[0], '/' );
+		$url = explode('?', str_replace(site_url(), '', $_SERVER['HTTP_REFERER']), 2);
+		if( isset($url[0]) ) {
+			$out = trim($url[0], '/');
 		}
 
-		return $out ? urldecode( $out ) : '/';
+		return $out ? urldecode($out) : '/';
 	}
 
 	/**
@@ -146,23 +153,24 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return string
 	 */
-	protected function get_current_url_path( $clear_query = false ) {
-		if ( ! is_admin() && ! $clear_query ) {
-			$url = explode( '?', $_SERVER['REQUEST_URI'], 2 );
-			if ( strlen( $url[0] ) > 1 ) {
-				$out = rtrim( $url[0], '/' );
+	protected function get_current_url_path($clear_query = false)
+	{
+		if( !is_admin() && !$clear_query ) {
+			$url = explode('?', $_SERVER['REQUEST_URI'], 2);
+			if( strlen($url[0]) > 1 ) {
+				$out = rtrim($url[0], '/');
 			} else {
 				$out = $url[0];
 			}
 
-			return "/" === $out ? "/" : untrailingslashit( $out );
+			return "/" === $out ? "/" : untrailingslashit($out);
 		}
 
-		$removeble_args = array_merge( [ 'wbcr_assets_manager' ], wp_removable_query_args() );
+		$removeble_args = array_merge(['wbcr_assets_manager'], wp_removable_query_args());
 
-		$url = remove_query_arg( $removeble_args, $_SERVER['REQUEST_URI'] );
+		$url = remove_query_arg($removeble_args, $_SERVER['REQUEST_URI']);
 
-		return untrailingslashit( $url );
+		return untrailingslashit($url);
 	}
 
 	/**
@@ -175,8 +183,9 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return bool
 	 */
-	public function apply_operator( $operator, $first, $second, $third = false ) {
-		switch ( $operator ) {
+	public function apply_operator($operator, $first, $second, $third = false)
+	{
+		switch( $operator ) {
 			case 'equals':
 				return $first === $second;
 			case 'notequal':
@@ -188,9 +197,9 @@ class WGZ_Check_Conditions {
 			case 'younger':
 				return $first < $second;
 			case 'contains':
-				return strpos( $first, $second ) !== false;
+				return strpos($first, $second) !== false;
 			case 'notcontain':
-				return strpos( $first, $second ) === false;
+				return strpos($first, $second) === false;
 			case 'between':
 				return $first < $second && $second < $third;
 
@@ -207,8 +216,9 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return integer
 	 */
-	protected function get_timestamp( $units, $count ) {
-		switch ( $units ) {
+	protected function get_timestamp($units, $count)
+	{
+		switch( $units ) {
 			case 'seconds':
 				return $count;
 			case 'minutes':
@@ -236,9 +246,10 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return integer
 	 */
-	public function get_date_timestamp( $value ) {
-		if ( is_object( $value ) ) {
-			return ( current_time( 'timestamp' ) - $this->get_timestamp( $value->units, $value->unitsCount ) ) * 1000;
+	public function get_date_timestamp($value)
+	{
+		if( is_object($value) ) {
+			return (current_time('timestamp') - $this->get_timestamp($value->units, $value->unitsCount)) * 1000;
 		} else {
 			return $value;
 		}
@@ -252,12 +263,13 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return boolean
 	 */
-	protected function location_some_page( $operator, $value ) {
-		if ( ! is_admin() ) {
+	protected function location_some_page($operator, $value)
+	{
+		if( !is_admin() ) {
 			// For frontend area
-			switch ( $value ) {
+			switch( $value ) {
 				case 'base_web':    // Basic - Entire Website
-					$result = ! is_admin();
+					$result = !is_admin();
 					break;
 				case 'base_sing':   // Basic - All Singulars
 					$result = is_singular();
@@ -285,35 +297,35 @@ class WGZ_Check_Conditions {
 					break;
 				case 'post_all':    // Posts - All Posts
 				case 'page_all':    // Pages - All Pages
-					$result  = false;
-					$post_id = ( ! is_404() && ! is_search() && ! is_archive() && ! is_home() ) ? get_the_ID() : false;
+					$result = false;
+					$post_id = (!is_404() && !is_search() && !is_archive() && !is_home()) ? get_the_ID() : false;
 
-					if ( false !== $post_id ) {
+					if( false !== $post_id ) {
 						$post_type = 'post_all' == $value ? 'post' : 'page';
-						$result    = $post_type == get_post_type( $post_id );
+						$result = $post_type == get_post_type($post_id);
 					}
 					break;
 				case 'post_arch':   // Posts - All Posts Archive
 				case 'page_arch':   // Pages - All Pages Archive
 					$result = false;
-					if ( is_archive() ) {
+					if( is_archive() ) {
 						$post_type = 'post_arch' == $value ? 'post' : 'page';
-						$result    = $post_type == get_post_type();
+						$result = $post_type == get_post_type();
 					}
 					break;
 				case 'post_cat':    // Posts - All Categories Archive
 				case 'post_tag':    // Posts - All Tags Archive
 					$result = false;
-					if ( is_archive() && 'post' == get_post_type() ) {
+					if( is_archive() && 'post' == get_post_type() ) {
 						$taxonomy = 'post_tag' == $value ? 'post_tag' : 'category';
-						$obj      = get_queried_object();
+						$obj = get_queried_object();
 
 						$current_taxonomy = '';
-						if ( '' !== $obj && null !== $obj ) {
+						if( '' !== $obj && null !== $obj ) {
 							$current_taxonomy = $obj->taxonomy;
 						}
 
-						if ( $current_taxonomy == $taxonomy ) {
+						if( $current_taxonomy == $taxonomy ) {
 							$result = true;
 						}
 					}
@@ -324,106 +336,106 @@ class WGZ_Check_Conditions {
 			}
 		} else {
 			// For admin area
-			switch ( $value ) {
+			switch( $value ) {
 				case 'all_admin_area':
 					$result = is_admin();
 					break;
 				case 'dashboard_home':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'index.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('index.php');
 					break;
 				case 'dashboard_wordpress_updates':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'update-core.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('update-core.php');
 					break;
 				case 'posts_all':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'edit.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('edit.php');
 					break;
 				case 'posts_add_new':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'post-new.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('post-new.php');
 					break;
 				case 'posts_taxonomies':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'edit-tags.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('edit-tags.php');
 					break;
 				case 'media_library':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'upload.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('upload.php');
 					break;
 				case 'media_library_add_new':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'media-new.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('media-new.php');
 					break;
 				case 'appearance_themes':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'themes.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('themes.php');
 					break;
 				case 'appearance_customize':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'customize.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('customize.php');
 					break;
 				case 'appearance_widgets':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'widgets.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('widgets.php');
 					break;
 				case 'appearance_menus':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'nav-menus.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('nav-menus.php');
 					break;
 				case 'appearance_theme_editor':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'theme-editor.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('theme-editor.php');
 					break;
 				case 'plugins_installed':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'plugins.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('plugins.php');
 					break;
 				case 'plugins_add_new':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'plugin-install.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('plugin-install.php');
 					break;
 				case 'plugins_editor':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'plugin-editor.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('plugin-editor.php');
 					break;
 				case 'users_all':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'users.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('users.php');
 					break;
 				case 'users_add_new':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'user-new.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('user-new.php');
 					break;
 				case 'users_your_profile':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'profile.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('profile.php');
 					break;
 				case 'tools_available':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'tools.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('tools.php');
 					break;
 				case 'tools_import':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'import.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('import.php');
 					break;
 				case 'tools_export':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'export.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('export.php');
 					break;
 				case 'tools_site_health':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'site-health.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('site-health.php');
 					break;
 				case 'tools_export_personal_data':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'tools.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('tools.php');
 					break;
 				case 'tools_erase_personal_data':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'tools.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('tools.php');
 					break;
 				case 'settings_general':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-general.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('options-general.php');
 					break;
 				case 'settings_writing':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-writing.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('options-writing.php');
 					break;
 				case 'settings_reading':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-reading.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('options-reading.php');
 					break;
 				case 'settings_media':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-media.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('options-media.php');
 					break;
 				case 'settings_permalinks':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'options-permalink.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('options-permalink.php');
 					break;
 				case 'settings_privacy':
-					$result = $this->get_current_url_path( true ) === $this->get_admin_url_path( 'privacy.php' );
+					$result = $this->get_current_url_path(true) === $this->get_admin_url_path('privacy.php');
 					break;
 				default:
 					$result = true;
 			}
 		}
 
-		return $this->apply_operator( $operator, $result, true );
+		return $this->apply_operator($operator, $result, true);
 	}
 
 	/**
@@ -432,17 +444,18 @@ class WGZ_Check_Conditions {
 	 * Если url в условии и url текущей страницы совпадают,
 	 * условие будет выполнено успешно.
 	 *
+	 * @param string $operator
+	 * @param string $value
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 * @since  2.0.0
 	 *
-	 * @param string $operator
-	 * @param string $value
 	 */
-	protected function current_url( $operator, $value ) {
-		$value       = ( "/" === $value ) ? "/" : untrailingslashit( $value );
+	protected function current_url($operator, $value)
+	{
+		$value = ("/" === $value) ? "/" : untrailingslashit($value);
 		$current_url = $this->get_current_url_path();
 
-		return $this->apply_operator( $operator, $value, $current_url );
+		return $this->apply_operator($operator, $value, $current_url);
 	}
 
 	/**
@@ -453,9 +466,10 @@ class WGZ_Check_Conditions {
 	 *
 	 * @return boolean
 	 */
-	protected function location_post_type( $operator, $value ) {
-		if ( is_singular() ) {
-			return $this->apply_operator( $operator, $value, get_post_type() );
+	protected function location_post_type($operator, $value)
+	{
+		if( is_singular() ) {
+			return $this->apply_operator($operator, $value, get_post_type());
 		}
 
 		return false;
@@ -464,23 +478,44 @@ class WGZ_Check_Conditions {
 	/**
 	 * A taxonomy of the current page
 	 *
+	 * @param $operator
+	 * @param $value
+	 *
+	 * @return boolean
 	 * @since 2.2.8 The bug is fixed, the condition was not checked
 	 *              for tachonomies, only posts.
+	 *
+	 */
+	protected function location_taxonomy($operator, $value)
+	{
+		$taxonomy = null;
+
+		if( is_tax() || is_tag() || is_category() ) {
+			$taxonomy = get_queried_object()->taxonomy;
+		}
+
+		return $this->apply_operator($operator, $taxonomy, $value);
+	}
+
+	/**
+	 * Checking for the existence of a variable in a query string
 	 *
 	 * @param $operator
 	 * @param $value
 	 *
 	 * @return boolean
+	 * @since 2.2.8 The bug is fixed, the condition was not checked
+	 *              for tachonomies, only posts.
+	 *
 	 */
-	protected function location_taxonomy( $operator, $value ) {
-		$taxonomy = null;
-
-		if ( is_tax() || is_tag() || is_category() ) {
-			$taxonomy = get_queried_object()->taxonomy;
+	protected function query_string($operator, $value)
+	{
+		if( is_object($value) ) {
+			if( !empty($value->var_name) && isset($_GET[$value->var_name]) ) {
+				return $this->apply_operator($operator, $_GET[$value->var_name], $value->var_value);
+			}
 		}
 
-		return $this->apply_operator( $operator, $taxonomy, $value );
+		return false;
 	}
-
-
 }

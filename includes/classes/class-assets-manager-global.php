@@ -221,11 +221,13 @@ class WGZ_Assets_Manager_Public {
 			return;
 		}
 		?>
-		<label class="wam-table__label-move-to-footer-premium">
-			<input type="checkbox" class="wam-checkbox wam-table__checkbox" disabled="disabled" <?php checked($item['move_to_footer']) ?>>
-			<?php _e('Move to footer (PRO)', 'gonzales') ?>
-			<i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip="<?php _e('This function will force a script or style from the header to the footer. This can fix problems of blocking page rendering.', 'gonzales') ?>"></i>
-		</label>
+		<div>
+			<label class="wam-table__label-move-to-footer-premium" style="display: inline-block">
+				<input type="checkbox" class="wam-checkbox wam-table__checkbox" disabled="disabled" <?php checked($item['move_to_footer']) ?>>
+				<?php _e('Move to footer (PRO)', 'gonzales') ?>
+				<i class="wam-help-hint wam-tooltip wam-tooltip--bottom" data-tooltip="<?php _e('This function will force a script or style from the header to the footer. This can fix problems of blocking page rendering.', 'gonzales') ?>"></i>
+			</label>
+		</div>
 		<?php
 	}
 
@@ -645,6 +647,7 @@ class WGZ_Assets_Manager_Public {
 		<script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-assets-conditions.js'; ?>'></script>
 		<script type='text/javascript' src='<?php echo WGZ_PLUGIN_URL . '/assets/js/wam-assets-manager.js'; ?>'></script>
 		<?php
+		do_action("wam/plugin_print_scripts");
 	}
 
 	/**
@@ -722,6 +725,7 @@ class WGZ_Assets_Manager_Public {
 						'wp-includes/js/admin-bar.min.js',
 						// --
 						'assets/js/wam-assets-manager.js',
+						'assets/js/wam-assets-manager-pro.js',
 						'assets/js/wam-assets-conditions.js',
 						// --
 						'assets/js/libs/wam-pnotify.js',
@@ -998,6 +1002,12 @@ class WGZ_Assets_Manager_Public {
 					$s['move_to_footer'] = false;
 				}
 
+				if( isset($settings[$type]) && isset($settings[$type][$name]) && !empty($settings[$type][$name]['dns_prefetch']) ) {
+					$s['dns_prefetch'] = "true" === $settings[$type][$name]['dns_prefetch'];
+				} else {
+					$s['dns_prefetch'] = false;
+				}
+
 				if( 'disable' === $s['load_mode'] ) {
 					$s['row_classes'] = " js-wam-table__tr--disabled-section";
 					$s['select_control_classes'] = " js-wam-select--disable";
@@ -1203,6 +1213,13 @@ class WGZ_Assets_Manager_Public {
 				'type' => 'default',
 				'default_value' => $this->get_current_url_path(),
 				'description' => __('Current Url', 'gonzales')
+			],
+			[
+				'id' => 'query-string',
+				'title' => __('Query string var', 'gonzales'),
+				'type' => 'equals',
+				'placeholder' => [__('Var name', 'gonzales'), __('Value', 'gonzales')],
+				'description' => __('You can set this rule if the page url contains a query string. For example ?editor=classic&<b>type</b>=<b>float</b>. For example add the variable <b>"type"</b> to the first input field, and add <b>"float"</b> to the second input field. So field1: <b>type</b> = field2: <b>float</b>. Now, if you go to a page where there is a query string with the <b>"type"</b> variable equal to the <b>"float"</b> value, the script or style file will not be loaded.', 'gonzales')
 			],
 			[
 				'id' => 'location-page',
