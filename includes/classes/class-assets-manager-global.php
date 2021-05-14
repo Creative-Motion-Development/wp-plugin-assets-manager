@@ -140,8 +140,8 @@ class WGZ_Assets_Manager_Public {
 		$this->stop_caching_and_script_optimize();
 
 		// Disable autoptimize on Assets manager page
-		add_filter('autoptimize_filter_noptimize', [$this, 'autoptimize_noptimize'], 10, 0);
-		add_filter('wmac_filter_noptimize', [$this, 'autoptimize_noptimize'], 10, 0);
+		add_filter('autoptimize_filter_noptimize', [$this, 'autoptimize_noptimize'], 10, 1);
+		add_filter('wmac_filter_noptimize', [$this, 'autoptimize_noptimize'], 10, 1);
 
 		if( wp_doing_ajax() ) {
 			require_once WGZ_PLUGIN_DIR . '/admin/ajax/save-settings.php';
@@ -331,10 +331,10 @@ class WGZ_Assets_Manager_Public {
 	 * @since  1.0.8
 	 * @author Alexander Kovalev <alex.kovalevv@gmail.com>
 	 */
-	public function autoptimize_noptimize()
+	public function autoptimize_noptimize($result)
 	{
 		if( !isset($_GET['wbcr_assets_manager']) ) {
-			return false;
+			return $result;
 		}
 
 		return true;
