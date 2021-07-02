@@ -71,7 +71,7 @@ $wgnz_plugin_info = array(
 		array('libs/factory/bootstrap', 'factory_bootstrap_000', 'admin'),
 		array('libs/factory/forms', 'factory_forms_000', 'admin'),
 		array('libs/factory/pages', 'factory_pages_000', 'admin'),
-		array('libs/factory/clearfy', 'factory_clearfy_000', 'all'),
+		array('libs/factory/clearfy', 'factory_templates_000', 'all'),
 		array('libs/factory/adverts', 'factory_adverts_000', 'admin')
 	)
 );

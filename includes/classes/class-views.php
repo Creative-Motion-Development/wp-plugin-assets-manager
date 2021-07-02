@@ -63,11 +63,11 @@ class WGZ_Views {
 	 *
 	 * @param string                          $template   The template name.
 	 * @param mixed                           $data       Some data to pass to the template.
-	 * @param Wbcr_FactoryClearfy000_PageBase $page
+	 * @param WBCR\Factory_Templates_000\Pages\PageBase $page
 	 *
 	 * @return bool|string       The page contents. False if the template doesn't exist.
 	 */
-	public function get_template( $template, $data = [], Wbcr_FactoryClearfy000_PageBase $page = null ) {
+	public function get_template( $template, $data = [], WBCR\Factory_Templates_000\Pages\PageBase $page = null ) {
 		$template = str_replace( '_', '-', $template );
 		$path     = $this->plugin_dir . '/views/' . $template . '.php';
 
@@ -92,9 +92,9 @@ class WGZ_Views {
 	 *
 	 * @param string                          $template   The template name.
 	 * @param mixed                           $data       Some data to pass to the template.
-	 * @param Wbcr_FactoryClearfy000_PageBase $page
+	 * @param WBCR\Factory_Templates_000\Pages\PageBase $page
 	 */
-	public function print_template( $template, $data = [], Wbcr_FactoryClearfy000_PageBase $page = null ) {
+	public function print_template( $template, $data = [], WBCR\Factory_Templates_000\Pages\PageBase $page = null ) {
 		echo $this->get_template( $template, $data, $page );
 	}
 }
