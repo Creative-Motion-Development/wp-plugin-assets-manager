@@ -8,6 +8,7 @@
         "node_modules",
         "Gruntfile.js",
         "git-submodules.sh",
+        "commit-multiple.sh",
         "/admin/assets/css/general.less",
         "/admin/assets/css/tinymce.less",
         "/components/assets-manager/libs",
