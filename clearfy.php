@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'WGZ_PLUGIN_ACTIVE' ) ) {
-	define( 'WGZ_PLUGIN_VERSION', '2.1.0' );
+	define( 'WGZ_PLUGIN_VERSION', '2.1.1' );
 	define( 'WGZ_TEXT_DOMAIN', 'gonzales' );
 	define( 'WGZ_PLUGIN_ACTIVE', true );
 
