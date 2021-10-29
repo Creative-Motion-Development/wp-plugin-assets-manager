@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/gonzales/
  * Description: Increase the speed of the pages by disabling unused scripts (.JS) and styles (.CSS). Make your website REACTIVE!
  * Author: Webcraftic <wordpress.webraftic@gmail.com>
- * Version: 2.0.8
+ * Version: 2.1.0
  * Text Domain: gonzales
  * Domain Path: /languages/
  * Author URI: https://webcraftic.com
@@ -40,19 +40,19 @@ if( !defined('ABSPATH') ) {
 require_once(dirname(__FILE__) . '/libs/factory/core/includes/class-factory-requirements.php');
 
 // @formatter:off
-$wgnz_plugin_info = array(
+$wgnz_plugin_info = [
 	'prefix' => 'wbcr_gnz_',
 	'plugin_name' => 'wbcr_gonzales',
 	'plugin_title' => __('Webcraftic assets manager', 'gonzales'),
 
 	// PLUGIN SUPPORT
-	'support_details' => array(
+	'support_details' => [
 		'url' => 'https://clearfy.pro',
-		'pages_map' => array(
-			'support' => 'support',           // {site}/support
+		'pages_map' => [
+			'support' => 'support',         // {site}/support
 			'docs' => 'docs'               // {site}/docs
-		)
-	),
+		]
+	],
 
 	// PLUGIN SUBSCRIBE FORM
 	'subscribe_widget' => true,
@@ -60,28 +60,28 @@ $wgnz_plugin_info = array(
 
 	// PLUGIN ADVERTS
 	'render_adverts' => true,
-	'adverts_settings' => array(
+	'adverts_settings' => [
 		'dashboard_widget' => true, // show dashboard widget (default: false)
 		'right_sidebar' => true, // show adverts sidebar (default: false)
 		'notice' => true, // show notice message (default: false)
-	),
+	],
 
 	// FRAMEWORK MODULES
-	'load_factory_modules' => array(
-		array('libs/factory/bootstrap', 'factory_bootstrap_000', 'admin'),
-		array('libs/factory/forms', 'factory_forms_000', 'admin'),
-		array('libs/factory/pages', 'factory_pages_000', 'admin'),
-		array('libs/factory/clearfy', 'factory_templates_000', 'all'),
-		array('libs/factory/adverts', 'factory_adverts_000', 'admin')
-	)
-);
+	'load_factory_modules' => [
+		['libs/factory/bootstrap', 'factory_bootstrap_000', 'admin'],
+		['libs/factory/forms', 'factory_forms_000', 'admin'],
+		['libs/factory/pages', 'factory_pages_000', 'admin'],
+		['libs/factory/templates', 'factory_templates_000', 'all'],
+		['libs/factory/adverts', 'factory_adverts_000', 'admin']
+	]
+];
 
-$wgnz_compatibility = new Wbcr_Factory000_Requirements(__FILE__, array_merge($wgnz_plugin_info, array(
+$wgnz_compatibility = new Wbcr_Factory000_Requirements(__FILE__, array_merge($wgnz_plugin_info, [
 	'plugin_already_activate' => defined('WGZ_PLUGIN_ACTIVE'),
 	'required_php_version' => '5.4',
 	'required_wp_version' => '4.2.0',
 	'required_clearfy_check_component' => false
-)));
+]));
 
 /**
  * If the plugin is compatible, then it will continue its work, otherwise it will be stopped,
@@ -204,10 +204,10 @@ require_once(WGZ_PLUGIN_DIR . '/includes/functions.php');
 require_once(WGZ_PLUGIN_DIR . '/includes/class-plugin.php');
 
 try {
-	new WGZ_Plugin(__FILE__, array_merge($wgnz_plugin_info, array(
+	new WGZ_Plugin(__FILE__, array_merge($wgnz_plugin_info, [
 		'plugin_version' => WGZ_PLUGIN_VERSION,
 		'plugin_text_domain' => $wgnz_compatibility->get_text_domain(),
-	)));
+	]));
 } catch( Exception $e ) {
 	// Plugin wasn't initialized due to an error
 	define('WGZ_PLUGIN_THROW_ERROR', true);

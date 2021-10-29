@@ -13,10 +13,10 @@
 [submodule "libs/onepress/compiler"]
 	path = libs/onepress/compiler
 	url = ssh://git@bitbucket.org/webcraftic/wp-plugins-factory-compiler/
-[submodule "libs/factory/clearfy"]
-	path = libs/factory/clearfy
-	url = ssh://git@bitbucket.org/webcraftic/wp-plugins-factory-clearfy
 [submodule "libs/factory/adverts"]
 	path = libs/factory/adverts
 	url = ssh://git@bitbucket.org/webcraftic/wp-plugins-factory-adverts
+[submodule "libs/factory/templates"]
+	path = libs/factory/templates
+	url = git@github.com:Creative-Motion-Development/wp-framework-factory-templates.git
 
