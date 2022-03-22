@@ -59,6 +59,9 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.1.3 (21.03.2022) =
+* Fixed: Compatibility with Disable admin notices plugin
+
 = 2.1.2 (21.03.2022) =
 * Compatibility with Wordpress 5.2 - 5.9.x
 * Fixed: Minor bug
