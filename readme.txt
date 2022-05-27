@@ -3,7 +3,7 @@ Tags: dequeue script, dequeue style, pagespeed, speed, unload style, gonzales, a
 Contributors: webcraftic, creativemotion, alexkovalevv
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VDX7JNTQPNPFW
 Requires at least: 5.2
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 7.0
 Stable tag: trunk
 License: GPLv2
@@ -59,6 +59,9 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
+= 2.1.4 (27.05.2022) =
+* Compatibility with Wordpress 6.0
+
 = 2.1.3 (21.03.2022) =
 * Fixed: Compatibility with Disable admin notices plugin
 
