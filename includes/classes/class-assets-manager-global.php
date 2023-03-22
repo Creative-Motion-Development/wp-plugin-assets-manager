@@ -370,7 +370,7 @@ class WGZ_Assets_Manager_Public {
 	 */
 	public function clearfy_admin_bar_menu_filter($menu_items)
 	{
-		$current_url = add_query_arg(['wbcr_assets_manager' => 1]);
+		$current_url = esc_url(add_query_arg(['wbcr_assets_manager' => 1]));
 
 		$menu_items['assets_manager_render_template'] = [
 			'title' => '<span class="dashicons dashicons-list-view"></span> ' . __('Assets Manager', 'gonzales'),
@@ -390,7 +390,7 @@ class WGZ_Assets_Manager_Public {
 	 */
 	public function assets_manager_add_admin_bar_menu($wp_admin_bar)
 	{
-		$current_url = add_query_arg(['wbcr_assets_manager' => 1]);
+		$current_url = esc_url(add_query_arg(['wbcr_assets_manager' => 1]));
 
 		$args = [
 			'id' => 'assets_manager_render_template',
@@ -775,7 +775,7 @@ class WGZ_Assets_Manager_Public {
 				$this->plugin->updateNetworkOption('backend_assets_states', []);
 			}
 
-			wp_redirect(remove_query_arg(['wam_reset_settings', '_wpnonce']));
+			wp_redirect(esc_url_raw(remove_query_arg(['wam_reset_settings', '_wpnonce'])));
 			die();
 		}
 	}
@@ -1125,7 +1125,7 @@ class WGZ_Assets_Manager_Public {
 
 		$url = remove_query_arg($removeble_args, $_SERVER['REQUEST_URI']);
 
-		return untrailingslashit($url);
+		return esc_url_raw(untrailingslashit($url));
 	}
 
 	/**

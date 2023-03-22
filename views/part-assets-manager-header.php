@@ -36,6 +36,6 @@ defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
         </a>
         <button id="wam-save-button" class="wam-float-panel__save js-wam-top-panel__save-button" data-nonce="<?php echo wp_create_nonce( 'wam_save_settigns' ); ?>"><?php _e( 'Save', 'gonzales' ) ?></button>
 		<?php do_action( 'wam/views/safe_mode_checkbox', $data ); ?>
-        <a class="wam-float-panel__close wbcr-close-button" href="<?php echo remove_query_arg( 'wbcr_assets_manager' ); ?>" aria-label="<?php _e( 'Close', 'gonzales' ) ?>"></a>
+        <a class="wam-float-panel__close wbcr-close-button" href="<?php echo esc_url(remove_query_arg( 'wbcr_assets_manager' )); ?>" aria-label="<?php _e( 'Close', 'gonzales' ) ?>"></a>
     </div>
 </header>

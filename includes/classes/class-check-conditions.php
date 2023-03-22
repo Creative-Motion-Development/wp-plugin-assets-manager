@@ -170,7 +170,7 @@ class WGZ_Check_Conditions {
 
 		$url = remove_query_arg($removeble_args, $_SERVER['REQUEST_URI']);
 
-		return untrailingslashit($url);
+		return esc_url_raw(untrailingslashit($url));
 	}
 
 	/**
