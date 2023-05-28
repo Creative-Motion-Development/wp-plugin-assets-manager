@@ -104,7 +104,7 @@ define('WGZ_PLUGIN_ACTIVE', true);
 define('WGZ_PLUGIN_VERSION', $wgnz_compatibility->get_plugin_version());
 define('WGZ_PLUGIN_DIR', dirname(__FILE__));
 define('WGZ_PLUGIN_BASE', plugin_basename(__FILE__));
-define('WGZ_PLUGIN_URL', plugins_url(null, __FILE__));
+define('WGZ_PLUGIN_URL', plugins_url('', __FILE__));
 
 #comp remove
 // Эта часть кода для компилятора, не требует редактирования.
