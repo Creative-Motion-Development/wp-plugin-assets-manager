@@ -59,7 +59,7 @@ We invite you to check out a few other related free plugins that our team has al
 2. Assets manager
 
 == Changelog ==
-= 2.1.5 (22.03.2023) =
+= 2.1.6 (22.03.2023) =
 * Fixed: Freemius framework conflict
 * Added: Compatibility with Wordpress 6.2
 
