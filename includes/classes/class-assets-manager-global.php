@@ -22,6 +22,8 @@ class WGZ_Assets_Manager_Public {
 
 	public $template_rendered = false;
 
+	protected $plugin;
+
 	private $deregistered = [];
 
 	/**
