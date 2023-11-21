@@ -31,7 +31,7 @@ if ( ! defined( 'WGZ_PLUGIN_ACTIVE' ) ) {
 	}
 
 	if ( ! defined( 'WGZ_PLUGIN_URL' ) ) {
-		define( 'WGZ_PLUGIN_URL', plugins_url( null, __FILE__ ) );
+		define( 'WGZ_PLUGIN_URL', plugins_url( '', __FILE__ ) );
 	}
 
 	try {

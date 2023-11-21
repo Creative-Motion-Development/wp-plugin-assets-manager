@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/gonzales/
  * Description: Increase the speed of the pages by disabling unused scripts (.JS) and styles (.CSS). Make your website REACTIVE!
  * Author: Webcraftic <wordpress.webraftic@gmail.com>
- * Version: 2.1.6
+ * Version: 2.1.7
  * Text Domain: gonzales
  * Domain Path: /languages/
  * Author URI: https://webcraftic.com
@@ -104,7 +104,7 @@ define('WGZ_PLUGIN_ACTIVE', true);
 define('WGZ_PLUGIN_VERSION', $wgnz_compatibility->get_plugin_version());
 define('WGZ_PLUGIN_DIR', dirname(__FILE__));
 define('WGZ_PLUGIN_BASE', plugin_basename(__FILE__));
-define('WGZ_PLUGIN_URL', plugins_url(null, __FILE__));
+define('WGZ_PLUGIN_URL', plugins_url('', __FILE__));
 
 #comp remove
 // Эта часть кода для компилятора, не требует редактирования.
